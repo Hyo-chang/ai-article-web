@@ -1,0 +1,14 @@
+.idea/
+.vscode/
+node_modules/
+package-lock.json
+build/
+dist/
+target/
+*.log
+*.tmp
+*.bak
+*.swp
+.DS_Store
+venv/
+__pycache__/

@@ -1,0 +1,87 @@
+version: '3.9'
+
+# 서비스(컨테이너)들의 묶음을 정의합니다.
+services:
+
+  # 1. MariaDB 데이터베이스 서비스
+  db:
+    image: mariadb:11.2
+    container_name: ai-article-db
+    environment:
+      # application.properties와 일치시켜야 합니다.
+      MARIADB_ROOT_PASSWORD: rootpassword # 루트 비밀번호 (개발용)
+      MARIADB_DATABASE: cu202507
+      MARIADB_USER: cu202507
+      MARIADB_PASSWORD: cu20250712#
+    volumes:
+      # DB 데이터를 컨테이너가 삭제되어도 유지하기 위해 볼륨을 사용합니다.
+      - db_data:/var/lib/mysql
+      # 컨테이너가 처음 시작될 때 테이블을 생성하기 위해 .sql 파일을 마운트합니다.
+      - ./ai-article-backend/ai-article-v2only-DB.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      # 호스트의 3307번 포트를 컨테이너의 3306번 포트로 연결합니다.
+      # (기존에 3306 포트를 사용 중일 수 있으므로 충돌 방지를 위해 3307로 설정)
+      - "3307:3306"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "${MARIADB_USER}", "-p${MARIADB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Python AI 서버 (rag-ai)
+  rag-ai:
+    container_name: ai-article-rag-ai
+    build:
+      context: ./rag-ai  # rag-ai 디렉토리의 Dockerfile을 사용
+    volumes:
+      # 로컬의 rag-ai 폴더를 컨테이너의 /app 폴더와 실시간 동기화 (코드 수정 반영)
+      - ./rag-ai:/app
+    ports:
+      # 호스트의 8020번 포트를 컨테이너의 8020번 포트로 연결
+      - "8020:8020"
+    restart: unless-stopped
+
+  # 3. Java 백엔드 서버 (ai-article-backend)
+  backend:
+    container_name: ai-article-backend
+    build:
+      context: ./ai-article-backend
+    volumes:
+      # 로컬의 ai-article-backend 소스 폴더를 컨테이너의 /app/src 폴더와 동기화
+      - ./ai-article-backend/src:/app/src
+    ports:
+      # 호스트의 8080번 포트를 컨테이너의 8080번 포트로 연결
+      - "8080:8080"
+    environment:
+      # Java 애플리케이션이 DB 컨테이너를 찾을 수 있도록 URL을 서비스 이름(db)으로 설정
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/cu202507
+      # AI 서버 컨테이너를 서비스 이름(rag-ai)으로 바라보도록 설정
+      RAG_API_URL: http://rag-ai:8020
+      # 프로필을 v2로 명시적으로 활성화
+      SPRING_PROFILES_ACTIVE: v2
+    # db 서비스가 건강한 상태(healthy)가 된 후에 백엔드 서비스를 시작하도록 설정
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # 4. React 프론트엔드 서버 (ai-article-front)
+  frontend:
+    container_name: ai-article-frontend
+    build:
+      context: ./ai-article-front
+    volumes:
+      # 로컬의 ai-article-front 소스 폴더를 컨테이너의 /app/src 폴더와 동기화
+      - ./ai-article-front/src:/app/src
+    ports:
+      # 호스트의 5173번 포트를 컨테이너의 80번 포트(Nginx)로 연결
+      - "5173:80"
+    # 백엔드 서비스가 시작된 후에 프론트엔드 서비스를 시작 (선택 사항)
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+# 컨테이너가 삭제되어도 데이터를 보존하기 위한 명명된 볼륨을 정의합니다.
+volumes:
+  db_data:

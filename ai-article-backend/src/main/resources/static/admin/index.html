@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <title>AI Article Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="./admin.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>AI Article Admin</h1>
+      <small>헤더 토큰: <code>X-Admin-Token</code></small>
+    </header>
+
+    <!-- 카테고리 코드 안내 -->
+    <div class="card">
+      <h3>카테고리 코드 안내</h3>
+      <div class="chips" id="catChips"></div>
+      <p class="help muted">백엔드/크롤러와 동일한 코드 사용. 표시는 아래 매핑으로 진행됩니다.</p>
+    </div>
+
+    <!-- 스케줄 제어 -->
+    <div class="card">
+      <h3>0) 스케줄 제어 (일시중지 / 재개)</h3>
+      <div class="row">
+        <div class="col">
+          <label>잡 선택</label>
+          <select id="job"></select>
+        </div>
+        <div class="col">
+          <label>상태</label>
+          <div id="jobStatus" class="status-chip"><span class="status-dot"></span><span>불러오는 중…</span></div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="btnPause">일시중지</button>
+        <button class="btn secondary" id="btnResume">재개</button>
+        <button class="btn ghost" id="btnRefresh">상태 새로고침</button>
+      </div>
+      <p class="help">* 서버 재시작 없이 특정 스케줄만 멈추거나 다시 시작할 수 있습니다.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>1) 카테고리 코드 백필</h3>
+        <button class="btn" id="btnBackfill">실행</button>
+      </div>
+
+      <div class="card">
+        <h3>2) 전처리 + TF-IDF 재실행</h3>
+        <div class="row">
+          <div class="col"><label>from</label><input id="from" type="datetime-local"></div>
+          <div class="col"><label>to</label><input id="to" type="datetime-local"></div>
+          <div class="col"><label>force</label>
+            <select id="force"><option>false</option><option>true</option></select>
+          </div>
+        </div>
+        <div class="toolbar"><button class="btn" id="btnRerun">실행</button></div>
+      </div>
+
+      <div class="card">
+        <h3>3) 트렌드 스냅샷 (일 단위)</h3>
+        <div class="row">
+          <div class="col"><label>from</label><input id="s_from" type="datetime-local"></div>
+          <div class="col"><label>to</label><input id="s_to" type="datetime-local"></div>
+          <div class="col"><label>wipeExisting</label>
+            <select id="wipe"><option>true</option><option>false</option></select>
+          </div>
+        </div>
+        <div class="toolbar"><button class="btn" id="btnSnapshot">실행</button></div>
+      </div>
+
+      <div class="card">
+        <h3>4) 정리(48시간 이전)</h3>
+        <div class="row">
+          <div class="col"><label>hours</label><input id="hours" type="number" value="48"></div>
+          <div class="col"><label>snapshotsOnly</label>
+            <select id="snapOnly"><option>true</option><option>false</option></select>
+          </div>
+        </div>
+        <div class="toolbar"><button class="btn danger" id="btnCleanup">실행</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>최근 실행 로그</h3>
+      <div class="toolbar">
+        <button class="btn ghost" id="btnRunsRefresh">새로고침</button>
+        <span class="pill">최대 50건</span>
+      </div>
+      <table id="runs">
+        <thead>
+          <tr><th>ID</th><th>Job</th><th>Params</th><th>Started</th><th>Finished</th><th>Status</th><th>Note</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="./admin.js"></script>
+</body>
+</html>
