@@ -17,7 +17,7 @@ public class ArticleV2 {
     @Column(name = "category_code", length = 255)
     private String categoryCode;
 
-    @Column(name = "article_url", length = 255, nullable = false)
+    @Column(name = "article_url", length = 2048, nullable = false)
     private String articleUrl;
 
     @Column(name = "title", length = 255)

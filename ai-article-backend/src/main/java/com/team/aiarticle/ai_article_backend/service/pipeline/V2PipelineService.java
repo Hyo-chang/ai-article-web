@@ -57,7 +57,7 @@ public class V2PipelineService implements PipelineService {
         List<ArticleInfo> articles = jdbc.query("""
             SELECT a.article_id, a.title, a.content
             FROM articlev2 a
-            WHERE a.created_at >= ? AND a.created_at < ?
+            WHERE a.published_at >= ? AND a.published_at < ?
               AND NOT EXISTS (
                 SELECT 1 FROM extracted_keyword_v2 ek
                 JOIN article_processed_content_v2 apc ON ek.processed_content_id = apc.processed_content_id

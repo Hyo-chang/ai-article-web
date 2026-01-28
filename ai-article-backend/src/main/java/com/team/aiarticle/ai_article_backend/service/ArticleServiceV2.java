@@ -2,12 +2,15 @@ package com.team.aiarticle.ai_article_backend.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.team.aiarticle.ai_article_backend.dto.ArticleIngestRequest;
 import com.team.aiarticle.ai_article_backend.entity.ArticleV2;
 import com.team.aiarticle.ai_article_backend.repository.ArticleV2Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -23,6 +26,39 @@ public class ArticleServiceV2 {
         this.articleV2Repository = articleV2Repository;
         this.aiApiService = aiApiService;
         this.objectMapper = objectMapper;
+    }
+
+    @Transactional
+    public ArticleV2 createArticle(ArticleIngestRequest request) {
+        String articleUrl = request.getArticleUrl();
+        if (articleUrl == null || articleUrl.isBlank()) {
+            throw new IllegalArgumentException("Article URL cannot be null or empty for ArticleIngestRequest");
+        }
+
+        ArticleV2 article = new ArticleV2();
+        article.setArticleUrl(articleUrl);
+        article.setTitle(request.getTitle());
+        article.setContent(request.getContent());
+        article.setPublisher(request.getPublisher());
+        article.setCategoryCode(request.getCategoryCode());
+        // Convert String dates to LocalDateTime
+        if (request.getPublishedAt() != null) {
+            article.setPublishedAt(LocalDateTime.parse(request.getPublishedAt(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+        }
+        if (request.getContentCrawledAt() != null) {
+            article.setContentCrawledAt(LocalDateTime.parse(request.getContentCrawledAt(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+        }
+        if (request.getInitialCrawledAt() != null) {
+            article.setInitialCrawledAt(LocalDateTime.parse(request.getInitialCrawledAt(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+        }
+        article.setIsFullContentCrawled(request.getIsFullContentCrawled());
+        article.setImageUrl(request.getImage_url());
+        article.setDefinition(request.getDefinition());
+        article.setLink(request.getLink());
+        article.setWord(request.getWord());
+        // summarize field is initially empty
+
+        return articleV2Repository.save(article);
     }
 
     @Transactional

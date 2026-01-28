@@ -187,14 +187,13 @@ class NewsKeywordExtractor:
     def _calculate_semantic_score(self, text: str, candidates: list):
         """
         Step 4: Embedding으로 의미적 중요도(문서-단어 간 유사도) 계산.
-        LangChain의 embedding 객체와 호환되도록 수정.
         """
         if not candidates:
             return {}
 
-        # LangChain 표준 메서드 사용
-        doc_embedding = self.model.embed_query(text)
-        candidate_embeddings = self.model.embed_documents(candidates)
+        # SentenceTransformer의 표준 'encode' 메서드 사용
+        doc_embedding = self.model.encode(text)
+        candidate_embeddings = self.model.encode(candidates)
 
         # 코사인 유사도 계산 (sklearn 사용)
         doc_embedding_reshaped = np.array(doc_embedding).reshape(1, -1)
