@@ -18,7 +18,7 @@ RUN mvn package -DskipTests
 
 # --- 2단계: 실행 환경 ---
 # 빌드된 JAR 파일을 실행하기 위한 가벼운 JRE 이미지를 사용합니다.
-FROM openjdk:21-jre-slim
+FROM eclipse-temurin:21-jre-jammy
 
 # 작업 디렉토리 설정
 WORKDIR /app

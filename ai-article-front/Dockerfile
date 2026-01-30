@@ -23,7 +23,7 @@ FROM nginx:1.27-alpine
 
 # 빌드 단계(builder)의 /app/dist 디렉토리에 있는 결과물을
 # Nginx 웹서버의 기본 HTML 서비스 디렉토리로 복사합니다.
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/build /usr/share/nginx/html
 
 # Nginx는 기본적으로 80번 포트를 사용합니다.
 EXPOSE 80

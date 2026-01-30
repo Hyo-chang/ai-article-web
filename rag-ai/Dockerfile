@@ -4,7 +4,13 @@ FROM python:3.11-slim
 # 2. 작업 디렉토리 설정
 WORKDIR /app
 
-# 3. 의존성 파일 복사 및 설치
+# 3. 시스템 의존성 설치 (MariaDB Connector/C 포함)
+RUN apt-get update && apt-get install -y \
+    libmariadb-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# 4. 의존성 파일 복사 및 설치
 # 소스 코드보다 의존성 파일을 먼저 복사하면, 코드만 변경되었을 때 불필요한 의존성 재설치를 방지하여 빌드 속도를 높일 수 있습니다.
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
