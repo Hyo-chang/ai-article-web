@@ -111,3 +111,44 @@ PYTHONIOENCODING=utf-8 /c/dev/venv/Scripts/python.exe scripts/crawling.py \
 ## Git 컨벤션
 
 - 커밋 메시지: `[타입] 설명` (feat, fix, refactor, docs, chore)
+
+## Docker Hub 이미지
+
+Docker Hub 계정: `hyopang`
+
+| 이미지 | 크기 | 설명 |
+|--------|------|------|
+| `hyopang/ai-article-backend:latest` | 541MB | Spring Boot 백엔드 |
+| `hyopang/ai-article-frontend:latest` | 74.6MB | React 프론트엔드 (Nginx) |
+| `hyopang/ai-article-rag-ai:latest` | 13.2GB | Python AI 엔진 |
+
+```bash
+# 이미지 Pull
+docker pull hyopang/ai-article-backend:latest
+docker pull hyopang/ai-article-frontend:latest
+docker pull hyopang/ai-article-rag-ai:latest
+```
+
+## 원격 개발 설정 (TODO)
+
+### 목적
+- 데스크탑(GPU)에서 AI 서버 실행
+- 노트북에서 외부 개발 시 원격 접속
+
+### 다음 작업
+1. **Tailscale 설치** (데스크탑 + 노트북) - VPN 연결
+2. 데스크탑에서 `docker-compose up -d` 실행
+3. VS Code Remote SSH로 노트북에서 원격 개발
+
+### 구조
+```
+데스크탑 (Docker 서비스 실행)
+  ├── backend:8080
+  ├── frontend:5173
+  ├── rag-ai:8020
+  └── db:3307
+       ▲
+       │ Tailscale VPN
+       ▼
+노트북 (VS Code Remote SSH로 접속)
+```
