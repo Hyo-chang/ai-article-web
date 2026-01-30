@@ -64,17 +64,12 @@ public class CrawlingBridgeService {
         command.add(script.toString());
         command.add("--article-url");
         command.add(articleUrl);
-        command.add("--max-articles");
-        command.add("1");
-        command.add("--sleep-min");
-        command.add(String.valueOf(fastSleepMin));
-        command.add("--sleep-max");
-        command.add(String.valueOf(fastSleepMax));
+        // Removed --max-articles, --sleep-min, --sleep-max, --once as they are not parsed by crawling.py's argparse
         command.add("--wait-min");
-        command.add("0");
+        command.add("0"); // Use 0 for single article immediate processing
         command.add("--wait-max");
-        command.add("0");
-        command.add("--once");
+        command.add("0"); // Use 0 for single article immediate processing
+        // Removed --loop and "False" as crawling.py's argparse defines --loop as action="store_true"
         command.add("--backend-endpoint");
         command.add(backendEndpoint);
 

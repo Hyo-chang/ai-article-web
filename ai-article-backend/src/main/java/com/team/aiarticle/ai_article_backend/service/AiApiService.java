@@ -26,8 +26,8 @@ public class AiApiService {
         this.webClient = webClientBuilder.baseUrl(aiApiUrl).build();
     }
 
-    public Mono<AnalyzeResponse> analyzeArticle(String htmlContent, String title, Map<String, Object> metadata) {
-        AnalyzeRequest requestPayload = new AnalyzeRequest(htmlContent, title, metadata);
+    public Mono<AnalyzeResponse> analyzeArticle(String htmlContent, String title, Map<String, Object> metadata, List<String> availableCategories) {
+        AnalyzeRequest requestPayload = new AnalyzeRequest(htmlContent, title, metadata, availableCategories);
 
         return this.webClient.post()
                 .uri("/analyze")
@@ -47,11 +47,15 @@ public class AiApiService {
         @JsonProperty("article_title")
         private String articleTitle;
         private Map<String, Object> metadata;
+        @JsonProperty("available_categories")
+        private List<String> availableCategories;
 
-        public AnalyzeRequest(String htmlContent, String articleTitle, Map<String, Object> metadata) {
+
+        public AnalyzeRequest(String htmlContent, String articleTitle, Map<String, Object> metadata, List<String> availableCategories) {
             this.htmlContent = htmlContent;
             this.articleTitle = articleTitle;
             this.metadata = metadata;
+            this.availableCategories = availableCategories;
         }
     }
 
@@ -62,6 +66,7 @@ public class AiApiService {
         private String summary;
         private List<KeywordScore> keywords;
         private Map<String, String> definitions;
+        private String category;
     }
 
     @Getter @Setter

@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
 @RestController
 @RequestMapping("/api") // Base path for API endpoints
 @CrossOrigin(origins = "http://localhost:5173")
@@ -24,6 +28,12 @@ public class ArticleSummaryController {
 
     private final ArticleSummaryService articleSummaryService;
     private final ArticleServiceV2 articleServiceV2; // Inject new service
+
+    @GetMapping("/articles")
+    public ResponseEntity<List<ArticleV2>> getArticles(@RequestParam(name = "limit", defaultValue = "200") int limit) {
+        List<ArticleV2> articles = articleServiceV2.findAll(limit);
+        return ResponseEntity.ok(articles);
+    }
 
     @GetMapping("/article/{id}") // Moved /article to GetMapping
     public ResponseEntity<ArticleSummaryResponse> getArticle(@PathVariable Integer id) {

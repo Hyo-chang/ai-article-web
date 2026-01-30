@@ -33,4 +33,8 @@ public class CategoryService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public List<CategoryDictV2> findAll() {
+        return categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "categoryName"));
+    }
 }

@@ -87,7 +87,7 @@ class DomainProfile:
     meta_time_selectors: Tuple[str, ...] = DEFAULT_META_TIME_SELECTORS
     time_selectors: Tuple[str, ...] = DEFAULT_TIME_SELECTORS
     time_attr_candidates: Tuple[str, ...] = DEFAULT_TIME_ATTRS
-    publisher_selectors: Tuple[str, ...] = ("meta[property='og:article:author']", "meta[property='og:site_name']")
+    publisher_selectors: Tuple[str, ...] = ("meta[property='og:site_name']", "meta[property='og:article:author']")
     referer: Optional[str] = None
     user_agent: Optional[str] = None
 
@@ -214,6 +214,50 @@ CHOSUN_PROFILE = DomainProfile(
     referer="https://www.chosun.com/",
 )
 
+ECONOVILL_PROFILE = DomainProfile(
+    name="ECONOVILL",
+    title_selectors=(
+        "header.article-view-header h3.heading",
+        "meta[property='og:title']",
+    ),
+    body_selectors=("article#article-view-content-div",),
+)
+
+AMENEWS_PROFILE = DomainProfile(
+    name="AMENEWS",
+    title_selectors=("meta[property='og:title']", "div.titleWrap strong", "title"),
+    body_selectors=("div#viewContent",),
+    time_selectors=("div.registModifyDate li span",),
+)
+
+WIKITREE_PROFILE = DomainProfile(
+    name="WIKITREE",
+    title_selectors=("meta[property='og:title']",),
+    body_selectors=("div#wikicon",),
+    meta_time_selectors=("meta[property='article:published_time']",),
+)
+
+PRESS9_PROFILE = DomainProfile(
+    name="PRESS9",
+    title_selectors=("meta[property='og:title']", "h3.heading"),
+    body_selectors=("div[itemprop='articleBody']",),
+    meta_time_selectors=("meta[property='article:published_time']",),
+)
+
+AJUNEWS_PROFILE = DomainProfile(
+    name="AJUNEWS",
+    title_selectors=("meta[property='og:title']", "h1.tit_view"),
+    body_selectors=("div[itemprop='articleBody']",),
+    meta_time_selectors=("meta[property='article:published_time']",),
+)
+
+ZIKKIR_PROFILE = DomainProfile(
+    name="ZIKKIR",
+    title_selectors=("meta[property='og:title']", "h3.heading"),
+    body_selectors=("article#article-view-content-div",),
+    meta_time_selectors=("meta[property='article:published_time']",),
+)
+
 DEFAULT_PROFILE = GENERIC_PROFILE
 
 HOST_PROFILES = {
@@ -230,6 +274,12 @@ HOST_PROFILES = {
     "www.chosun.com": CHOSUN_PROFILE,
     "chosun.com": CHOSUN_PROFILE,
     "news.chosun.com": CHOSUN_PROFILE,
+    "www.econovill.com": ECONOVILL_PROFILE,
+    "amenews.kr": AMENEWS_PROFILE,
+    "www.wikitree.co.kr": WIKITREE_PROFILE,
+    "www.press9.kr": PRESS9_PROFILE,
+    "www.ajunews.com": AJUNEWS_PROFILE,
+    "www.ziksir.com": ZIKKIR_PROFILE,
 }
 
 
@@ -377,10 +427,14 @@ def extract_body_text(body_el: Optional[Tag], profile: DomainProfile) -> str:
 def parse_article_fields(article_url: str, soup: BeautifulSoup, profile: DomainProfile) -> Dict[str, Any]:
     title_el = pick_first(soup, profile.title_selectors)
     body_el = pick_first(soup, profile.body_selectors)
+    publisher_el = pick_first(soup, profile.publisher_selectors)
+
     title = _title_text(title_el)
     body = extract_body_text(body_el, profile)
+    publisher = _title_text(publisher_el)
     published_at = parse_published_at(soup, profile)
-    return {"title": title, "body": body, "published_at": published_at}
+    
+    return {"title": title, "body": body, "publisher": publisher, "published_at": published_at}
 
 # ====================================================================
 # 🚚 백엔드 전송
@@ -391,6 +445,9 @@ def send_to_backend(session: requests.Session, cfg: Config, payload: Dict[str, A
         return True
     try:
         res = session.post(cfg.backend_endpoint, json=payload, timeout=cfg.timeout)
+        if res.status_code >= 400:
+            print(f"❌ 서버 응답 내용 (상태 코드: {res.status_code}):")
+            print(res.text)
         res.raise_for_status()
         print(f"📦 저장 완료: {payload.get('title')}")
         return True
@@ -414,15 +471,20 @@ def fetch_articles_from_naver_api(session: requests.Session, cfg: Config, keywor
         res = session.get("https://openapi.naver.com/v1/search/news.json", headers=headers, params=params, timeout=cfg.timeout)
         res.raise_for_status()
         data = res.json()
-        articles = [item for item in data.get("items", []) if item.get("originallink")]
-        print(f"  ➡️ API 응답: {len(articles)}개 유효 기사 발견")
+        # 네이버 뉴스 URL(n.news.naver.com)이 있는 기사만 필터링 (HTML 구조 통일)
+        articles = [
+            item for item in data.get("items", [])
+            if item.get("link") and "n.news.naver.com" in item.get("link", "")
+        ]
+        print(f"  ➡️ API 응답: {len(articles)}개 네이버 뉴스 기사 발견")
         return articles
     except requests.exceptions.RequestException as e:
         print(f"❌ API 요청 실패: {e}")
         return []
 
 def process_article(session: requests.Session, cfg: Config, article_api_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    link = article_api_data.get("originallink")
+    # 네이버 뉴스 URL 사용 (HTML 구조 통일)
+    link = article_api_data.get("link")
     if not link: return None
 
     print(f"  C: GET article {link}")
@@ -447,6 +509,7 @@ def process_article(session: requests.Session, cfg: Config, article_api_data: Di
             "publisher": parsed_data.get("publisher"),
             "publishedAt": to_iso(parsed_data.get("published_at") or _parse_datetime_string(article_api_data.get("pubDate"))),
             "contentCrawledAt": to_iso(datetime.utcnow()),
+            "isFullContentCrawled": True,
         }
         
         return {"payload": payload, "html": page_html, "metadata": {}}
@@ -464,7 +527,7 @@ def crawl_with_api_2_phase(session: requests.Session, cfg: Config, keyword_extra
     print("\n--- 🟢 1단계 수집 시작 ---")
     for keyword in cfg.keywords:
         for article_api_data in fetch_articles_from_naver_api(session, cfg, keyword):
-            url = article_api_data.get("originallink")
+            url = article_api_data.get("link")
             if not url or url in processed_urls: continue
             processed_urls.add(url)
             
@@ -496,7 +559,7 @@ def crawl_with_api_2_phase(session: requests.Session, cfg: Config, keyword_extra
     print(f"  2단계 수집을 위한 신규 키워드: {unique_new_keywords}")
     for keyword in unique_new_keywords:
         for article_api_data in fetch_articles_from_naver_api(session, cfg, keyword):
-            url = article_api_data.get("originallink")
+            url = article_api_data.get("link")
             if not url or url in processed_urls: continue
             processed_urls.add(url)
             
@@ -545,11 +608,16 @@ def main():
         sys.exit(1)
 
     session = create_session(cfg)
-    keyword_extractor = NewsKeywordExtractor() if NewsKeywordExtractor else None
-    
-    if not keyword_extractor and cfg.total_phases > 1:
-        print("⚠️ 2단계 수집을 위해 'news_keyword_extractor'가 필요하지만, 로드에 실패했습니다. 1단계 수집만 진행합니다.")
-        cfg.total_phases = 1
+
+    # 2단계 수집 시에만 키워드 추출기 로드 (모델 로딩이 오래 걸림)
+    keyword_extractor = None
+    if cfg.total_phases > 1:
+        if NewsKeywordExtractor:
+            print("🔄 2단계 수집을 위해 키워드 추출기를 로드합니다...")
+            keyword_extractor = NewsKeywordExtractor()
+        else:
+            print("⚠️ 2단계 수집을 위해 'news_keyword_extractor'가 필요하지만, 로드에 실패했습니다. 1단계 수집만 진행합니다.")
+            cfg = replace(cfg, total_phases=1)
         
     def crawl_job():
         if cfg.article_url:

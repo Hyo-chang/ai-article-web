@@ -1,7 +1,11 @@
 package com.team.aiarticle.ai_article_backend.controller;
 
+import com.team.aiarticle.ai_article_backend.dto.ManualCrawlResponse;
+import com.team.aiarticle.ai_article_backend.service.CrawlingBridgeService;
 import com.team.aiarticle.ai_article_backend.service.admin.AdminService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,17 +19,37 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@RequiredArgsConstructor
 public class AdminController {
 
     private final AdminService adminService;
+    private final CrawlingBridgeService crawlingBridgeService;
     private final JdbcTemplate jdbc;
     private static final String TOKEN = System.getenv().getOrDefault("ADMIN_TOKEN", "1234");
+
+    public AdminController(AdminService adminService, CrawlingBridgeService crawlingBridgeService, JdbcTemplate jdbc) {
+        this.adminService = adminService;
+        this.crawlingBridgeService = crawlingBridgeService;
+        this.jdbc = jdbc;
+    }
 
     private void requireToken(String token) {
         if (token == null || !token.equals(TOKEN)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid admin token");
         }
+    }
+
+    @Getter
+    @Setter
+    public static class CrawlRequest {
+        private String articleUrl;
+    }
+
+    @PostMapping("/crawl-article")
+    public ManualCrawlResponse crawlArticle(@RequestBody CrawlRequest request) {
+        if (request == null || request.getArticleUrl() == null || request.getArticleUrl().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "articleUrl cannot be empty");
+        }
+        return crawlingBridgeService.crawlSingleArticle(request.getArticleUrl());
     }
 
     @PostMapping("/backfill/category-code")
