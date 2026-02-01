@@ -175,87 +175,58 @@ def _classify_category_placeholder(categories: Optional[List[str]]) -> str:
 async def analyze_article(request: AnalyzeRequest):
     """기사의 HTML 본문을 받아 키워드 추출, 요약, 단어 정의를 모두 수행합니다."""
     print(f"\n--- [FastAPI] '/analyze' 요청 수신 (Title: {request.article_title}) ---")
-    
-    # ===================================================================
-    # 테스트 모드: 실제 AI 분석을 건너뛰고 즉시 더미 데이터를 반환합니다.
-    # ===================================================================
-    print("[FastAPI] !!! 테스트 모드 활성화 !!! 실제 AI 분석을 건너뜁니다.")
-    
-    # 1. 카테고리 분류 (임시 로직은 그대로 사용)
-    assigned_category = _classify_category_placeholder(request.available_categories)
-    
-    # 2. 더미 데이터 생성
-    dummy_summary = "이것은 AI 모델을 거치지 않은 테스트용 요약문입니다."
-    dummy_keywords = [
-        KeywordScore(word="테스트", score=0.9),
-        KeywordScore(word="파이프라인", score=0.8),
-    ]
-    dummy_definitions = {
-        "테스트": "시스템이 올바르게 작동하는지 검증하는 과정입니다.",
-        "파이프라인": "데이터가 처리되는 일련의 단계입니다.",
-    }
 
-    print("[FastAPI] 테스트용 더미 데이터로 응답합니다.")
-    return AnalyzeResponse(
-        summary=dummy_summary,
-        keywords=dummy_keywords,
-        definitions=dummy_definitions,
-        category=assigned_category
-    )
-    # ===================================================================
+    try:
+        # --- 0. 카테고리 분류 (임시) ---
+        assigned_category = _classify_category_placeholder(request.available_categories)
 
-    # 원본 분석 로직 (현재는 주석 처리됨)
-    # try:
-    #     # --- 0. 카테고리 분류 (임시) ---
-    #     assigned_category = _classify_category_placeholder(request.available_categories)
-        
-    #     # --- 1. 키워드 추출 ---
-    #     print("[FastAPI] 키워드 추출 시작...")
-    #     llm = global_models["llm"]
-    #     embeddings = global_models["embeddings"]
+        # --- 1. 키워드 추출 ---
+        print("[FastAPI] 키워드 추출 시작...")
+        llm = global_models["llm"]
+        embeddings = global_models["embeddings"]
 
-    #     keyword_extractor = NewsKeywordExtractor(embedding_model=embeddings)
-        
-    #     extracted_keywords_with_scores = keyword_extractor.extract_keywords(
-    #         html_text=request.html_content, 
-    #         n=5, 
-    #         metadata=request.metadata
-    #     )
-    #     keywords_for_response = [KeywordScore(word=word, score=score) for word, score in extracted_keywords_with_scores]
-    #     keyword_list = [item.word for item in keywords_for_response]
-    #     print(f"[FastAPI] 키워드 추출 완료: {keyword_list}")
+        keyword_extractor = NewsKeywordExtractor(embedding_model=embeddings)
 
-    #     # --- 2. 기사 분석 (요약 및 단어 정의) ---
-    #     print("[FastAPI] 기사 분석 및 요약 시작...")
-    #     analyzer = AdvancedArticleAnalyzer(
-    #         article_text=request.html_content,
-    #         article_title=request.article_title,
-    #         key_words=keyword_list,
-    #         llm=llm,
-    #         embeddings=embeddings,
-    #         db_pool=global_models.get("db_pool"),  # 전역 DB 풀 전달
-    #         metadata=request.metadata
-    #     )
+        extracted_keywords_with_scores = keyword_extractor.extract_keywords(
+            html_text=request.html_content,
+            n=5,
+            metadata=request.metadata
+        )
+        keywords_for_response = [KeywordScore(word=word, score=score) for word, score in extracted_keywords_with_scores]
+        keyword_list = [item.word for item in keywords_for_response]
+        print(f"[FastAPI] 키워드 추출 완료: {keyword_list}")
 
-    #     # 요약 실행 (내부적으로 단어 정의 동시 수행)
-    #     summary_result, definitions_result = analyzer.summarize_and_define()
+        # --- 2. 기사 분석 (요약 및 단어 정의) ---
+        print("[FastAPI] 기사 분석 및 요약 시작...")
+        analyzer = AdvancedArticleAnalyzer(
+            article_text=request.html_content,
+            article_title=request.article_title,
+            key_words=keyword_list,
+            llm=llm,
+            embeddings=embeddings,
+            db_pool=global_models.get("db_pool"),  # 전역 DB 풀 전달
+            metadata=request.metadata
+        )
 
-    #     print("[FastAPI] 분석 완료. 응답 전송.")
-    #     return AnalyzeResponse(
-    #         summary=summary_result,
-    #         keywords=keywords_for_response,
-    #         definitions=definitions_result,
-    #         category=assigned_category
-    #     )
-    # except Exception as e:
-    #     print(f"[!!! FastAPI 치명적 오류 !!!] {e}")
-    #     # 개발 환경에서는 상세한 오류를 확인하기 위해 스택 트레이스 출력
-    #     import traceback
-    #     traceback.print_exc()
-    #     raise HTTPException(
-    #         status_code=500,
-    #         detail=f"분석 중 오류 발생: {e}"
-    #     )
+        # 요약 실행 (내부적으로 단어 정의 동시 수행)
+        summary_result, definitions_result = analyzer.summarize_and_define()
+
+        print("[FastAPI] 분석 완료. 응답 전송.")
+        return AnalyzeResponse(
+            summary=summary_result,
+            keywords=keywords_for_response,
+            definitions=definitions_result,
+            category=assigned_category
+        )
+    except Exception as e:
+        print(f"[!!! FastAPI 치명적 오류 !!!] {e}")
+        # 개발 환경에서는 상세한 오류를 확인하기 위해 스택 트레이스 출력
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"분석 중 오류 발생: {e}"
+        )
 
 # --- 4. Uvicorn 서버 실행 방법 ---
 # 실행 명령어 : uvicorn api_main:app --host 127.0.0.1 --port 8020 --reload (--reload 옵션은 개발용)

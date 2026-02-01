@@ -86,6 +86,24 @@ public class ArticleServiceV2 {
         // 4. Set summary from AI response
         article.setSummarize(analyzeResponse.getSummary());
 
+        // 5. Set keywords and definitions from AI response (as JSON)
+        try {
+            if (analyzeResponse.getKeywords() != null && !analyzeResponse.getKeywords().isEmpty()) {
+                // 키워드를 단어 목록으로 변환하여 JSON 저장
+                List<String> keywordWords = analyzeResponse.getKeywords().stream()
+                    .map(AiApiService.KeywordScore::getWord)
+                    .collect(Collectors.toList());
+                article.setWord(objectMapper.writeValueAsString(keywordWords));
+                System.out.println("키워드 저장: " + keywordWords);
+            }
+            if (analyzeResponse.getDefinitions() != null && !analyzeResponse.getDefinitions().isEmpty()) {
+                article.setDefinition(objectMapper.writeValueAsString(analyzeResponse.getDefinitions()));
+                System.out.println("단어 정의 저장: " + analyzeResponse.getDefinitions().keySet());
+            }
+        } catch (JsonProcessingException e) {
+            System.out.println("키워드/정의 JSON 변환 실패: " + e.getMessage());
+        }
+
         // Convert String dates to LocalDateTime
         if (request.getPublishedAt() != null) {
             article.setPublishedAt(LocalDateTime.parse(request.getPublishedAt(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
@@ -94,8 +112,7 @@ public class ArticleServiceV2 {
             article.setContentCrawledAt(LocalDateTime.parse(request.getContentCrawledAt(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
         }
         article.setIsFullContentCrawled(request.getIsFullContentCrawled());
-        
-        // Unused fields are intentionally not set
+        article.setImage_url(request.getImage_url());
 
         System.out.println("--- 기사 DB 저장 시도 ---");
         return articleV2Repository.save(article);

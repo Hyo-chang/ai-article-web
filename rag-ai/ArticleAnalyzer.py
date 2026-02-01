@@ -183,25 +183,53 @@ class AdvancedArticleAnalyzer:
         # (헬퍼) LLM을 사용하여 지저분한 정의를 깔끔한 한 문장으로 정제
         print(f"[{word} - 정의 정제 시작] 원본: {messy_definition[:30]}...")
         try:
-            template = """당신은 사전 편집자입니다. 다음은 '{word}'라는 단어에 대한 정리되지 않은 설명입니다. 이 설명을 명확하고 간결한 한 문장의 사전적 정의로 다시 작성해주세요.
+            template = """당신은 사전 편집자입니다. 다음은 '{word}'라는 단어에 대한 정리되지 않은 설명입니다.
+이 설명을 명확하고 간결한 한 문장의 사전적 정의로 다시 작성해주세요.
+
+**중요한 출력 규칙:**
+- 반드시 "{word}은(는) ~입니다." 또는 "{word}은(는) ~을(를) 말한다." 형식으로 시작하세요.
+- **굵은 글씨**, 따옴표, "정제된 정의:" 같은 접두사를 절대 사용하지 마세요.
+- 오직 정의 문장 하나만 출력하세요.
 
 --- 예시 ---
 단어: 하사
 정리되지 않은 설명: 부사관 계급의 하나 중사의 아래 병장의 위로 부사관 계급에서 가장 낮은 계급이다 대한 제국 때에 특무정교 정교 부교 참교에 해당하던 무관
-정제된 한 문장 정의: 하사는 부사관 계급 중 중사 아래에 위치하며 군대 내에서 초급 부사관 역할을 담당하는 계급입니다.
+출력: 하사는 부사관 계급 중 중사 아래에 위치하며 군대 내에서 초급 부사관 역할을 담당하는 계급이다.
+
+단어: 공급망
+정리되지 않은 설명: 제품이나 서비스가 공급자로부터 소비자에게 전달되는 전 과정에 걸친 시스템 원자재 조달 생산 유통 판매 등 모든 단계를 포함
+출력: 공급망은 원자재 조달부터 생산, 유통, 판매까지 제품이 소비자에게 전달되는 전체 과정을 아우르는 시스템이다.
 ---
 
+단어: {word}
 정리되지 않은 설명: {messy_definition}
-
-정제된 한 문장 정의:"""
+출력:"""
             prompt = PromptTemplate.from_template(template)
             chain = prompt | self.llm | StrOutputParser()
             refined_definition = chain.invoke({"word": word, "messy_definition": messy_definition})
-            
-            # 후처리: 가끔 LLM이 불필요한 앞뒤 텍스트를 붙이는 경우 제거
+
+            # 후처리: LLM이 불필요한 앞뒤 텍스트를 붙이는 경우 제거
             refined_definition = refined_definition.strip()
-            
-            print(f"정의 정제 완료: {refined_definition[:30]}...")
+
+            # 불필요한 접두사 제거 패턴들
+            prefixes_to_remove = [
+                "정제된 한 문장 정의:",
+                "정제된 정의:",
+                "출력:",
+                "답변:",
+                "정의:",
+            ]
+            for prefix in prefixes_to_remove:
+                if refined_definition.startswith(prefix):
+                    refined_definition = refined_definition[len(prefix):].strip()
+
+            # 마크다운 볼드(**) 제거
+            refined_definition = re.sub(r'\*\*([^*]+)\*\*', r'\1', refined_definition)
+
+            # 앞뒤 따옴표 제거
+            refined_definition = refined_definition.strip('"\'')
+
+            print(f"정의 정제 완료: {refined_definition[:50]}...")
             return refined_definition
         except Exception as e:
             print(f"[오류] LLM 정의 정제 중 오류 발생: {e}")
@@ -404,7 +432,13 @@ class AdvancedArticleAnalyzer:
         [지시]:
         당신은 전문 뉴스 편집자입니다.
         위 [기사 제목]을 기준으로, 필요시 [핵심 용어 정의]를 참고하여,
-        [기사 원문 전체]의 '핵심 내용'만을 간결하게 3줄 요약해 주십시오.
+        [기사 원문 전체]의 핵심 내용을 아래 형식으로 요약해 주십시오.
+
+        **출력 형식 (반드시 준수):**
+        **핵심 내용 요약:**
+        1. **[핵심 키워드]**: 해당 내용에 대한 간결한 설명 (1-2문장)
+        2. **[핵심 키워드]**: 해당 내용에 대한 간결한 설명 (1-2문장)
+        3. **[핵심 키워드]**: 해당 내용에 대한 간결한 설명 (1-2문장)
 
         핵심 내용 요약:
         """

@@ -100,9 +100,49 @@ PYTHONIOENCODING=utf-8 /c/dev/venv/Scripts/python.exe scripts/crawling.py \
 
 ## RAG AI 상태
 
-- 현재: **테스트 모드** (더미 데이터 반환)
-- 이유: 로컬 환경 성능 부족 (Ollama + exaone3.5)
-- 배포 시: `api_main.py`에서 테스트 모드 해제 후 실제 AI 분석 활성화
+- 현재: **실제 AI 분석 활성화됨** (테스트 모드 해제 완료)
+- LLM: Ollama + exaone3.5
+- 임베딩: HuggingFace `snunlp/KR-SBERT-V40K-klueNLI-augSTS`
+
+## 최근 수정 사항 (2026-02-01)
+
+### 1. 단어 정의 형식 통일 (`rag-ai/ArticleAnalyzer.py`)
+- 프롬프트 개선: `{단어}은(는) ~이다.` 형식으로 일관된 출력
+- 후처리 추가: 마크다운 볼드(`**`), 접두사, 따옴표 자동 제거
+- 위치: `_refine_definition_with_llm()` 함수
+
+### 2. 요약 마크다운 렌더링 (`ai-article-front/`)
+- `parseMarkdownBold()` 함수 추가
+- `**키워드**` → 파란색 볼드로 표시
+- 적용 파일:
+  - `src/pages/article_content.tsx` (ArticleSummary 컴포넌트)
+  - `src/components/AnalysisResult.tsx`
+
+### 3. 키워드 중복 필터링 (`rag-ai/news_keyword_extractor.py`)
+- `_filter_similar_keywords()` 함수 추가
+- 부분 문자열 중복 제거 (예: "공급" + "공급망" → "공급망"만 유지)
+
+### 4. 이미지 크롤링 (`scripts/crawling.py`)
+- `extract_image_url()` 함수 추가
+- 네이버 기본 로고 필터링 (`pstatic.net/static.news` 제외)
+- og:image 또는 본문 내 이미지 추출
+
+### 5. 크롤링 타임아웃 증가
+- 10초 → 300초 (AI 분석 시간 고려)
+
+## 다음 작업 (TODO)
+
+### 즉시 필요
+1. **word_definition 테이블 초기화** - 이전 형식의 정의 삭제 필요
+   ```sql
+   DELETE FROM word_definition;
+   ```
+2. 서버 재시작 (RAG AI, Frontend)
+3. 단일 크롤링 테스트로 형식 확인
+
+### 테스트 완료 후
+- 대량 크롤링 실행
+- 프론트엔드에서 요약/키워드/단어해석 표시 확인
 
 ## 현재 작업 브랜치
 

@@ -554,6 +554,27 @@ export default function ArticleDetailPage() {
     );
 }
 
+/**
+ * 마크다운 볼드(**텍스트**)를 파싱하여 React 엘리먼트로 변환
+ */
+function parseMarkdownBold(text: string): React.ReactNode[] {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, index) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+            const boldText = part.slice(2, -2);
+            return (
+                <span
+                    key={index}
+                    className="font-bold text-blue-600"
+                >
+                    {boldText}
+                </span>
+            );
+        }
+        return <span key={index}>{part}</span>;
+    });
+}
+
 function ArticleSummary({
     summary,
     isLoading,
@@ -573,7 +594,7 @@ function ArticleSummary({
             {!isLoading && !error && hasSummary && (
                 <ul className="mt-3 space-y-2 text-lg leading-8 text-slate-700">
                     {lines.map((line, index) => (
-                        <li key={index}>{line}</li>
+                        <li key={index}>{parseMarkdownBold(line)}</li>
                     ))}
                 </ul>
             )}

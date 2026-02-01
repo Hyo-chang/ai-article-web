@@ -1,5 +1,26 @@
 import React, { useState } from "react";
 import { Clock, Tag, BookOpen, CheckCircle, FileText, MessageCircle } from "lucide-react";
+
+/**
+ * 마크다운 볼드(**텍스트**)를 파싱하여 React 엘리먼트로 변환
+ */
+function parseMarkdownBold(text: string): React.ReactNode[] {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, index) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+            const boldText = part.slice(2, -2);
+            return (
+                <span
+                    key={index}
+                    className="font-bold text-blue-600"
+                >
+                    {boldText}
+                </span>
+            );
+        }
+        return <span key={index}>{part}</span>;
+    });
+}
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -176,7 +197,7 @@ export function AnalysisResult({
               </CardDescription>
             </CardHeader>
             <CardContent onMouseUp={handleTextSelect}>
-              <p className="select-text cursor-text leading-relaxed text-[#1f2937]">{data.summary}</p>
+              <p className="select-text cursor-text leading-relaxed text-[#1f2937]">{parseMarkdownBold(data.summary)}</p>
             </CardContent>
           </Card>
 
@@ -198,7 +219,7 @@ export function AnalysisResult({
                     <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#f2f5fa] via-[#e2e7f1] to-[#d6dce8] text-sm text-[#1f2937] shadow-[0_10px_20px_rgba(160,170,190,0.22)]">
                       {index + 1}
                     </div>
-                    <p className="leading-relaxed text-[#1f2937]">{point}</p>
+                    <p className="leading-relaxed text-[#1f2937]">{parseMarkdownBold(point)}</p>
                   </li>
                 ))}
               </ul>

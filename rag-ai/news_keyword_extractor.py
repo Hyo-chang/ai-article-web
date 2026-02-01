@@ -191,9 +191,9 @@ class NewsKeywordExtractor:
         if not candidates:
             return {}
 
-        # SentenceTransformer의 표준 'encode' 메서드 사용
-        doc_embedding = self.model.encode(text)
-        candidate_embeddings = self.model.encode(candidates)
+        # HuggingFaceEmbeddings의 embed_query/embed_documents 메서드 사용
+        doc_embedding = self.model.embed_query(text)
+        candidate_embeddings = self.model.embed_documents(candidates)
 
         # 코사인 유사도 계산 (sklearn 사용)
         doc_embedding_reshaped = np.array(doc_embedding).reshape(1, -1)
@@ -252,10 +252,52 @@ class NewsKeywordExtractor:
             semantic_score = norm_semantic_scores.get(word, 0)
             final_scores[word] = (struct_score * struct_weight) + (semantic_score * semantic_weight)
             
-        # 점수가 높은 순으로 정렬하여 상위 n개 추출
+        # 점수가 높은 순으로 정렬
         sorted_keywords = sorted(final_scores.items(), key=lambda item: item[1], reverse=True)
-        
-        return sorted_keywords[:n]
+
+        # 중복/유사 키워드 필터링
+        filtered_keywords = self._filter_similar_keywords(sorted_keywords)
+
+        return filtered_keywords[:n]
+
+    def _filter_similar_keywords(self, sorted_keywords: list) -> list:
+        """
+        부분 문자열 관계 또는 유사한 키워드를 필터링합니다.
+        예: (공급, 공급망) → 공급망만 유지
+            (하이닉스, SK하이닉스) → SK하이닉스만 유지
+        """
+        if not sorted_keywords:
+            return []
+
+        filtered = []
+        used_words = set()
+
+        for word, score in sorted_keywords:
+            # 이미 더 긴 키워드에 포함된 경우 스킵
+            is_substring = False
+            for used_word in used_words:
+                # 현재 단어가 이미 선택된 단어에 포함되어 있으면 스킵
+                if word in used_word and word != used_word:
+                    is_substring = True
+                    break
+
+            if is_substring:
+                continue
+
+            # 현재 단어가 더 긴 경우, 이미 선택된 짧은 단어 제거
+            to_remove = []
+            for used_word in used_words:
+                if used_word in word and used_word != word:
+                    to_remove.append(used_word)
+
+            for remove_word in to_remove:
+                used_words.discard(remove_word)
+                filtered = [(w, s) for w, s in filtered if w != remove_word]
+
+            filtered.append((word, score))
+            used_words.add(word)
+
+        return filtered
 
 # ==============================================================================
 # 사용 예시 (if __name__ == "__main__")

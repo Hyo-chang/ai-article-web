@@ -424,6 +424,26 @@ def extract_body_text(body_el: Optional[Tag], profile: DomainProfile) -> str:
     body = body_el.get_text("\n", strip=True)
     return re.sub(r"\n{3,}", "\n\n", body)
 
+def extract_image_url(soup: BeautifulSoup) -> Optional[str]:
+    """기사의 대표 이미지 URL을 추출합니다."""
+    # 1순위: og:image 메타 태그 (가장 안정적)
+    og_image = soup.select_one("meta[property='og:image']")
+    if og_image and og_image.get("content"):
+        og_url = og_image.get("content")
+        # 네이버 기본 로고 이미지는 제외
+        if "pstatic.net/static.news" not in og_url:
+            return og_url
+
+    # 2순위: 본문 내 첫 번째 이미지
+    for selector in ("div#newsct_article img", "article#dic_area img", "div.article-body img"):
+        img = soup.select_one(selector)
+        if img:
+            for attr in IMAGE_CANDIDATE_ATTRS:
+                if img.get(attr):
+                    return img.get(attr)
+
+    return None
+
 def parse_article_fields(article_url: str, soup: BeautifulSoup, profile: DomainProfile) -> Dict[str, Any]:
     title_el = pick_first(soup, profile.title_selectors)
     body_el = pick_first(soup, profile.body_selectors)
@@ -433,8 +453,9 @@ def parse_article_fields(article_url: str, soup: BeautifulSoup, profile: DomainP
     body = extract_body_text(body_el, profile)
     publisher = _title_text(publisher_el)
     published_at = parse_published_at(soup, profile)
-    
-    return {"title": title, "body": body, "publisher": publisher, "published_at": published_at}
+    image_url = extract_image_url(soup)
+
+    return {"title": title, "body": body, "publisher": publisher, "published_at": published_at, "image_url": image_url}
 
 # ====================================================================
 # 🚚 백엔드 전송
@@ -510,6 +531,7 @@ def process_article(session: requests.Session, cfg: Config, article_api_data: Di
             "publishedAt": to_iso(parsed_data.get("published_at") or _parse_datetime_string(article_api_data.get("pubDate"))),
             "contentCrawledAt": to_iso(datetime.utcnow()),
             "isFullContentCrawled": True,
+            "image_url": parsed_data.get("image_url"),
         }
         
         return {"payload": payload, "html": page_html, "metadata": {}}
@@ -579,7 +601,7 @@ def main():
         max_articles_per_keyword=5,
         total_phases=2,
         backend_endpoint="http://localhost:8080/api/articles/v2",
-        timeout=10, wait_min=10, wait_max=20, sleep_min=1.0, sleep_max=3.0,
+        timeout=300, wait_min=10, wait_max=20, sleep_min=1.0, sleep_max=3.0,
         user_agent="Mozilla/5.0", accept_language="ko-KR,ko;q=0.9",
         referer="https://news.naver.com/", max_retries=2,
         loop=False, dry_run=False, debug_save_page=False, article_url=None,
