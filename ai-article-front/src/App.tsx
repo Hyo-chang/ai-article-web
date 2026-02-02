@@ -339,10 +339,10 @@ function HomePage() {
     };
   }, [syncPreferredKeywords, userStorageKey]);
 
+  // 카테고리 코드 정규화 (100, 101 등 숫자 코드 직접 비교)
   const normalizeCategoryCode = (code?: string | null) => {
     if (!code) return null;
-    const [main] = code.split("-");
-    return main || code;
+    return code.trim();
   };
 
   const filteredArticles = useMemo(() => {

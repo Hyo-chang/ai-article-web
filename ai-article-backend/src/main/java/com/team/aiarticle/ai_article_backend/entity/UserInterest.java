@@ -26,7 +26,6 @@ public class UserInterest {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // 선택: v2 스키마에는 category_code가 있을 수 있음. 필요 시 아래 필드를 해제하세요.
-    // @Column(name = "category_code")
-    // private String categoryCode;
+    @Column(name = "category_code")
+    private String categoryCode;
 }

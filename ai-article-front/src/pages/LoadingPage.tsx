@@ -24,8 +24,9 @@ export default function LoadingPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // HomePage에서 전달받은 analysisResult를 가져옵니다.
+  // HomePage에서 전달받은 데이터를 가져옵니다.
   const analysisResult = location.state?.analysisResult;
+  const article = location.state?.article;
 
   const [progress, setProgress] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
@@ -39,13 +40,13 @@ export default function LoadingPage() {
         return;
       }
       const targetPath = `/content/${articleId}`;
-      // 분석 결과를 다음 페이지의 state로 전달합니다.
+      // 분석 결과와 기사 데이터를 다음 페이지의 state로 전달합니다.
       navigate(targetPath, {
         replace: true,
-        state: { analysisResult },
+        state: { analysisResult, article },
       });
     }
-  }, [progress, articleId, navigate, analysisResult]);
+  }, [progress, articleId, navigate, analysisResult, article]);
 
   useEffect(() => {
     const interval = setInterval(() => {

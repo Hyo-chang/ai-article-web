@@ -3,21 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "../services/AuthContext";
-import { fetchJson } from "@/lib/api";
+import { fetchJson, getApiBaseUrl } from "@/lib/api";
 import defaultUserImage from "@/image/userimage.png";
-
-// TODO: Replace mock API hooks with real endpoints
-async function updateNickname(nickname: string): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 600));
-}
-
-async function saveInterests(selected: string[]): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 400));
-}
-
-async function updateProfileImage(file: File): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 500));
-}
 
 type CategoryWithKeywords = {
   categoryId: string;
@@ -139,20 +126,52 @@ const MyPage: React.FC = () => {
   };
 
   const handleNicknameSave = async () => {
+    if (!typedUser?.token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
     try {
       setIsSavingNickname(true);
-      await updateNickname(nickname);
-      if (selectedFile) {
-        await updateProfileImage(selectedFile);
+
+      // TODO: 프로필 이미지 업로드는 별도 파일 업로드 API 필요
+      // 현재는 닉네임(username)만 업데이트
+      const response = await fetch(`${getApiBaseUrl()}/api/mypage/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${typedUser.token}`,
+        },
+        body: JSON.stringify({
+          username: nickname,
+          profileImageUrl: previewUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "프로필 저장에 실패했습니다.");
       }
+
+      const updatedProfile = await response.json();
+
+      // localStorage의 user 데이터 업데이트
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        userData.username = updatedProfile.username;
+        userData.profileImageUrl = updatedProfile.profileImageUrl;
+        localStorage.setItem("user", JSON.stringify(userData));
+      }
+
       alert("프로필이 저장되었습니다.");
       await refreshUser();
       if (selectedFile) {
         setSelectedFile(null);
       }
     } catch (error) {
-      console.error("updateNickname failed:", error);
-      alert("프로필 저장에 실패했습니다. 다시 시도해 주세요.");
+      console.error("updateProfile failed:", error);
+      alert(error instanceof Error ? error.message : "프로필 저장에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setIsSavingNickname(false);
     }
@@ -172,19 +191,38 @@ const MyPage: React.FC = () => {
   };
 
   const handleKeywordSave = async () => {
-    if (!storageKey) {
+    if (!storageKey || !typedUser?.token) {
       alert("로그인 후 저장할 수 있습니다.");
       return;
     }
+
     try {
       setIsSavingKeywords(true);
-      await saveInterests(selectedKeywords);
+
+      // 백엔드에 관심 카테고리 저장 (선택된 키워드를 카테고리로 저장)
+      const response = await fetch(`${getApiBaseUrl()}/api/mypage/interests`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${typedUser.token}`,
+        },
+        body: JSON.stringify({
+          categories: selectedKeywords,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "관심사 저장에 실패했습니다.");
+      }
+
+      // localStorage에도 저장 (프론트 캐시용)
       localStorage.setItem(storageKey, JSON.stringify(selectedKeywords));
       window.dispatchEvent(new Event("preferredKeywordsUpdated"));
       alert("관심 키워드가 저장되었습니다.");
     } catch (error) {
       console.error("saveInterests failed:", error);
-      alert("관심사 저장에 실패했습니다.");
+      alert(error instanceof Error ? error.message : "관심사 저장에 실패했습니다.");
     } finally {
       setIsSavingKeywords(false);
     }

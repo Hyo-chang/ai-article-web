@@ -139,7 +139,14 @@ export function KeywordCategories({
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">아직 키워드가 없습니다.</p>
+                <div className="text-center py-4">
+                  <p className="text-sm text-slate-500">
+                    아직 트렌드 키워드가 없습니다.
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    기사가 수집되면 자동으로 키워드가 표시됩니다.
+                  </p>
+                </div>
               )}
             </div>
           )}

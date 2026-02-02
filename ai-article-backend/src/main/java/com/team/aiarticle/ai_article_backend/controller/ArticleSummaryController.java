@@ -1,6 +1,7 @@
 package com.team.aiarticle.ai_article_backend.controller;
 
 import com.team.aiarticle.ai_article_backend.dto.ArticleIngestRequest;
+import com.team.aiarticle.ai_article_backend.dto.ArticleListResponse;
 import com.team.aiarticle.ai_article_backend.dto.ArticleSummaryResponse;
 import com.team.aiarticle.ai_article_backend.entity.ArticleV2;
 import com.team.aiarticle.ai_article_backend.service.ArticleServiceV2;
@@ -30,8 +31,8 @@ public class ArticleSummaryController {
     private final ArticleServiceV2 articleServiceV2; // Inject new service
 
     @GetMapping("/articles")
-    public ResponseEntity<List<ArticleV2>> getArticles(@RequestParam(name = "limit", defaultValue = "200") int limit) {
-        List<ArticleV2> articles = articleServiceV2.findAll(limit);
+    public ResponseEntity<List<ArticleListResponse>> getArticles(@RequestParam(name = "limit", defaultValue = "200") int limit) {
+        List<ArticleListResponse> articles = articleServiceV2.findAll(limit);
         return ResponseEntity.ok(articles);
     }
 

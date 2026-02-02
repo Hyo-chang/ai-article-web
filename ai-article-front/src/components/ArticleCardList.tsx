@@ -170,6 +170,7 @@ export function ArticleCardList({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {featuredArticles.map((article) => {
                 const isHighlighted = highlightSet.has(article.articleId);
+                const articleImageUrl = article.imageUrl || article.image_url;
                 return (
                   <div
                     key={`featured-${article.articleId}`}
@@ -194,9 +195,9 @@ export function ArticleCardList({
                       </span>
                     )}
                     <div className="relative h-44 w-full overflow-hidden">
-                      {article.image_url ? (
+                      {articleImageUrl ? (
                         <img
-                          src={article.image_url}
+                          src={articleImageUrl}
                           alt={article.title}
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
@@ -234,6 +235,7 @@ export function ArticleCardList({
             {paginatedArticles.map((article) => {
               const isHighlighted = highlightSet.has(article.articleId);
               const summary = article.content ? article.content.slice(0, 120) : "";
+              const articleImageUrl = article.imageUrl || article.image_url;
               return (
                 <article
                   key={article.articleId}
@@ -258,9 +260,9 @@ export function ArticleCardList({
                   )}
                 >
                   <div className="relative h-[120px] w-[120px] flex-none overflow-hidden rounded-2xl bg-[#f2f4f9]">
-                    {article.image_url ? (
+                    {articleImageUrl ? (
                       <img
-                        src={article.image_url}
+                        src={articleImageUrl}
                         alt={article.title}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />

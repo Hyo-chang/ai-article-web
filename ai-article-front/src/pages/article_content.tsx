@@ -269,13 +269,16 @@ export default function ArticleDetailPage() {
                 ? resolvedArticle.glossary
                 : []);
 
+        // imageUrl (camelCase) 또는 image_url (snake_case) 둘 다 확인
+        const articleImage = resolvedArticle.imageUrl || resolvedArticle.image_url || sampleArticle.image;
+
         return {
             ...sampleArticle,
             title: resolvedArticle.title || sampleArticle.title,
             body: parsedBody.length > 0 ? parsedBody : sampleArticle.body,
-            image: resolvedArticle.image_url || sampleArticle.image,
+            image: articleImage,
             publisher: resolvedArticle.publisher || sampleArticle.publisher,
-            publishedAt: resolvedArticle.published_at || sampleArticle.publishedAt,
+            publishedAt: resolvedArticle.publishedAt || resolvedArticle.published_at || sampleArticle.publishedAt,
             readingTime: resolvedArticle.readingTime || sampleArticle.readingTime,
             summary: resolvedSummary,
             keywords: resolvedKeywords,

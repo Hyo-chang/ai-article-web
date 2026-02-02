@@ -3,9 +3,11 @@ package com.team.aiarticle.ai_article_backend.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team.aiarticle.ai_article_backend.dto.ArticleIngestRequest;
+import com.team.aiarticle.ai_article_backend.dto.ArticleListResponse;
 import com.team.aiarticle.ai_article_backend.entity.ArticleV2;
 import com.team.aiarticle.ai_article_backend.entity.CategoryDictV2;
 import com.team.aiarticle.ai_article_backend.repository.ArticleV2Repository;
+import com.team.aiarticle.ai_article_backend.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -23,20 +25,37 @@ import java.util.stream.Collectors;
 public class ArticleServiceV2 {
 
     private final ArticleV2Repository articleV2Repository;
+    private final CategoryRepository categoryRepository;
     private final AiApiService aiApiService;
     private final CategoryService categoryService; // Inject CategoryService
     private final ObjectMapper objectMapper; // For converting map to JSON string
 
-    public ArticleServiceV2(ArticleV2Repository articleV2Repository, AiApiService aiApiService, ObjectMapper objectMapper, CategoryService categoryService) {
+    public ArticleServiceV2(ArticleV2Repository articleV2Repository, CategoryRepository categoryRepository, AiApiService aiApiService, ObjectMapper objectMapper, CategoryService categoryService) {
         this.articleV2Repository = articleV2Repository;
+        this.categoryRepository = categoryRepository;
         this.aiApiService = aiApiService;
         this.objectMapper = objectMapper;
         this.categoryService = categoryService;
     }
 
     @Transactional(readOnly = true)
-    public List<ArticleV2> findAll(int limit) {
-        return articleV2Repository.findAllByOrderByArticleIdDesc(PageRequest.of(0, limit));
+    public List<ArticleListResponse> findAll(int limit) {
+        // 카테고리 코드 → 이름 매핑 생성
+        Map<String, String> categoryNameMap = categoryRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        CategoryDictV2::getCategoryCode,
+                        CategoryDictV2::getCategoryName,
+                        (existing, replacement) -> existing
+                ));
+
+        List<ArticleV2> articles = articleV2Repository.findAllByOrderByArticleIdDesc(PageRequest.of(0, limit));
+
+        return articles.stream()
+                .map(article -> {
+                    String categoryName = categoryNameMap.getOrDefault(article.getCategoryCode(), "미분류");
+                    return ArticleListResponse.from(article, categoryName);
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional

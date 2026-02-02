@@ -130,19 +130,40 @@ PYTHONIOENCODING=utf-8 /c/dev/venv/Scripts/python.exe scripts/crawling.py \
 ### 5. 크롤링 타임아웃 증가
 - 10초 → 300초 (AI 분석 시간 고려)
 
+## 카테고리 목록
+
+| 코드 | 이름 |
+|------|------|
+| 100 | 정치 |
+| 101 | 경제 |
+| 102 | 사회 |
+| 103 | 생활/문화 |
+| 104 | 세계 |
+| 105 | IT/과학 |
+| 106 | 엔터 |
+
+## 완료된 작업 (2026-02-02)
+
+### DB 초기화
+- 카테고리 106 (엔터) 추가 완료
+- 관련 테이블 초기화 완료:
+  - `extracted_keyword_v2`: 150건 삭제
+  - `article_processed_content_v2`: 30건 삭제
+  - `article_category_map_v2`: 30건 삭제
+  - `category_keyword_trend_snapshot`: 3169건 삭제
+  - `keyword`: 4094건 삭제
+- `word_definition` 테이블은 유지 (정의는 재사용 가능)
+
 ## 다음 작업 (TODO)
 
 ### 즉시 필요
-1. **word_definition 테이블 초기화** - 이전 형식의 정의 삭제 필요
-   ```sql
-   DELETE FROM word_definition;
-   ```
-2. 서버 재시작 (RAG AI, Frontend)
-3. 단일 크롤링 테스트로 형식 확인
+1. 서버 재시작 (RAG AI, Frontend)
+2. 단일 크롤링 테스트로 새 기사 수집 확인
 
 ### 테스트 완료 후
 - 대량 크롤링 실행
 - 프론트엔드에서 요약/키워드/단어해석 표시 확인
+- 카테고리 → 키워드 필터링 기능 확인
 
 ## 현재 작업 브랜치
 
