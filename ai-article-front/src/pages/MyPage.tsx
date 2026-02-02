@@ -228,8 +228,48 @@ const MyPage: React.FC = () => {
     }
   };
 
-  const handleKeywordReset = () => {
-    setSelectedKeywords([]);
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleKeywordReset = async () => {
+    if (!storageKey || !typedUser?.token) {
+      setSelectedKeywords([]);
+      return;
+    }
+
+    const confirmed = window.confirm("관심 키워드를 모두 초기화하시겠습니까?");
+    if (!confirmed) return;
+
+    try {
+      setIsResetting(true);
+
+      // 백엔드에 빈 배열 전송하여 초기화
+      const response = await fetch(`${getApiBaseUrl()}/api/mypage/interests`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${typedUser.token}`,
+        },
+        body: JSON.stringify({ categories: [] }),
+      });
+
+      if (!response.ok) {
+        throw new Error("초기화에 실패했습니다.");
+      }
+
+      // localStorage 초기화
+      localStorage.removeItem(storageKey);
+
+      // UI 상태 초기화
+      setSelectedKeywords([]);
+
+      window.dispatchEvent(new Event("preferredKeywordsUpdated"));
+      alert("관심 키워드가 초기화되었습니다.");
+    } catch (error) {
+      console.error("resetInterests failed:", error);
+      alert(error instanceof Error ? error.message : "초기화에 실패했습니다.");
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   if (!typedUser) {
@@ -287,6 +327,7 @@ const MyPage: React.FC = () => {
           onSave={handleKeywordSave}
           onReset={handleKeywordReset}
           isSaving={isSavingKeywords}
+          isResetting={isResetting}
           categories={categories}
           isLoading={categoriesLoading}
           error={categoriesError}
@@ -394,6 +435,7 @@ interface KeywordSectionProps {
   onSave: () => void;
   onReset: () => void;
   isSaving: boolean;
+  isResetting: boolean;
   categories: CategoryWithKeywords[];
   isLoading: boolean;
   error: string | null;
@@ -406,6 +448,7 @@ const KeywordSection: React.FC<KeywordSectionProps> = ({
   onSave,
   onReset,
   isSaving,
+  isResetting,
   categories,
   isLoading,
   error,
@@ -489,15 +532,15 @@ const KeywordSection: React.FC<KeywordSectionProps> = ({
           <button
             type="button"
             onClick={onReset}
-            disabled={isSaving}
-            className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white/70 transition hover:border-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSaving || isResetting}
+            className="inline-flex items-center justify-center rounded-2xl border border-red-400/30 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-300 transition hover:border-red-400/50 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            초기화
+            {isResetting ? "초기화 중..." : "전체 초기화"}
           </button>
           <button
             type="button"
             onClick={onSave}
-            disabled={isSaving}
+            disabled={isSaving || isResetting}
             className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSaving ? "저장 중..." : "관심사 저장"}

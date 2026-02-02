@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshCw, Send } from 'lucide-react';
+import { RefreshCw, Send, Plus, Check } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useArticles } from '../hooks/useArticles';
 import type { Article } from '@/types/article';
@@ -609,22 +609,133 @@ function ArticleSummary({
 }
 
 function KeywordSection({ keywords }: { keywords: Keyword[] }) {
+    const { user } = useAuth();
     const items = Array.isArray(keywords) ? keywords : [];
     const hasKeywords = items.length > 0;
+    const [addedKeywords, setAddedKeywords] = useState<Set<string>>(new Set());
+    const [isAdding, setIsAdding] = useState<string | null>(null);
+
+    const storageKey = user?.userId ? `preferredKeywords:${user.userId}` : null;
+
+    // 이미 저장된 관심 키워드 로드
+    useEffect(() => {
+        if (!storageKey) return;
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) {
+                    setAddedKeywords(new Set(parsed));
+                }
+            } catch (e) {
+                console.warn('Failed to parse stored keywords:', e);
+            }
+        }
+    }, [storageKey]);
+
+    const handleAddKeyword = async (term: string) => {
+        if (!user?.token || !storageKey) {
+            alert('로그인 후 이용할 수 있습니다.');
+            return;
+        }
+
+        if (addedKeywords.has(term)) {
+            return; // 이미 추가됨
+        }
+
+        try {
+            setIsAdding(term);
+
+            // 기존 관심 키워드 가져오기
+            const stored = localStorage.getItem(storageKey);
+            let currentKeywords: string[] = [];
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed)) {
+                        currentKeywords = parsed;
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse stored keywords:', e);
+                }
+            }
+
+            // 이미 있으면 추가 안함
+            if (currentKeywords.includes(term)) {
+                setAddedKeywords(prev => new Set([...prev, term]));
+                return;
+            }
+
+            // 최대 4개 제한
+            if (currentKeywords.length >= 4) {
+                alert('관심 키워드는 최대 4개까지 등록할 수 있습니다.');
+                return;
+            }
+
+            const newKeywords = [...currentKeywords, term];
+
+            // 백엔드에 저장
+            const response = await fetch(`${API_URL}/api/mypage/interests`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${user.token}`,
+                },
+                body: JSON.stringify({ categories: newKeywords }),
+            });
+
+            if (!response.ok) {
+                throw new Error('관심 키워드 저장에 실패했습니다.');
+            }
+
+            // localStorage 업데이트
+            localStorage.setItem(storageKey, JSON.stringify(newKeywords));
+            setAddedKeywords(prev => new Set([...prev, term]));
+            window.dispatchEvent(new Event('preferredKeywordsUpdated'));
+        } catch (error) {
+            console.error('Failed to add keyword:', error);
+            alert(error instanceof Error ? error.message : '키워드 추가에 실패했습니다.');
+        } finally {
+            setIsAdding(null);
+        }
+    };
 
     return (
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md md:p-7">
-            <h2 className="text-sm font-semibold text-slate-900 md:text-base">핵심 키워드</h2>
+            <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-slate-900 md:text-base">핵심 키워드</h2>
+                {user && <span className="text-xs text-slate-400">클릭하여 관심 키워드 등록</span>}
+            </div>
             {hasKeywords ? (
                 <div className="mt-4 flex flex-wrap gap-2.5">
-                    {items.map((keyword) => (
-                        <span
-                            key={keyword.term}
-                            className="inline-block rounded-full bg-slate-100 px-3.5 py-1.5 text-xs md:text-sm text-slate-700 ring-1 ring-slate-200"
-                        >
-                            {keyword.term}
-                        </span>
-                    ))}
+                    {items.map((keyword) => {
+                        const isAdded = addedKeywords.has(keyword.term);
+                        const isCurrentlyAdding = isAdding === keyword.term;
+                        return (
+                            <button
+                                key={keyword.term}
+                                type="button"
+                                onClick={() => handleAddKeyword(keyword.term)}
+                                disabled={isAdded || isCurrentlyAdding || !user}
+                                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs md:text-sm transition ${
+                                    isAdded
+                                        ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200'
+                                        : 'bg-slate-100 text-slate-700 ring-1 ring-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:ring-blue-200'
+                                } ${!user ? 'cursor-default' : 'cursor-pointer'}`}
+                            >
+                                {keyword.term}
+                                {user && (
+                                    isAdded ? (
+                                        <Check className="h-3 w-3" />
+                                    ) : isCurrentlyAdding ? (
+                                        <RefreshCw className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                        <Plus className="h-3 w-3" />
+                                    )
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
             ) : (
                 <p className="mt-4 text-sm text-slate-500">현재 해당되는 키워드를 찾을 수 없습니다.</p>

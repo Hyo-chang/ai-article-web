@@ -36,6 +36,34 @@ if not os.getenv("NAVER_CLIENT_ID") or not os.getenv("NAVER_CLIENT_PASSWD"):
 
 # ===============================================================================================
 
+def sanitize_text(text: str) -> str:
+    """특수문자를 일반 문자로 변환 (cp949 인코딩 오류 방지)"""
+    if not text:
+        return text
+    replacements = {
+        '\u2013': '-',   # en-dash → hyphen
+        '\u2014': '-',   # em-dash → hyphen
+        '\u2022': '-',   # bullet → hyphen
+        '\u2018': "'",   # left single quote
+        '\u2019': "'",   # right single quote
+        '\u201c': '"',   # left double quote
+        '\u201d': '"',   # right double quote
+        '\u2026': '...', # ellipsis
+        '\u00b7': '-',   # middle dot
+        '\u2010': '-',   # hyphen
+        '\u2011': '-',   # non-breaking hyphen
+        '\u2012': '-',   # figure dash
+        '\u2015': '-',   # horizontal bar
+        '\u200b': '',    # zero-width space (삭제)
+        '\u200c': '',    # zero-width non-joiner (삭제)
+        '\u200d': '',    # zero-width joiner (삭제)
+        '\ufeff': '',    # BOM (삭제)
+        '\xa0': ' ',     # non-breaking space → space
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    return text
+
 class AdvancedArticleAnalyzer:
     SIMILARITY_THRESHOLD = 0.75  # 유사도 점수 임계값(코사인 유사도는 1.0에 가까울 수록 유사하다)
     SIMILARITY_HIGH_THRESHOLD = 0.60  # 유사도 상위 임계값
@@ -110,6 +138,7 @@ class AdvancedArticleAnalyzer:
                 if search_result['items']:
                     for item in search_result['items']:
                         definition = self.clean_api_text(item['description'])
+                        definition = sanitize_text(definition)  # 특수문자 제거
                         definitions_list.append(definition)
             else:
                 print(f"네이버 API 에러 코드: {rescode}")
@@ -229,6 +258,9 @@ class AdvancedArticleAnalyzer:
             # 앞뒤 따옴표 제거
             refined_definition = refined_definition.strip('"\'')
 
+            # 특수문자 정리 (cp949 인코딩 오류 방지)
+            refined_definition = sanitize_text(refined_definition)
+
             print(f"정의 정제 완료: {refined_definition[:50]}...")
             return refined_definition
         except Exception as e:
@@ -266,7 +298,7 @@ class AdvancedArticleAnalyzer:
         potential_meanings = re.split(r'\n?\d+\.\s*', raw_answer)
 
         for meaning in potential_meanings:
-            cleaned_meaning = meaning.strip().rstrip('.')
+            cleaned_meaning = sanitize_text(meaning.strip().rstrip('.'))
             if cleaned_meaning:  # 빈 문자열이 아니면 추가
                 definitions_list.append(cleaned_meaning)
 
@@ -410,8 +442,9 @@ class AdvancedArticleAnalyzer:
                         definition = future.result()
                         definitions_dict[keyword] = definition
                     except Exception as exc:
-                        print(f"'{keyword}'의 정의 생성 중 오류 발생: {exc}")
-                        definitions_dict[keyword] = f"오류 발생: {exc}"
+                        error_msg = sanitize_text(str(exc))
+                        print(f"'{keyword}'의 정의 생성 중 오류 발생: {error_msg}")
+                        definitions_dict[keyword] = f"오류 발생: {error_msg}"
             
             # 요약 프롬프트에 사용할 정의 문자열 생성
             valid_definitions = [f"{kw}: {df}" for kw, df in definitions_dict.items() if df and "찾을 수 없습니다" not in df and "오류 발생" not in df]
@@ -454,7 +487,10 @@ class AdvancedArticleAnalyzer:
         
         summary_text = summary_result.get('output_text', '요약 생성에 실패했습니다.')
 
-        return summary_text, definitions_dict
+        # 모든 정의에 특수문자 정리 적용
+        sanitized_definitions = {k: sanitize_text(v) for k, v in definitions_dict.items()}
+
+        return summary_text, sanitized_definitions
 
 # --- 메인 실행 블록 ---
 if __name__ == "__main__":
