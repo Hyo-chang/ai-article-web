@@ -18,6 +18,9 @@ interface ArticleCardListProps {
   searchQuery?: string;
   onSearchInputChange?: (value: string) => void;
   onSearchSubmit?: (event?: React.FormEvent<HTMLFormElement>) => void;
+  // 북마크 관련 props
+  bookmarkedIds?: Set<number>;
+  onToggleBookmark?: (articleId: number) => void;
 }
 
 const DEFAULT_ITEMS_PER_PAGE = 3;
@@ -38,6 +41,8 @@ export function ArticleCardList({
   searchQuery,
   onSearchInputChange,
   onSearchSubmit,
+  bookmarkedIds,
+  onToggleBookmark,
 }: ArticleCardListProps) {
   const featuredArticles = useMemo(() => articles.slice(0, 3), [articles]);
   const remainingArticles = useMemo(() => articles.slice(3), [articles]);
@@ -215,14 +220,29 @@ export function ArticleCardList({
 
                       <div className="mt-auto flex items-center justify-between text-sm text-[#5b6472]">
                         <span className="font-medium text-[#394150]">AI Reader</span>
-                        <button
-                          type="button"
-                          onClick={(event) => event.stopPropagation()}
-                          className="rounded-full border border-[#ccd1da] bg-white/80 p-2 text-[#4a5260] transition-colors hover:bg-white hover:text-[#1f2937]"
-                          aria-label="좋아요"
-                        >
-                          <Heart className="h-4 w-4 fill-current" />
-                        </button>
+                        {onToggleBookmark && (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onToggleBookmark(article.articleId);
+                            }}
+                            className={cn(
+                              "rounded-full border p-2 transition-colors",
+                              bookmarkedIds?.has(article.articleId)
+                                ? "border-rose-300 bg-rose-50 text-rose-500 hover:bg-rose-100"
+                                : "border-[#ccd1da] bg-white/80 text-[#4a5260] hover:bg-white hover:text-[#1f2937]"
+                            )}
+                            aria-label={bookmarkedIds?.has(article.articleId) ? "북마크 해제" : "북마크"}
+                          >
+                            <Heart
+                              className={cn(
+                                "h-4 w-4",
+                                bookmarkedIds?.has(article.articleId) && "fill-current"
+                              )}
+                            />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -275,11 +295,36 @@ export function ArticleCardList({
                   <div className="flex flex-1 flex-col justify-between gap-2">
                     <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-[#9aa3b3]">
                       <span>{article.categoryName ?? "AI Reader"}</span>
-                      {isHighlighted && (
-                        <span className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700">
-                          내 키워드
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {isHighlighted && (
+                          <span className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700">
+                            내 키워드
+                          </span>
+                        )}
+                        {onToggleBookmark && (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onToggleBookmark(article.articleId);
+                            }}
+                            className={cn(
+                              "rounded-full border p-1.5 transition-colors",
+                              bookmarkedIds?.has(article.articleId)
+                                ? "border-rose-300 bg-rose-50 text-rose-500 hover:bg-rose-100"
+                                : "border-[#ccd1da] bg-white/80 text-[#4a5260] hover:bg-white hover:text-[#1f2937]"
+                            )}
+                            aria-label={bookmarkedIds?.has(article.articleId) ? "북마크 해제" : "북마크"}
+                          >
+                            <Heart
+                              className={cn(
+                                "h-3.5 w-3.5",
+                                bookmarkedIds?.has(article.articleId) && "fill-current"
+                              )}
+                            />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <h3 className="line-clamp-2 text-base font-semibold text-[#1f2937]">
                       {article.title}

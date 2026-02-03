@@ -1,10 +1,19 @@
 // src/pages/MyPage.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Heart, Trash2 } from "lucide-react";
 import { useAuth } from "../services/AuthContext";
 import { fetchJson, getApiBaseUrl } from "@/lib/api";
+import { BookmarkSection } from "@/components/BookmarkSection";
 import defaultUserImage from "@/image/userimage.png";
+
+type BookmarkedArticle = {
+  articleId: number;
+  title: string;
+  categoryName?: string;
+  imageUrl?: string;
+  publishedAt?: string;
+};
 
 type CategoryWithKeywords = {
   categoryId: string;
@@ -230,6 +239,75 @@ const MyPage: React.FC = () => {
 
   const [isResetting, setIsResetting] = useState(false);
 
+  // 북마크 상태
+  const [bookmarks, setBookmarks] = useState<BookmarkedArticle[]>([]);
+  const [bookmarksLoading, setBookmarksLoading] = useState(true);
+  const [bookmarksError, setBookmarksError] = useState<string | null>(null);
+
+  // 북마크 목록 불러오기
+  useEffect(() => {
+    if (!typedUser?.token) {
+      setBookmarks([]);
+      setBookmarksLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    async function loadBookmarks() {
+      try {
+        setBookmarksLoading(true);
+        setBookmarksError(null);
+        const response = await fetch(`${getApiBaseUrl()}/api/mypage/bookmarks`, {
+          headers: {
+            Authorization: `Bearer ${typedUser.token}`,
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("북마크를 불러오지 못했습니다.");
+        }
+
+        const data = await response.json();
+        setBookmarks(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          return;
+        }
+        setBookmarksError(
+          err instanceof Error ? err.message : "북마크를 불러오지 못했습니다."
+        );
+      } finally {
+        setBookmarksLoading(false);
+      }
+    }
+    loadBookmarks();
+    return () => controller.abort();
+  }, [typedUser?.token]);
+
+  // 북마크 삭제
+  const handleRemoveBookmark = async (articleId: number) => {
+    if (!typedUser?.token) return;
+
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/mypage/bookmarks/${articleId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${typedUser.token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setBookmarks((prev) => prev.filter((b) => b.articleId !== articleId));
+      }
+    } catch (err) {
+      console.error("Failed to remove bookmark:", err);
+    }
+  };
+
   const handleKeywordReset = async () => {
     if (!storageKey || !typedUser?.token) {
       setSelectedKeywords([]);
@@ -332,6 +410,14 @@ const MyPage: React.FC = () => {
           isLoading={categoriesLoading}
           error={categoriesError}
           maxSelections={MAX_KEYWORDS}
+        />
+
+        <BookmarkSection
+          bookmarks={bookmarks}
+          isLoading={bookmarksLoading}
+          error={bookmarksError}
+          onRemove={handleRemoveBookmark}
+          onArticleClick={(articleId) => navigate(`/content/${articleId}`)}
         />
       </div>
     </div>

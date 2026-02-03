@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshCw, Send, Plus, Check } from 'lucide-react';
+import { RefreshCw, Send, Plus, Check, Heart } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useArticles } from '../hooks/useArticles';
+import { useBookmarks } from '../hooks/useBookmarks';
 import type { Article } from '@/types/article';
 import { useAuth } from '@/services/AuthContext';
 
@@ -71,6 +72,7 @@ export default function ArticleDetailPage() {
 
     const { articles, isLoading, error } = useArticles();
     const { user } = useAuth();
+    const { isBookmarked, toggleBookmark } = useBookmarks();
 
     const articleIdNumber = articleId ? Number(articleId) : NaN;
     const isArticleIdValid = Number.isInteger(articleIdNumber) && articleIdNumber >= 0;
@@ -455,9 +457,27 @@ export default function ArticleDetailPage() {
                     <div className="mt-12 w-full flex justify-center">
                         <div className="w-full max-w-[1600px] px-4 md:px-6 lg:px-10">
                             <header className="space-y-3">
-                                <h1 className="text-left text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-                                    {articleDetail.title}
-                                </h1>
+                                <div className="flex items-start justify-between gap-4">
+                                    <h1 className="text-left text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
+                                        {articleDetail.title}
+                                    </h1>
+                                    {user && isArticleIdValid && (
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleBookmark(articleIdNumber)}
+                                            className={`flex-shrink-0 rounded-full border p-3 transition-colors ${
+                                                isBookmarked(articleIdNumber)
+                                                    ? 'border-rose-300 bg-rose-50 text-rose-500 hover:bg-rose-100'
+                                                    : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                                            }`}
+                                            aria-label={isBookmarked(articleIdNumber) ? '북마크 해제' : '북마크'}
+                                        >
+                                            <Heart
+                                                className={`h-6 w-6 ${isBookmarked(articleIdNumber) ? 'fill-current' : ''}`}
+                                            />
+                                        </button>
+                                    )}
+                                </div>
                                 <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
                                     {articleDetail.publisher && <span>{articleDetail.publisher}</span>}
                                     {articleDetail.publishedAt && (

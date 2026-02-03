@@ -19,6 +19,7 @@ import { Login } from "./pages/Login";
 import { SignUp } from "./pages/SignUp";
 
 import { useArticles } from "./hooks/useArticles";
+import { useBookmarks } from "./hooks/useBookmarks";
 import { AuthProvider, useAuth } from "./services/AuthContext";
 import type { Article } from "./types/article";
 
@@ -150,6 +151,7 @@ function HomePage() {
     isLoading: isArticlesLoading,
     error: articlesError,
   } = useArticles();
+  const { bookmarkedIds, toggleBookmark } = useBookmarks();
   const [currentTab, setCurrentTab] = useState<HomeTab>("home");
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -212,52 +214,53 @@ function HomePage() {
   const handleAnalyze = async (articleUrl: string) => {
     if (!articleUrl) return;
 
-    // AI 서버가 없을 때 true로 설정하여 가짜 데이터 사용
-    const useMockData = true;
-
     setIsAnalyzing(true);
     setAnalysisData(null);
     toast.loading("기사 분석을 시작합니다. 잠시만 기다려주세요...", { id: "analyze" });
 
-    if (useMockData) {
-      console.log("DEV MODE: Using mock data as AI server is unavailable.");
-      // 2초 후 가짜 데이터로 결과 페이지 이동
-      setTimeout(() => {
-        const mockResult = {
-          articleId: Date.now(), // Unique ID
-          title: "테스트: AI 서버 없이 생성된 제목",
-          summary: "이 내용은 실제 AI 서버를 거치지 않고 프론트엔드에서 생성한 가짜(mock) 요약입니다. UI 흐름 테스트를 위해 사용됩니다.",
-          keywords: [
-            { word: "목업 데이터", score: 0.95 },
-            { word: "프론트엔드", score: 0.91 },
-            { word: "테스트", score: 0.88 },
-          ],
-          definitions: {
-            "목업 데이터": "실제 데이터 대신 사용되는 가짜 데이터 샘플입니다.",
-            "프론트엔드": "사용자가 직접 상호작용하는 웹 애플리케이션의 인터페이스 부분입니다.",
-          }
-        };
-
-        toast.success("분석 완료! (Mock)", { id: "analyze" });
-        navigate(`/loading/${mockResult.articleId}`, { state: { analysisResult: mockResult } });
-        setIsAnalyzing(false);
-      }, 2000);
-      return;
-    }
-
-    // --- 실제 API 호출 로직 (useMockData가 false일 때 실행) ---
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/articles/analyze`,
-        { articleUrl },
-        { timeout: 180000 } // 3분 타임아웃
-      );
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 180000); // 3분 타임아웃
+
+      const response = await fetch(`${API_BASE_URL}/api/articles/analyze`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ articleUrl }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "알 수 없는 오류" }));
+        throw new Error(errorData.error || `서버 오류 (${response.status})`);
+      }
+
+      const data = await response.json();
+      // 백엔드 응답: { article_id, title, publisher, summarize, keywords, keywordDefinitions }
+      const analysisResult = {
+        articleId: data.article_id,
+        title: data.title,
+        publisher: data.publisher,
+        summary: data.summarize,
+        keywords: data.keywords,
+        definitions: data.keywordDefinitions,
+      };
 
       toast.success("분석 완료! 결과 페이지로 이동합니다.", { id: "analyze" });
-      navigate(`/loading/${response.data.articleId}`, { state: { analysisResult: response.data } });
+      navigate(`/loading/${analysisResult.articleId}`, { state: { analysisResult } });
 
     } catch (error) {
-      const message = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.";
+      let message = "알 수 없는 오류가 발생했습니다.";
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          message = "요청 시간이 초과되었습니다. 다시 시도해주세요.";
+        } else {
+          message = error.message;
+        }
+      }
       toast.error("분석 중 오류가 발생했습니다.", {
         id: "analyze",
         description: message,
@@ -499,6 +502,8 @@ function HomePage() {
                   searchQuery={searchQuery}
                   onSearchInputChange={setSearchInput}
                   onSearchSubmit={handleSearchSubmit}
+                  bookmarkedIds={bookmarkedIds}
+                  onToggleBookmark={toggleBookmark}
                 />
             </div>
           </TabsContent>
