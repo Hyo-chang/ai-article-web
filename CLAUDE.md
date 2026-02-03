@@ -173,16 +173,52 @@ PYTHONIOENCODING=utf-8 /c/dev/venv/Scripts/python.exe scripts/crawling.py \
 - 이미 등록된 키워드는 체크(✓) 표시
 - 최대 4개 제한, 비로그인 시 비활성화
 
+## 최근 수정 사항 (2026-02-03)
+
+### 1. 기사 분석 API (`/api/articles/analyze`)
+- 프론트엔드에서 URL 입력 → 실시간 크롤링 + AI 분석
+- `ArticleSummaryController.java`에 POST 엔드포인트 추가
+- Python 크롤러(`crawling.py`) → RAG AI → DB 저장 → 결과 반환
+- 기존 mock 데이터 제거, 실제 API 호출로 변경
+
+### 2. 북마크 기능 전체 구현
+
+**백엔드 API (4개)**
+- `GET /api/mypage/bookmarks/ids` - 북마크된 기사 ID 목록
+- `GET /api/mypage/bookmarks` - 북마크 목록 (기사 정보 포함)
+- `POST /api/mypage/bookmarks` - 북마크 추가
+- `DELETE /api/mypage/bookmarks/{articleId}` - 북마크 삭제
+
+**새 파일**
+- `UserBookmark.java` - 북마크 엔티티
+- `UserBookmarkRepository.java` - 북마크 레포지토리
+- `useBookmarks.ts` - 프론트엔드 북마크 hook
+- `BookmarkSection.tsx` - 마이페이지 북마크 목록 컴포넌트
+
+**UI 변경**
+- `ArticleCardList.tsx` - 모든 기사 카드에 하트 버튼 추가
+- `article_content.tsx` - 기사 상세 페이지 헤더에 하트 버튼
+- `MyPage.tsx` - 북마크 섹션 추가 (목록/삭제/이동)
+
+### 3. 분석하기 UI 개선 (`ArticleInput.tsx`)
+- 불필요한 탭 UI 제거 (URL 입력 탭 버튼 삭제)
+- 분석 소요시간 안내 문구 추가: "실시간 AI 분석으로 1~2분 정도 소요"
+
+### 4. 카테고리 키워드 조회 개선
+- `ExtractedKeywordV2Repository` - 카테고리별 키워드 조회 Native Query 추가
+- `CategoryService` - 스냅샷 테이블 대신 extracted_keyword_v2에서 직접 조회
+- 기사 분석되면 해당 카테고리 키워드 바로 표시
+
+### 5. DB 설정 변경
+- `application.properties`: `ddl-auto=validate` → `update` (테이블 자동 생성)
+- `user_bookmark` 테이블 자동 생성됨
+
 ## 다음 작업 (TODO)
 
-### 테스트 필요
-1. DB에서 오류 데이터 정리 후 크롤링 재테스트
-2. 프론트엔드 관심 키워드 기능 테스트
-
-### 테스트 완료 후
-- 대량 크롤링 실행
-- 프론트엔드에서 요약/키워드/단어해석 표시 확인
-- 카테고리 → 키워드 필터링 기능 확인
+### 남은 개선 사항
+- 다크 모드 추가
+- 프로필 이미지 업로드 기능 완성 (현재 UI만 있음)
+- 검색 기능 고도화 (내용 검색)
 
 ## 현재 작업 브랜치
 
