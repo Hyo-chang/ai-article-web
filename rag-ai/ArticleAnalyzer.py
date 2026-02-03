@@ -49,6 +49,7 @@ def sanitize_text(text: str) -> str:
         '\u201c': '"',   # left double quote
         '\u201d': '"',   # right double quote
         '\u2026': '...', # ellipsis
+        '\u22ef': '...', # midline horizontal ellipsis (⋯)
         '\u00b7': '-',   # middle dot
         '\u2010': '-',   # hyphen
         '\u2011': '-',   # non-breaking hyphen

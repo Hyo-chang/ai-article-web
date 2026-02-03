@@ -13,7 +13,7 @@ from typing import List, Dict, Any, Optional
 
 # 현재 파일의 디렉토리를 시스템 경로에 추가
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from ArticleAnalyzer import AdvancedArticleAnalyzer
+from ArticleAnalyzer import AdvancedArticleAnalyzer, sanitize_text
 from langchain_ollama.chat_models import ChatOllama
 from langchain_huggingface import HuggingFaceEmbeddings
 from news_keyword_extractor import NewsKeywordExtractor
@@ -174,7 +174,7 @@ def _classify_category_placeholder(categories: Optional[List[str]]) -> str:
 @app.post("/analyze", response_model=AnalyzeResponse, dependencies=[Depends(verify_api_key)])
 async def analyze_article(request: AnalyzeRequest):
     """기사의 HTML 본문을 받아 키워드 추출, 요약, 단어 정의를 모두 수행합니다."""
-    print(f"\n--- [FastAPI] '/analyze' 요청 수신 (Title: {request.article_title}) ---")
+    print(f"\n--- [FastAPI] '/analyze' 요청 수신 (Title: {sanitize_text(request.article_title)}) ---")
 
     try:
         # --- 0. 카테고리 분류 (임시) ---

@@ -156,10 +156,13 @@ PYTHONIOENCODING=utf-8 /c/dev/venv/Scripts/python.exe scripts/crawling.py \
 
 ## 최근 수정 사항 (2026-02-02 저녁)
 
-### 1. cp949 인코딩 오류 수정 (`rag-ai/ArticleAnalyzer.py`)
+### 1. cp949 인코딩 오류 수정 (`rag-ai/ArticleAnalyzer.py`, `api_main.py`)
 - `sanitize_text()` 함수 추가: 특수문자를 일반 문자로 변환
 - 처리 문자: en-dash, em-dash, bullet, smart quotes, zero-width space 등
 - 적용 위치: 네이버 API 결과, RAG 결과, LLM 정제 결과, 에러 메시지
+- **추가 수정 (2026-02-03)**:
+  - `\u22ef` (midline horizontal ellipsis ⋯) 문자 추가
+  - `api_main.py`에서 기사 제목 출력 시 `sanitize_text()` 적용
 
 ### 2. 관심 키워드 초기화 버튼 개선 (`ai-article-front/src/pages/MyPage.tsx`)
 - 백엔드 API 연동하여 완전 초기화 (기존: UI만 초기화)
