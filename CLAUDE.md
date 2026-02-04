@@ -295,6 +295,11 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
 
 ### 🟢 우선순위 낮음
 - [ ] Tailscale 원격 개발 환경 구축
+- [ ] **Google AdSense 적용**
+  - [ ] 개인정보처리방침 페이지 생성
+  - [ ] 이용약관 페이지 생성
+  - [ ] AdSense 계정 신청 및 승인
+  - [ ] 광고 코드 삽입
 
 ## 현재 작업 브랜치
 
