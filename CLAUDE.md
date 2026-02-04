@@ -216,12 +216,85 @@ PYTHONIOENCODING=utf-8 /c/dev/venv/Scripts/python.exe scripts/crawling.py \
 - `application.properties`: `ddl-auto=validate` → `update` (테이블 자동 생성)
 - `user_bookmark` 테이블 자동 생성됨
 
+## 배포 완료 (2026-02-04)
+
+### 배포 URL
+| 서비스 | URL | 플랫폼 |
+|--------|-----|--------|
+| Frontend | https://ai-article-web.vercel.app | Vercel |
+| Backend | https://ai-article-web-production.up.railway.app | Railway ($5/월) |
+| RAG AI | ngrok 터널 (로컬 데스크탑) | localhost:8020 |
+
+### 배포 구조
+```
+[사용자] → Vercel (Frontend)
+              ↓
+         Railway (Backend) ← RAG_AI_URL 환경변수
+              ↓
+         ngrok 터널 → 로컬 데스크탑 (RAG AI + Ollama)
+              ↓
+         MariaDB (203.231.146.220:3306)
+```
+
+### 환경변수 설정 (Railway)
+- `RAG_AI_URL`: ngrok 터널 URL (매번 변경됨, 확인 필요)
+
+### 로컬 서버 실행 명령어 (데스크탑)
+
+**1. RAG AI 서버**
+```bash
+cd C:\ai-article-web\ai-article-web\rag-ai
+C:\dev\venv\Scripts\uvicorn.exe api_main:app --host 0.0.0.0 --port 8020
+```
+
+**2. ngrok 터널**
+```bash
+ngrok http 8020
+```
+
+**3. 자동 크롤링 (무한 루프)**
+```bash
+cd C:\ai-article-web\ai-article-web\scripts
+C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회" "생활" "세계" "IT" "연예" --max-articles-per-keyword 5 --total-phases 1 --loop --wait-min 300 --wait-max 600
+```
+
+## 최근 수정 사항 (2026-02-04)
+
+### 1. 반응형 UI 개선 (모바일 대응)
+- `Header.tsx`: 모바일 햄버거 메뉴 추가
+- `App.tsx`: 화면 크기 감지하여 사이드바 동적 표시
+- `KeywordCategories.tsx`: 모바일 패딩/타이틀 크기 조정
+- `ArticleCardList.tsx`: 기사 카드 및 검색창 반응형 레이아웃
+- 768px 미만: 사이드바 숨김 + 햄버거 메뉴
+- 768px 이상: 사이드바 항상 표시
+
+### 2. 영문 기사 필터링 (`scripts/crawling.py`)
+- `contains_korean()`: 한글 포함 여부 체크
+- `is_korean_article()`: 제목/본문에 한글 없으면 영문 기사로 판단
+- 영문 기사는 `⏭️ SKIP (영문 기사)` 로그와 함께 자동 제외
+
+### 3. 저작권 문구 제거 (`scripts/crawling.py`)
+- `clean_article_body()`: 기사 본문에서 불필요한 내용 제거
+- 제거 대상:
+  - 저작권 문구: `<저작권자 ⓒ MBN 무단전재 및 재배포 금지>`
+  - 기자 이메일
+  - 구독/앱 유도 문구
+  - 연속 줄바꿈
+
 ## 다음 작업 (TODO)
 
-### 남은 개선 사항
-- 다크 모드 추가
-- 프로필 이미지 업로드 기능 완성 (현재 UI만 있음)
-- 검색 기능 고도화 (내용 검색)
+### 🔴 우선순위 높음
+- [ ] **AI 채팅 기능 구현** - 기사 맥락 기반 대화
+  - RAG AI에 `/chat` 엔드포인트 추가
+  - `ArticleChat.tsx` 실제 API 연결 (현재 mock 데이터)
+
+### 🟡 우선순위 중간
+- [ ] 다크 모드 추가
+- [ ] 프로필 이미지 업로드 기능 완성 (현재 UI만 있음)
+- [ ] 검색 기능 고도화 (내용 검색)
+
+### 🟢 우선순위 낮음
+- [ ] Tailscale 원격 개발 환경 구축
 
 ## 현재 작업 브랜치
 

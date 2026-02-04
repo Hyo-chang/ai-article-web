@@ -191,9 +191,9 @@ class NewsKeywordExtractor:
         if not candidates:
             return {}
 
-        # HuggingFaceEmbeddings의 embed_query/embed_documents 메서드 사용
-        doc_embedding = self.model.embed_query(text)
-        candidate_embeddings = self.model.embed_documents(candidates)
+        # SentenceTransformer의 encode 메서드 사용
+        doc_embedding = self.model.encode(text)
+        candidate_embeddings = self.model.encode(candidates)
 
         # 코사인 유사도 계산 (sklearn 사용)
         doc_embedding_reshaped = np.array(doc_embedding).reshape(1, -1)
