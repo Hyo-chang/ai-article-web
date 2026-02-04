@@ -63,7 +63,7 @@ export function KeywordCategories({
   }, [activeCategory, onKeywordSelect, selectedKeyword]);
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-[#dfe4ef] bg-white/90 p-8 shadow-[0_32px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+    <section className="relative overflow-hidden rounded-2xl border border-[#dfe4ef] bg-white/90 p-4 shadow-[0_32px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:rounded-3xl sm:p-8">
       <div className="pointer-events-none absolute inset-0 opacity-70">
         <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-br from-blue-50/80 via-white to-transparent" />
         <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-br from-rose-50/70 via-white to-transparent" />
@@ -74,7 +74,7 @@ export function KeywordCategories({
           Live Trend
         </p>
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-semibold text-slate-900">키워드 카테고리</h2>
+          <h2 className="text-xl font-semibold text-slate-900 sm:text-3xl">키워드 카테고리</h2>
           {isLoading && <span className="text-xs text-slate-400">불러오는 중...</span>}
         </div>
         <p className="text-sm text-slate-500">

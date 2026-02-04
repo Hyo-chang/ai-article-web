@@ -91,8 +91,8 @@ export function ArticleCardList({
     <section className="mx-auto mt-16 w-full max-w-6xl space-y-10">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-medium uppercase tracking-[0.35em] text-[#a4adbb]">최신 기사</p>
-          <h2 className="text-2xl font-semibold text-[#1f2937]">지금 주목받는 콘텐츠를 확인하세요</h2>
+          <p className="text-xs font-medium uppercase tracking-[0.35em] text-[#a4adbb] sm:text-sm">최신 기사</p>
+          <h2 className="text-lg font-semibold text-[#1f2937] sm:text-2xl">지금 주목받는 콘텐츠를 확인하세요</h2>
           {activeCategoryName && (
             <p className="mt-1 text-sm text-[#5b6472]">
               현재 선택된 카테고리:{" "}
@@ -126,7 +126,7 @@ export function ArticleCardList({
                 value={searchInput}
                 onChange={(event) => onSearchInputChange?.(event.target.value)}
                 placeholder="제목 검색"
-                className="h-10 w-56 rounded-2xl border border-[#d3d9e5] bg-white px-3 text-sm text-[#1f2937] placeholder:text-[#94a3b8] focus:border-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c7d2fe]"
+                className="h-10 w-full rounded-2xl border border-[#d3d9e5] bg-white px-3 text-sm text-[#1f2937] placeholder:text-[#94a3b8] focus:border-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c7d2fe] sm:w-56"
               />
             </div>
             <button
@@ -270,7 +270,7 @@ export function ArticleCardList({
                     }
                   }}
                   className={cn(
-                    "group flex w-full items-center gap-5 transition-all hover:-translate-y-1",
+                    "group flex w-full flex-col items-start gap-4 transition-all hover:-translate-y-1 sm:flex-row sm:items-center sm:gap-5",
                     onArticleClick
                       ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d0d7e6] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                       : "",
@@ -279,7 +279,7 @@ export function ArticleCardList({
                       : "border-b border-[#1a1a1a] pb-6 hover:border-[#2a2a2a] last:border-b-0",
                   )}
                 >
-                  <div className="relative h-[120px] w-[120px] flex-none overflow-hidden rounded-2xl bg-[#f2f4f9]">
+                  <div className="relative h-[160px] w-full flex-none overflow-hidden rounded-2xl bg-[#f2f4f9] sm:h-[120px] sm:w-[120px]">
                     {articleImageUrl ? (
                       <img
                         src={articleImageUrl}

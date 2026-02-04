@@ -287,6 +287,18 @@ function HomePage() {
   const headerActiveView =
     currentTab === "home" ? "home" : currentTab === "history" ? "history" : "analyze";
   const [sidebarWidth, setSidebarWidth] = useState(230);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 화면 크기 감지
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
   const isResizingRef = useRef(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null);
@@ -457,21 +469,36 @@ function HomePage() {
     <div className={`min-h-screen ${AMBIENT_BACKGROUND} text-[#1f2937]`}>
       <Header
         sidebarWidth={sidebarWidth}
-        onLoginClick={() => navigate("/login")}
+        onLoginClick={() => {
+          navigate("/login");
+          setIsMobileMenuOpen(false);
+        }}
         onHomeClick={() => {
           setCurrentTab("home");
+          setIsMobileMenuOpen(false);
           window.location.reload();
         }}
-        onAnalyzeClick={() => setCurrentTab("analyze")}
-        onHistoryClick={() => setCurrentTab("history")}
-        onExperienceClick={() => navigate("/experience")}
+        onAnalyzeClick={() => {
+          setCurrentTab("analyze");
+          setIsMobileMenuOpen(false);
+        }}
+        onHistoryClick={() => {
+          setCurrentTab("history");
+          setIsMobileMenuOpen(false);
+        }}
+        onExperienceClick={() => {
+          navigate("/experience");
+          setIsMobileMenuOpen(false);
+        }}
         onSidebarResizeStart={handleSidebarResizeStart}
         activeView={headerActiveView}
+        isMobileMenuOpen={isMobileMenuOpen}
+        onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
 
       <main
-        className="flex min-h-screen flex-col px-10 py-10"
-        style={{ marginLeft: sidebarWidth }}
+        className="flex min-h-screen flex-col px-4 py-10 pt-16 transition-[margin] duration-300 md:px-10 md:pt-10"
+        style={{ marginLeft: isMobile ? 0 : sidebarWidth }}
       >
         <div className="mx-auto w-full max-w-6xl">
           <Tabs value={currentTab} onValueChange={(value) => setCurrentTab(value as HomeTab)}>

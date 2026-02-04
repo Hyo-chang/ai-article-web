@@ -1,4 +1,4 @@
-import { Sparkles, Home, FileText, User as UserIcon, Clock3 } from "lucide-react";
+import { Sparkles, Home, FileText, User as UserIcon, Clock3, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import type React from "react";
 import { Button } from "./ui/button";
@@ -13,6 +13,8 @@ interface HeaderProps {
   onExperienceClick?: () => void;
   onSidebarResizeStart?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   activeView?: "home" | "analyze" | "history";
+  isMobileMenuOpen?: boolean;
+  onMobileMenuToggle?: () => void;
 }
 
 export function Header({
@@ -24,6 +26,8 @@ export function Header({
   onExperienceClick,
   onSidebarResizeStart,
   activeView = "home",
+  isMobileMenuOpen = false,
+  onMobileMenuToggle,
 }: HeaderProps) {
   const { user, isLoggedIn, logout } = useAuth();
   const navigate = useNavigate();
@@ -110,11 +114,32 @@ export function Header({
   ];
 
   return (
-    <aside
-      className="fixed left-0 top-0 z-40 border-r border-black/40 bg-[linear-gradient(180deg,#1a1c20_0%,#15171b_45%,#111215_100%)] text-[#dcdcdc]"
-      style={{ width: sidebarWidth }}
-    >
-      <div className="grid h-screen grid-rows-[auto_1fr_auto] px-6 py-10">
+    <>
+      {/* Mobile Menu Button - 모바일에서만 표시 */}
+      <button
+        type="button"
+        onClick={onMobileMenuToggle}
+        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#1a1c20] text-white shadow-lg md:hidden"
+        aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
+      >
+        {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </button>
+
+      {/* Mobile Overlay - 모바일 메뉴가 열렸을 때 배경 어둡게 */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={onMobileMenuToggle}
+        />
+      )}
+
+      <aside
+        className={`fixed left-0 top-0 z-40 border-r border-black/40 bg-[linear-gradient(180deg,#1a1c20_0%,#15171b_45%,#111215_100%)] text-[#dcdcdc] transition-transform duration-300 md:translate-x-0 ${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+        style={{ width: sidebarWidth }}
+      >
+        <div className="grid h-screen grid-rows-[auto_1fr_auto] px-6 py-10">
         <div className="flex flex-col items-center">
           <button
             type="button"
@@ -185,12 +210,14 @@ export function Header({
           )}
         </div>
       </div>
-      <button
-        type="button"
-        onMouseDown={onSidebarResizeStart}
-        className="absolute inset-y-0 right-0 w-3 cursor-col-resize bg-transparent transition hover:bg-white/10"
-        aria-label="사이드바 너비 조절"
-      />
-    </aside>
+        {/* 데스크톱에서만 리사이즈 핸들 표시 */}
+        <button
+          type="button"
+          onMouseDown={onSidebarResizeStart}
+          className="absolute inset-y-0 right-0 hidden w-3 cursor-col-resize bg-transparent transition hover:bg-white/10 md:block"
+          aria-label="사이드바 너비 조절"
+        />
+      </aside>
+    </>
   );
 }
