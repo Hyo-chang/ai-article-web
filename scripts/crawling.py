@@ -600,7 +600,7 @@ def main():
         keywords=["경제", "사회", "IT"],
         max_articles_per_keyword=5,
         total_phases=2,
-        backend_endpoint="http://localhost:8080/api/articles/v2",
+        backend_endpoint="https://ai-article-web-production.up.railway.app/api/articles/v2",
         timeout=300, wait_min=10, wait_max=20, sleep_min=1.0, sleep_max=3.0,
         user_agent="Mozilla/5.0", accept_language="ko-KR,ko;q=0.9",
         referer="https://news.naver.com/", max_retries=2,
