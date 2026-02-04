@@ -61,6 +61,45 @@ def is_korean_article(title: str, body: str = "") -> bool:
         return True
     return False
 
+def clean_article_body(body: str) -> str:
+    """기사 본문에서 저작권 문구, 기자 정보 등 불필요한 내용을 제거합니다."""
+    if not body:
+        return body
+
+    # 제거할 패턴들 (저작권, 기자 정보, 구독 유도 등)
+    patterns_to_remove = [
+        # 저작권 문구
+        r'<저작권자[^>]*>.*?(?:금지|, \w+>)',
+        r'ⓒ\s*\S+.*?(?:무단.*?금지|저작권.*?보호)',
+        r'\(c\)\s*\S+.*?(?:무단.*?금지|저작권.*?보호)',
+        r'copyright\s*©?.*?(?:금지|reserved)',
+        r'무단\s*전재.*?금지',
+        r'무단전재\s*(?:및\s*)?재배포\s*금지',
+        # 기자 이메일/정보
+        r'\S+@\S+\.\S+',  # 이메일
+        r'기자\s*[가-힣]{2,4}\s*기자',
+        # 구독/앱 유도
+        r'(?:네이버|카카오|구글)\s*(?:뉴스|채널).*?(?:구독|추가)',
+        r'앱\s*다운로드.*',
+        r'더\s*많은\s*기사.*',
+        # MBN 등 특정 매체 문구
+        r'MBN\s*뉴스.*?,, .*?, ',
+        r'\[.*?뉴스\]',
+        # 빈 줄 여러 개
+        r'\n{3,}',
+    ]
+
+    cleaned = body
+    for pattern in patterns_to_remove:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE | re.MULTILINE)
+
+    # 앞뒤 공백 정리
+    cleaned = cleaned.strip()
+    # 연속 줄바꿈 정리
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+
+    return cleaned
+
 # ====================================================================
 # 🧩 선택자 (사이트 구조 변경 시 여기 수정)
 # ====================================================================
@@ -548,6 +587,9 @@ def process_article(session: requests.Session, cfg: Config, article_api_data: Di
         if not is_korean_article(title, body):
             print(f"  ⏭️ SKIP (영문 기사): {title[:50]}...")
             return None
+
+        # 저작권 문구 등 불필요한 내용 제거
+        body = clean_article_body(body)
         
         payload = {
             "articleUrl": link,
