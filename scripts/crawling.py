@@ -41,6 +41,27 @@ NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "")
 NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_PASSWD", "") # 변수명 수정
 
 # ====================================================================
+# 🌐 언어 감지 (영문 기사 필터링용)
+# ====================================================================
+def contains_korean(text: str) -> bool:
+    """텍스트에 한글이 포함되어 있는지 확인합니다."""
+    if not text:
+        return False
+    # 한글 유니코드 범위: 가-힣 (완성형), ㄱ-ㅎ, ㅏ-ㅣ (자모)
+    korean_pattern = re.compile(r'[가-힣ㄱ-ㅎㅏ-ㅣ]')
+    return bool(korean_pattern.search(text))
+
+def is_korean_article(title: str, body: str = "") -> bool:
+    """기사가 한국어인지 확인합니다. 제목에 한글이 있으면 한국어 기사로 판단."""
+    # 제목에 한글이 있으면 한국어 기사
+    if contains_korean(title):
+        return True
+    # 제목에 한글이 없고, 본문의 처음 200자에도 한글이 없으면 영문 기사로 판단
+    if body and contains_korean(body[:200]):
+        return True
+    return False
+
+# ====================================================================
 # 🧩 선택자 (사이트 구조 변경 시 여기 수정)
 # ====================================================================
 DEFAULT_TITLE_SELECTORS = ("h2.media_end_head_headline", "h1.media_end_head_headline", "meta[property='og:title']")
@@ -518,9 +539,14 @@ def process_article(session: requests.Session, cfg: Config, article_api_data: Di
         
         title = parsed_data.get("title") or BeautifulSoup(article_api_data.get("title", ""), "html.parser").get_text(strip=True)
         body = parsed_data.get("body")
-        
+
         if not body:
-            print(f"  C ERR: 본문을 추출하지 못했습니다: {link}")
+            print(f"  ⏭️ SKIP: 본문을 추출하지 못했습니다: {link}")
+            return None
+
+        # 영문 기사 필터링
+        if not is_korean_article(title, body):
+            print(f"  ⏭️ SKIP (영문 기사): {title[:50]}...")
             return None
         
         payload = {
