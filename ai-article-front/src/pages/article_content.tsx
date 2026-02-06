@@ -600,9 +600,10 @@ function ArticleSummary({
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#15181f] md:p-6">
             <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-gray-400">AI SUMMARY</div>
-                <div className="text-xs text-slate-400 dark:text-gray-500">
-                    <span className="hidden sm:inline">텍스트를 드래그하여 AI에게 질문할 수 있어요</span>
-                    <span className="sm:hidden">드래그하여 AI 질문</span>
+                <div className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
+                    <span className="text-sm">💬</span>
+                    <span className="hidden sm:inline">텍스트를 드래그하여 AI에게 질문해보세요!</span>
+                    <span className="sm:hidden">드래그로 AI 질문</span>
                 </div>
             </div>
             {isLoading && <p className="mt-3 text-sm text-slate-500 dark:text-gray-400">AI 요약을 불러오는 중입니다...</p>}
