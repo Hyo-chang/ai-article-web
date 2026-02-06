@@ -1,0 +1,6 @@
+# AI Reader - robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://ai-article-web.vercel.app/sitemap.xml
