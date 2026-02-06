@@ -281,17 +281,37 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
   - 구독/앱 유도 문구
   - 연속 줄바꿈
 
+## 최근 수정 사항 (2026-02-07)
+
+### 1. 다크 모드 구현
+- Tailwind `darkMode: 'class'` 설정
+- next-themes ThemeProvider 래핑
+- Header에 테마 토글 버튼 추가 (Sun/Moon 아이콘)
+- HomePage, ArticleCardList, KeywordCategories, article_content 다크 모드 대응
+- 시스템 테마 자동 감지 지원
+
+### 2. AI 채팅 기능 완성
+- Backend: `/api/analysis/chat` 엔드포인트 추가
+- RAG AI: `/chat` 엔드포인트 추가
+- 기사 맥락 기반 질문 응답
+- 텍스트 드래그 → AI 질문 기능
+- AI Summary 섹션에 드래그 질문 안내 문구 추가
+
 ## 다음 작업 (TODO)
 
-### 🔴 우선순위 높음
-- [ ] **AI 채팅 기능 구현** - 기사 맥락 기반 대화
-  - RAG AI에 `/chat` 엔드포인트 추가
-  - `ArticleChat.tsx` 실제 API 연결 (현재 mock 데이터)
-
 ### 🟡 우선순위 중간
-- [ ] 다크 모드 추가
-- [ ] 프로필 이미지 업로드 기능 완성 (현재 UI만 있음)
-- [ ] 검색 기능 고도화 (내용 검색)
+- [ ] **프로필 이미지 업로드 기능**
+  - 현재: UI만 있고 실제 파일 업로드 미구현
+  - User 엔티티에 `profileImageUrl` 필드 있음
+  - 구현 방식 선택 필요:
+    1. Base64로 DB 저장 (간단, DB 용량 증가)
+    2. Cloudinary 사용 (권장, 무료 티어 월 25GB)
+  - 백엔드: MultipartFile 받는 API 추가 필요
+  - 프론트엔드: 파일 업로드 로직 추가
+
+- [ ] **검색 기능 고도화**
+  - 현재: 제목만 검색
+  - 개선: 본문 내용 검색 추가
 
 ### 🟢 우선순위 낮음
 - [ ] Tailscale 원격 개발 환경 구축
@@ -300,6 +320,10 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
   - [ ] 이용약관 페이지 생성
   - [ ] AdSense 계정 신청 및 승인
   - [ ] 광고 코드 삽입
+
+### 🔵 향후 기능
+- [ ] 게시판 기능
+- [ ] 댓글 기능
 
 ## 현재 작업 브랜치
 
