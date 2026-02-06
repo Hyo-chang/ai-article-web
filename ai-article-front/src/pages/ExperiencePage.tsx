@@ -413,7 +413,7 @@ export default function ExperiencePage() {
           </div>
 
           <motion.div
-            className="flex justify-center pt-12"
+            className="flex flex-col items-center gap-4 pt-12"
             variants={fadeUpVariants}
             initial="hidden"
             whileInView="visible"
@@ -429,6 +429,13 @@ export default function ExperiencePage() {
             >
               체험 계속하기
             </motion.button>
+            <button
+              type="button"
+              onClick={() => navigate("/updates")}
+              className="text-sm text-white/50 transition hover:text-white/80"
+            >
+              업데이트 내역 보기 →
+            </button>
           </motion.div>
         </div>
       </section>

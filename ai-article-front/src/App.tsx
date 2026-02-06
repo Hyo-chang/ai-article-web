@@ -12,6 +12,7 @@ import Content from "./pages/article_content";
 import MyPage from "./pages/MyPage";
 import ExperiencePage from "./pages/ExperiencePage";
 import LoadingPage from "./pages/LoadingPage";
+import UpdatesPage from "./pages/UpdatesPage";
 import { Tabs, TabsContent } from "./components/ui/tabs";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
@@ -608,6 +609,7 @@ export default function App() {
         <Route path="/loading/:articleId" element={<LoadingPage />} />
         <Route path="/content/:articleId" element={<Content />} />
         <Route path="/mypage" element={<MyPage />} />
+        <Route path="/updates" element={<UpdatesPage />} />
       </Routes>
     </AuthProvider>
   );
