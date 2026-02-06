@@ -1,5 +1,6 @@
 package com.team.aiarticle.ai_article_backend.service;
 
+import com.team.aiarticle.ai_article_backend.dto.ChatDto;
 import com.team.aiarticle.ai_article_backend.dto.RagRequestDto;
 import com.team.aiarticle.ai_article_backend.dto.RagResponseDto;
 // import lombok.RequiredArgsConstructor; // 이 어노테이션을 삭제하거나 주석 처리합니다.
@@ -35,5 +36,21 @@ public class RagAiService {
                 .bodyToMono(RagResponseDto.class)
                 .doOnSuccess(response -> log.info("AI 서버로부터 응답을 성공적으로 수신했습니다."))
                 .doOnError(error -> log.error("AI 서버와 통신 중 오류가 발생했습니다.", error));
+    }
+
+    /**
+     * AI 서버에 채팅 요청을 전송하고 응답을 받아옵니다.
+     */
+    public Mono<ChatDto.Response> requestChat(ChatDto.Request requestDto) {
+        log.info("AI 서버로 채팅 요청을 전송합니다. (질문 길이: {})",
+                requestDto.getQuestion() != null ? requestDto.getQuestion().length() : 0);
+
+        return ragAiWebClient.post()
+                .uri("/chat")
+                .bodyValue(requestDto)
+                .retrieve()
+                .bodyToMono(ChatDto.Response.class)
+                .doOnSuccess(response -> log.info("AI 채팅 응답을 성공적으로 수신했습니다."))
+                .doOnError(error -> log.error("AI 채팅 중 오류가 발생했습니다.", error));
     }
 }

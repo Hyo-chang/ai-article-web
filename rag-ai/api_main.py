@@ -48,6 +48,16 @@ class AnalyzeResponse(BaseModel):
     definitions: Dict[str, str]
     category: str
 
+class ChatRequest(BaseModel):
+    """AI 채팅 요청"""
+    article_context: str  # 기사 본문 또는 요약
+    question: str  # 사용자 질문
+    snippet: Optional[str] = None  # 선택된 텍스트 (있는 경우)
+
+class ChatResponse(BaseModel):
+    """AI 채팅 응답"""
+    answer: str
+
 # --- 2. 전역 변수 및 생명주기 관리 ---
 
 global_models: Dict[str, any] = {}
@@ -228,6 +238,58 @@ async def analyze_article(request: AnalyzeRequest):
             detail=f"분석 중 오류 발생: {e}"
         )
 
+@app.post("/chat", response_model=ChatResponse, dependencies=[Depends(verify_api_key)])
+async def chat_with_article(request: ChatRequest):
+    """기사 맥락을 기반으로 사용자 질문에 답변합니다."""
+    print(f"\n--- [FastAPI] '/chat' 요청 수신 ---")
+    print(f"[FastAPI] 질문: {sanitize_text(request.question[:100])}...")
+
+    try:
+        llm = global_models["llm"]
+
+        # 시스템 프롬프트 구성
+        if request.snippet:
+            system_prompt = """너는 뉴스 기사 내용을 해석하고 설명하는 AI 어시스턴트야.
+사용자가 기사의 특정 부분을 선택했으니 그 부분에 집중해서 답변해줘.
+답변은 친근하고 이해하기 쉽게 작성해줘."""
+            user_prompt = f"""기사 전체 맥락:
+{request.article_context[:2000]}
+
+사용자가 선택한 부분:
+"{request.snippet}"
+
+질문: {request.question if request.question else "이 부분에 대해 설명해줘."}"""
+        else:
+            system_prompt = """너는 뉴스 기사 분석을 도와주는 AI 어시스턴트야.
+기사 내용을 바탕으로 사용자의 질문에 정확하고 친근하게 답변해줘.
+기사에 없는 내용은 추측하지 말고, 기사 내용을 기반으로만 답변해."""
+            user_prompt = f"""기사 내용:
+{request.article_context[:3000]}
+
+질문: {request.question}"""
+
+        # LLM 호출
+        from langchain_core.messages import SystemMessage, HumanMessage
+        messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_prompt)
+        ]
+
+        response = llm.invoke(messages)
+        answer = sanitize_text(response.content.strip())
+
+        print(f"[FastAPI] 응답 생성 완료 (길이: {len(answer)})")
+        return ChatResponse(answer=answer)
+
+    except Exception as e:
+        print(f"[!!! FastAPI 오류 !!!] 채팅 중 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI 응답 생성 중 오류 발생: {e}"
+        )
+
 # --- 4. Uvicorn 서버 실행 방법 ---
 # 실행 명령어 : uvicorn api_main:app --host 127.0.0.1 --port 8020 --reload (--reload 옵션은 개발용)
-# uvicorn api_main:app --host 0._classify_category_placeholder0.0.0 --port 8020 --reload 브로드캐스트용
+# uvicorn api_main:app --host 0.0.0.0 --port 8020 --reload 브로드캐스트용
