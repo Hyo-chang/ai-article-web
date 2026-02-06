@@ -598,7 +598,13 @@ function ArticleSummary({
     const hasSummary = lines.length > 0;
     return (
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#15181f] md:p-6">
-            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-gray-400">AI SUMMARY</div>
+            <div className="flex items-center justify-between">
+                <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-gray-400">AI SUMMARY</div>
+                <div className="text-xs text-slate-400 dark:text-gray-500">
+                    <span className="hidden sm:inline">텍스트를 드래그하여 AI에게 질문할 수 있어요</span>
+                    <span className="sm:hidden">드래그하여 AI 질문</span>
+                </div>
+            </div>
             {isLoading && <p className="mt-3 text-sm text-slate-500 dark:text-gray-400">AI 요약을 불러오는 중입니다...</p>}
             {error && !isLoading && <p className="mt-3 text-sm text-rose-500 dark:text-rose-400">{error}</p>}
             {!isLoading && !error && hasSummary && (
