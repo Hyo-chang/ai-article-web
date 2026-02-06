@@ -23,6 +23,18 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.2.1",
+    date: "2026-02-06",
+    highlights: "다크 모드 지원",
+    items: [
+      { type: "feature", text: "다크 모드 / 라이트 모드 테마 전환 기능" },
+      { type: "feature", text: "시스템 테마 자동 감지 (OS 설정 연동)" },
+      { type: "improvement", text: "사이드바에 테마 토글 버튼 추가" },
+      { type: "improvement", text: "홈페이지, 기사 상세, 마이페이지 다크 모드 대응" },
+      { type: "improvement", text: "next-themes + Tailwind dark: prefix 활용" },
+    ],
+  },
+  {
     version: "0.2.0",
     date: "2026-02-06",
     highlights: "정식 배포 및 모바일 지원",
