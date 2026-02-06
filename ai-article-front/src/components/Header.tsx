@@ -1,6 +1,8 @@
-import { Sparkles, Home, FileText, User as UserIcon, Clock3, Menu, X, History } from "lucide-react";
+import { Sparkles, Home, FileText, User as UserIcon, Clock3, Menu, X, History, Sun, Moon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import type React from "react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { useAuth } from "../services/AuthContext";
 
@@ -31,6 +33,16 @@ export function Header({
 }: HeaderProps) {
   const { user, isLoggedIn, logout } = useAuth();
   const navigate = useNavigate();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  };
 
   const displayName = (() => {
     if (!user) return "사용자";
@@ -184,6 +196,27 @@ export function Header({
             <History className="h-4 w-4" />
             <span>업데이트</span>
           </button>
+
+          {mounted && (
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="mt-4 flex items-center gap-3 rounded-r-full px-4 py-3 text-xs uppercase tracking-[0.2em] text-[#9398a3] transition-colors duration-300 hover:text-white"
+              aria-label={resolvedTheme === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환"}
+            >
+              {resolvedTheme === "dark" ? (
+                <>
+                  <Sun className="h-4 w-4" />
+                  <span>라이트 모드</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4" />
+                  <span>다크 모드</span>
+                </>
+              )}
+            </button>
+          )}
         </nav>
 
         <div className="mt-10 border-t border-black/70 pt-6">

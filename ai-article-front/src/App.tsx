@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { Header } from "./components/Header";
 import { KeywordCategories } from "./components/KeywordCategories";
 import { ArticleInput } from "./components/ArticleInput";
@@ -53,7 +54,7 @@ interface ManualCrawlResponse {
 type HomeTab = "home" | "analyze" | "history" | "result";
 
 const AMBIENT_BACKGROUND =
-  "bg-[radial-gradient(1200px_720px_at_12%_-5%,rgba(255,255,255,0.9),transparent),radial-gradient(1000px_640px_at_88%_0%,rgba(237,240,246,0.78),transparent),linear-gradient(185deg,#fbfcfe,#f1f3f8_58%,#e4e8f1)]";
+  "bg-[radial-gradient(1200px_720px_at_12%_-5%,rgba(255,255,255,0.9),transparent),radial-gradient(1000px_640px_at_88%_0%,rgba(237,240,246,0.78),transparent),linear-gradient(185deg,#fbfcfe,#f1f3f8_58%,#e4e8f1)] dark:bg-[radial-gradient(1200px_720px_at_12%_-5%,rgba(30,30,35,0.9),transparent),radial-gradient(1000px_640px_at_88%_0%,rgba(20,22,28,0.78),transparent),linear-gradient(185deg,#0a0a0c,#0f1115_58%,#15171b)]";
 
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ??
@@ -467,7 +468,7 @@ function HomePage() {
   );
 
   return (
-    <div className={`min-h-screen ${AMBIENT_BACKGROUND} text-[#1f2937]`}>
+    <div className={`min-h-screen ${AMBIENT_BACKGROUND} text-[#1f2937] dark:text-white`}>
       {/* Beta 배너 */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-500/90 via-orange-500/90 to-amber-500/90 px-4 py-2 text-center text-sm font-medium text-white backdrop-blur-sm md:left-auto">
         <span className="mr-2 inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wider">
@@ -598,19 +599,21 @@ function HomePage() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Toaster position="bottom-right" richColors />
-      <Routes>
-        <Route path="/" element={<ExperiencePage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/experience" element={<ExperiencePage />} />
-        <Route path="/loading/:articleId" element={<LoadingPage />} />
-        <Route path="/content/:articleId" element={<Content />} />
-        <Route path="/mypage" element={<MyPage />} />
-        <Route path="/updates" element={<UpdatesPage />} />
-      </Routes>
-    </AuthProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <AuthProvider>
+        <Toaster position="bottom-right" richColors />
+        <Routes>
+          <Route path="/" element={<ExperiencePage />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/experience" element={<ExperiencePage />} />
+          <Route path="/loading/:articleId" element={<LoadingPage />} />
+          <Route path="/content/:articleId" element={<Content />} />
+          <Route path="/mypage" element={<MyPage />} />
+          <Route path="/updates" element={<UpdatesPage />} />
+        </Routes>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

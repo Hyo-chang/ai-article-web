@@ -91,23 +91,23 @@ export function ArticleCardList({
     <section className="mx-auto mt-16 w-full max-w-6xl space-y-10">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-[0.35em] text-[#a4adbb] sm:text-sm">최신 기사</p>
-          <h2 className="text-lg font-semibold text-[#1f2937] sm:text-2xl">지금 주목받는 콘텐츠를 확인하세요</h2>
+          <p className="text-xs font-medium uppercase tracking-[0.35em] text-[#a4adbb] dark:text-gray-400 sm:text-sm">최신 기사</p>
+          <h2 className="text-lg font-semibold text-[#1f2937] dark:text-white sm:text-2xl">지금 주목받는 콘텐츠를 확인하세요</h2>
           {activeCategoryName && (
-            <p className="mt-1 text-sm text-[#5b6472]">
+            <p className="mt-1 text-sm text-[#5b6472] dark:text-gray-400">
               현재 선택된 카테고리:{" "}
-              <span className="font-semibold text-[#1f2937]">{activeCategoryName}</span>
+              <span className="font-semibold text-[#1f2937] dark:text-white">{activeCategoryName}</span>
             </p>
           )}
           {activeKeyword && (
-            <p className="text-sm text-[#5b6472]">
-              선택된 키워드: <span className="font-semibold text-[#1f2937]">#{activeKeyword}</span>
+            <p className="text-sm text-[#5b6472] dark:text-gray-400">
+              선택된 키워드: <span className="font-semibold text-[#1f2937] dark:text-white">#{activeKeyword}</span>
             </p>
           )}
           {hasPreferredKeywords && (
-            <p className="text-sm text-sky-700">
+            <p className="text-sm text-sky-700 dark:text-sky-400">
               내 저장 키워드 우선 노출:{" "}
-              <span className="font-semibold text-sky-900">
+              <span className="font-semibold text-sky-900 dark:text-sky-300">
                 {preferredKeywords?.slice(0, 3).join(", ")}
                 {preferredKeywords && preferredKeywords.length > 3 ? " …" : ""}
               </span>
@@ -120,23 +120,23 @@ export function ArticleCardList({
             className="flex flex-col items-stretch gap-2 text-sm text-[#475569] sm:flex-row sm:items-end sm:justify-end"
           >
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-[#94a3b8]">Search</label>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-[#94a3b8] dark:text-gray-400">Search</label>
               <input
                 type="text"
                 value={searchInput}
                 onChange={(event) => onSearchInputChange?.(event.target.value)}
                 placeholder="제목 검색"
-                className="h-10 w-full rounded-2xl border border-[#d3d9e5] bg-white px-3 text-sm text-[#1f2937] placeholder:text-[#94a3b8] focus:border-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c7d2fe] sm:w-56"
+                className="h-10 w-full rounded-2xl border border-[#d3d9e5] bg-white px-3 text-sm text-[#1f2937] placeholder:text-[#94a3b8] focus:border-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c7d2fe] dark:border-white/10 dark:bg-[#1a1c20] dark:text-white dark:placeholder:text-gray-500 dark:focus:border-white/30 dark:focus:ring-white/20 sm:w-56"
               />
             </div>
             <button
               type="submit"
-              className="h-10 rounded-2xl bg-[#1f2937] px-4 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-[#111827]"
+              className="h-10 rounded-2xl bg-[#1f2937] px-4 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-[#111827] dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
               검색하기
             </button>
             {searchQuery && (
-              <span className="text-right text-xs text-[#64748b] sm:ml-2 sm:text-sm">
+              <span className="text-right text-xs text-[#64748b] dark:text-gray-400 sm:ml-2 sm:text-sm">
                 "{searchQuery}" 검색 중
               </span>
             )}
@@ -149,24 +149,24 @@ export function ArticleCardList({
           {loadingPlaceholders.map((_, index) => (
             <div
               key={index}
-              className="flex w-full items-center gap-5 rounded-2xl border border-[#e2e6ef] bg-white p-5 shadow-[0_18px_38px_rgba(164,174,194,0.18)]"
+              className="flex w-full items-center gap-5 rounded-2xl border border-[#e2e6ef] bg-white p-5 shadow-[0_18px_38px_rgba(164,174,194,0.18)] dark:border-white/10 dark:bg-[#1a1c20] dark:shadow-black/40"
             >
-              <div className="h-[120px] w-[120px] flex-none animate-pulse rounded-2xl bg-gradient-to-br from-[#f1f4fa] via-[#e6eaf3] to-[#dfe3ed]" />
+              <div className="h-[120px] w-[120px] flex-none animate-pulse rounded-2xl bg-gradient-to-br from-[#f1f4fa] via-[#e6eaf3] to-[#dfe3ed] dark:from-[#2a2d35] dark:via-[#23262d] dark:to-[#1e2127]" />
               <div className="flex flex-1 flex-col gap-3">
-                <div className="h-6 w-2/3 animate-pulse rounded bg-[#e8ecf5]" />
-                <div className="h-4 w-full animate-pulse rounded bg-[#edf0f7]" />
-                <div className="h-4 w-4/5 animate-pulse rounded bg-[#edf0f7]" />
+                <div className="h-6 w-2/3 animate-pulse rounded bg-[#e8ecf5] dark:bg-[#2a2d35]" />
+                <div className="h-4 w-full animate-pulse rounded bg-[#edf0f7] dark:bg-[#23262d]" />
+                <div className="h-4 w-4/5 animate-pulse rounded bg-[#edf0f7] dark:bg-[#23262d]" />
               </div>
             </div>
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-2xl border border-red-400/40 bg-red-500/10 p-6 text-red-200">
+        <div className="rounded-2xl border border-red-400/40 bg-red-500/10 p-6 text-red-700 dark:text-red-200">
           <p className="font-semibold">기사를 불러오지 못했습니다.</p>
-          <p className="text-sm text-red-200/80">{error}</p>
+          <p className="text-sm text-red-600/80 dark:text-red-200/80">{error}</p>
         </div>
       ) : featuredArticles.length === 0 && paginatedArticles.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#d6dbe7] bg-white/70 py-12 text-center text-[#8f98a8]">
+        <div className="rounded-2xl border border-dashed border-[#d6dbe7] bg-white/70 py-12 text-center text-[#8f98a8] dark:border-white/20 dark:bg-[#1a1c20]/70 dark:text-gray-400">
           아직 표시할 기사가 없습니다.
         </div>
       ) : (
@@ -190,8 +190,8 @@ export function ArticleCardList({
                       }
                     }}
                     className={cn(
-                      "group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-[#d1d5dc] bg-gradient-to-br from-[#f7f8fa] via-[#eef0f4] to-[#e2e7ed] text-[#1f2937] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b7beca] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f5f6f8]",
-                      isHighlighted && "border-2 border-sky-300 shadow-[0_20px_40px_rgba(56,189,248,0.35)]",
+                      "group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-[#d1d5dc] bg-gradient-to-br from-[#f7f8fa] via-[#eef0f4] to-[#e2e7ed] text-[#1f2937] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b7beca] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f5f6f8] dark:border-white/10 dark:from-[#1e2025] dark:via-[#1a1c20] dark:to-[#15171b] dark:text-white dark:hover:shadow-black/60 dark:focus-visible:ring-white/30 dark:focus-visible:ring-offset-[#0f1115]",
+                      isHighlighted && "border-2 border-sky-300 shadow-[0_20px_40px_rgba(56,189,248,0.35)] dark:border-sky-500 dark:shadow-[0_20px_40px_rgba(56,189,248,0.2)]",
                     )}
                   >
                     {isHighlighted && (
@@ -207,19 +207,19 @@ export function ArticleCardList({
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-[#d8dde5] text-sm font-semibold text-[#4a5260]">
+                        <div className="flex h-full w-full items-center justify-center bg-[#d8dde5] text-sm font-semibold text-[#4a5260] dark:bg-[#2a2d35] dark:text-gray-400">
                           No Image
                         </div>
                       )}
                     </div>
 
                     <div className="flex flex-1 flex-col gap-4 p-5">
-                      <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-[#1a202c]">
+                      <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-[#1a202c] dark:text-white">
                         {article.title}
                       </h3>
 
-                      <div className="mt-auto flex items-center justify-between text-sm text-[#5b6472]">
-                        <span className="font-medium text-[#394150]">AI Reader</span>
+                      <div className="mt-auto flex items-center justify-between text-sm text-[#5b6472] dark:text-gray-400">
+                        <span className="font-medium text-[#394150] dark:text-gray-300">AI Reader</span>
                         {onToggleBookmark && (
                           <button
                             type="button"
@@ -230,8 +230,8 @@ export function ArticleCardList({
                             className={cn(
                               "rounded-full border p-2 transition-colors",
                               bookmarkedIds?.has(article.articleId)
-                                ? "border-rose-300 bg-rose-50 text-rose-500 hover:bg-rose-100"
-                                : "border-[#ccd1da] bg-white/80 text-[#4a5260] hover:bg-white hover:text-[#1f2937]"
+                                ? "border-rose-300 bg-rose-50 text-rose-500 hover:bg-rose-100 dark:border-rose-400/50 dark:bg-rose-500/20 dark:text-rose-400 dark:hover:bg-rose-500/30"
+                                : "border-[#ccd1da] bg-white/80 text-[#4a5260] hover:bg-white hover:text-[#1f2937] dark:border-white/20 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/20 dark:hover:text-white"
                             )}
                             aria-label={bookmarkedIds?.has(article.articleId) ? "북마크 해제" : "북마크"}
                           >
@@ -272,14 +272,14 @@ export function ArticleCardList({
                   className={cn(
                     "group flex w-full flex-col items-start gap-4 transition-all hover:-translate-y-1 sm:flex-row sm:items-center sm:gap-5",
                     onArticleClick
-                      ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d0d7e6] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                      ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d0d7e6] focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-white/30 dark:focus-visible:ring-offset-[#0f1115]"
                       : "",
                     isHighlighted
-                      ? "rounded-2xl border border-sky-200 bg-sky-50/60 px-4 py-4"
-                      : "border-b border-[#1a1a1a] pb-6 hover:border-[#2a2a2a] last:border-b-0",
+                      ? "rounded-2xl border border-sky-200 bg-sky-50/60 px-4 py-4 dark:border-sky-500/30 dark:bg-sky-500/10"
+                      : "border-b border-[#1a1a1a] pb-6 hover:border-[#2a2a2a] last:border-b-0 dark:border-white/10 dark:hover:border-white/20",
                   )}
                 >
-                  <div className="relative h-[160px] w-full flex-none overflow-hidden rounded-2xl bg-[#f2f4f9] sm:h-[120px] sm:w-[120px]">
+                  <div className="relative h-[160px] w-full flex-none overflow-hidden rounded-2xl bg-[#f2f4f9] dark:bg-[#1e2025] sm:h-[120px] sm:w-[120px]">
                     {articleImageUrl ? (
                       <img
                         src={articleImageUrl}
@@ -287,17 +287,17 @@ export function ArticleCardList({
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f1f4fa] via-[#e5e9f3] to-[#d9deeb] text-sm font-semibold text-[#5b6472]">
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f1f4fa] via-[#e5e9f3] to-[#d9deeb] text-sm font-semibold text-[#5b6472] dark:from-[#2a2d35] dark:via-[#23262d] dark:to-[#1e2127] dark:text-gray-400">
                         No Image
                       </div>
                     )}
                   </div>
                   <div className="flex flex-1 flex-col justify-between gap-2">
-                    <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-[#9aa3b3]">
+                    <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-[#9aa3b3] dark:text-gray-500">
                       <span>{article.categoryName ?? "AI Reader"}</span>
                       <div className="flex items-center gap-2">
                         {isHighlighted && (
-                          <span className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700">
+                          <span className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700 dark:bg-sky-500/20 dark:text-sky-400">
                             내 키워드
                           </span>
                         )}
@@ -311,8 +311,8 @@ export function ArticleCardList({
                             className={cn(
                               "rounded-full border p-1.5 transition-colors",
                               bookmarkedIds?.has(article.articleId)
-                                ? "border-rose-300 bg-rose-50 text-rose-500 hover:bg-rose-100"
-                                : "border-[#ccd1da] bg-white/80 text-[#4a5260] hover:bg-white hover:text-[#1f2937]"
+                                ? "border-rose-300 bg-rose-50 text-rose-500 hover:bg-rose-100 dark:border-rose-400/50 dark:bg-rose-500/20 dark:text-rose-400 dark:hover:bg-rose-500/30"
+                                : "border-[#ccd1da] bg-white/80 text-[#4a5260] hover:bg-white hover:text-[#1f2937] dark:border-white/20 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/20 dark:hover:text-white"
                             )}
                             aria-label={bookmarkedIds?.has(article.articleId) ? "북마크 해제" : "북마크"}
                           >
@@ -326,10 +326,10 @@ export function ArticleCardList({
                         )}
                       </div>
                     </div>
-                    <h3 className="line-clamp-2 text-base font-semibold text-[#1f2937]">
+                    <h3 className="line-clamp-2 text-base font-semibold text-[#1f2937] dark:text-white">
                       {article.title}
                     </h3>
-                    <p className="text-sm leading-relaxed text-[#5b6472]">
+                    <p className="text-sm leading-relaxed text-[#5b6472] dark:text-gray-400">
                       {summary}
                       {article.content && article.content.length > 120 ? "…" : ""}
                     </p>
@@ -341,14 +341,14 @@ export function ArticleCardList({
 
           {remainingArticles.length > 0 && totalPages > 1 && (
             <nav
-              className="flex items-center justify-center gap-2 text-sm font-medium text-[#6b7382]"
+              className="flex items-center justify-center gap-2 text-sm font-medium text-[#6b7382] dark:text-gray-400"
               aria-label="기사 페이지네이션"
             >
               {hasPrevGroup && (
                 <button
                   type="button"
                   onClick={() => setCurrentPage(Math.max(1, currentGroupStart - PAGE_GROUP_SIZE))}
-                  className="rounded-full border border-[#d6dae3] px-3 py-1 transition hover:border-[#b7beca]"
+                  className="rounded-full border border-[#d6dae3] px-3 py-1 transition hover:border-[#b7beca] dark:border-white/20 dark:hover:border-white/40"
                 >
                   이전
                 </button>
@@ -365,8 +365,8 @@ export function ArticleCardList({
                     className={cn(
                       "rounded-full px-3 py-1 transition",
                       isActive
-                        ? "bg-[#1f2937] text-white shadow-lg"
-                        : "border border-transparent hover:border-[#cbd2de]",
+                        ? "bg-[#1f2937] text-white shadow-lg dark:bg-white dark:text-black"
+                        : "border border-transparent hover:border-[#cbd2de] dark:hover:border-white/30",
                     )}
                   >
                     {pageNumber}
@@ -378,7 +378,7 @@ export function ArticleCardList({
                 <button
                   type="button"
                   onClick={() => setCurrentPage(currentGroupEnd + 1)}
-                  className="rounded-full border border-[#d6dae3] px-3 py-1 transition hover:border-[#b7beca]"
+                  className="rounded-full border border-[#d6dae3] px-3 py-1 transition hover:border-[#b7beca] dark:border-white/20 dark:hover:border-white/40"
                 >
                   다음
                 </button>

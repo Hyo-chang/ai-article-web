@@ -63,27 +63,27 @@ export function KeywordCategories({
   }, [activeCategory, onKeywordSelect, selectedKeyword]);
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-[#dfe4ef] bg-white/90 p-4 shadow-[0_32px_80px_rgba(15,23,42,0.08)] backdrop-blur sm:rounded-3xl sm:p-8">
-      <div className="pointer-events-none absolute inset-0 opacity-70">
-        <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-br from-blue-50/80 via-white to-transparent" />
-        <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-br from-rose-50/70 via-white to-transparent" />
+    <section className="relative overflow-hidden rounded-2xl border border-[#dfe4ef] bg-white/90 p-4 shadow-[0_32px_80px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-[#15181f]/95 dark:shadow-black/40 sm:rounded-3xl sm:p-8">
+      <div className="pointer-events-none absolute inset-0 opacity-70 dark:opacity-30">
+        <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-br from-blue-50/80 via-white to-transparent dark:from-blue-900/20 dark:via-transparent" />
+        <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-br from-rose-50/70 via-white to-transparent dark:from-rose-900/20 dark:via-transparent" />
       </div>
 
       <div className="relative flex flex-col gap-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.30em] text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-[0.30em] text-slate-400 dark:text-gray-500">
           Live Trend
         </p>
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-slate-900 sm:text-3xl">키워드 카테고리</h2>
-          {isLoading && <span className="text-xs text-slate-400">불러오는 중...</span>}
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white sm:text-3xl">키워드 카테고리</h2>
+          {isLoading && <span className="text-xs text-slate-400 dark:text-gray-500">불러오는 중...</span>}
         </div>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 dark:text-gray-400">
           분야별로 지금 가장 주목받는 키워드를 확인해 보세요.
         </p>
       </div>
 
       {error ? (
-        <p className="relative mt-5 text-sm text-rose-500">{error}</p>
+        <p className="relative mt-5 text-sm text-rose-500 dark:text-rose-400">{error}</p>
       ) : (
         <>
           <div className="relative mt-6 flex flex-wrap justify-center gap-3">
@@ -103,8 +103,8 @@ export function KeywordCategories({
                   }}
                   className={`rounded-full border-2 px-5 py-2 text-sm font-medium transition duration-200 ${
                     isActive
-                      ? "border-transparent bg-gradient-to-r from-sky-100 via-sky-50 to-indigo-200 text-slate-900 shadow ring-2 ring-sky-200"
-                      : "border-[#e3e8f4] bg-white/90 text-slate-600 hover:text-slate-900 hover:bg-gradient-to-r hover:from-white hover:via-slate-50 hover:to-indigo-50 hover:border-[#c7d7f2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-200"
+                      ? "border-transparent bg-gradient-to-r from-sky-100 via-sky-50 to-indigo-200 text-slate-900 shadow ring-2 ring-sky-200 dark:from-sky-900/40 dark:via-sky-800/30 dark:to-indigo-900/40 dark:text-white dark:ring-sky-500/50"
+                      : "border-[#e3e8f4] bg-white/90 text-slate-600 hover:text-slate-900 hover:bg-gradient-to-r hover:from-white hover:via-slate-50 hover:to-indigo-50 hover:border-[#c7d7f2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-200 dark:border-white/15 dark:bg-white/5 dark:text-gray-300 dark:hover:text-white dark:hover:from-white/10 dark:hover:via-white/5 dark:hover:to-indigo-900/20 dark:hover:border-white/30"
                   }`}
                 >
                   {category.categoryName}
@@ -112,12 +112,12 @@ export function KeywordCategories({
               );
             })}
             {categories.length === 0 && !isLoading && (
-              <span className="text-sm text-slate-500">표시할 카테고리가 없습니다.</span>
+              <span className="text-sm text-slate-500 dark:text-gray-400">표시할 카테고리가 없습니다.</span>
             )}
           </div>
 
           {activeCategory && (
-            <div className="relative mt-6 rounded-2xl border border-[#e6eaf5] bg-white/90 p-5">
+            <div className="relative mt-6 rounded-2xl border border-[#e6eaf5] bg-white/90 p-5 dark:border-white/10 dark:bg-white/5">
               {activeCategory.keywords.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {[...new Set(activeCategory.keywords)].map((keyword) => {
@@ -127,10 +127,10 @@ export function KeywordCategories({
                         key={keyword}
                         type="button"
                         onClick={() => onKeywordSelect?.(isKeywordActive ? null : keyword)}
-                        className={`rounded-full px-3 py-1 text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-200 ${
+                        className={`rounded-full px-3 py-1 text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-200 dark:focus-visible:outline-sky-500/50 ${
                           isKeywordActive
-                            ? "bg-gradient-to-r from-sky-100 via-white to-indigo-100 text-slate-900 border border-transparent shadow-sm ring-1 ring-sky-200"
-                            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-transparent"
+                            ? "bg-gradient-to-r from-sky-100 via-white to-indigo-100 text-slate-900 border border-transparent shadow-sm ring-1 ring-sky-200 dark:from-sky-900/40 dark:via-sky-800/20 dark:to-indigo-900/30 dark:text-white dark:ring-sky-500/40"
+                            : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-transparent dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/20"
                         }`}
                       >
                         #{keyword}
@@ -140,10 +140,10 @@ export function KeywordCategories({
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-gray-400">
                     아직 트렌드 키워드가 없습니다.
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-slate-400 mt-1 dark:text-gray-500">
                     기사가 수집되면 자동으로 키워드가 표시됩니다.
                   </p>
                 </div>

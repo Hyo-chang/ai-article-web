@@ -304,15 +304,9 @@ export default function ArticleDetailPage() {
         }
     }, []);
 
-    const openAiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-
     const submitQuestion = useCallback(
         async (content: string, snippet?: string) => {
             if (!content || !articleDetail) return;
-            if (!openAiKey) {
-                setChatError('OPENAI_API_KEY 환경 변수를 설정해 주세요.');
-                return;
-            }
 
             const timestamp = new Date().toLocaleTimeString('ko-KR', {
                 hour: '2-digit',
@@ -331,28 +325,20 @@ export default function ArticleDetailPage() {
             setIsSending(true);
             setChatError(null);
 
-            const systemPrompt = snippet
-                ? '너는 뉴스 기사 내용을 해석하고 설명하는 AI 어시스턴트야.'
-                : '너는 뉴스 기사 분석을 도와주는 AI 어시스턴트야.';
-
-            const userPrompt = snippet
-                ? `기사 일부 내용: ${snippet}\n\n이 부분에 대한 설명 또는 요약을 해줘.`
-                : `다음은 기사 본문입니다:\n${articleBodyText}\n\n질문: ${content}`;
-
+            // 기사 맥락 준비 (요약 + 본문)
+            const articleContext = articleDetail.summary
+                ? `[요약]\n${articleDetail.summary}\n\n[본문]\n${articleBodyText}`
+                : articleBodyText;
             try {
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                const response = await fetch(`${API_URL}/api/analysis/chat`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${openAiKey}`,
                     },
                     body: JSON.stringify({
-                        model: 'gpt-4o-mini',
-                        messages: [
-                            { role: 'system', content: systemPrompt },
-                            { role: 'user', content: userPrompt },
-                        ],
-                        max_tokens: 500,
+                        article_context: articleContext,
+                        question: content,
+                        snippet: snippet || null,
                     }),
                 });
 
@@ -361,8 +347,7 @@ export default function ArticleDetailPage() {
                 }
 
                 const data = await response.json();
-                const assistantContent =
-                    data?.choices?.[0]?.message?.content?.trim() ?? 'AI 응답을 가져오지 못했습니다.';
+                const assistantContent = data?.answer?.trim() ?? 'AI 응답을 가져오지 못했습니다.';
 
                 const assistantMessage: ChatMessage = {
                     id: crypto.randomUUID?.() ?? `${Date.now()}-assistant`,
@@ -382,7 +367,7 @@ export default function ArticleDetailPage() {
                 setIsSending(false);
             }
         },
-        [articleBodyText, articleDetail, openAiKey]
+        [articleBodyText, articleDetail]
     );
 
     const handleSendQuestion = useCallback(async () => {
@@ -449,7 +434,7 @@ export default function ArticleDetailPage() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#f3f4f6] px-4 py-10 text-slate-900 md:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#f3f4f6] px-4 py-10 text-slate-900 dark:bg-[#0f1115] dark:text-white md:px-6 lg:px-8">
             {loading ? (
                 <ArticlePageSkeleton />
             ) : articleDetail ? (
@@ -458,7 +443,7 @@ export default function ArticleDetailPage() {
                         <div className="w-full max-w-[1600px] px-4 md:px-6 lg:px-10">
                             <header className="space-y-3">
                                 <div className="flex items-start justify-between gap-4">
-                                    <h1 className="text-left text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
+                                    <h1 className="text-left text-4xl font-bold tracking-tight text-slate-900 dark:text-white md:text-5xl">
                                         {articleDetail.title}
                                     </h1>
                                     {user && isArticleIdValid && (
@@ -467,8 +452,8 @@ export default function ArticleDetailPage() {
                                             onClick={() => toggleBookmark(articleIdNumber)}
                                             className={`flex-shrink-0 rounded-full border p-3 transition-colors ${
                                                 isBookmarked(articleIdNumber)
-                                                    ? 'border-rose-300 bg-rose-50 text-rose-500 hover:bg-rose-100'
-                                                    : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                                                    ? 'border-rose-300 bg-rose-50 text-rose-500 hover:bg-rose-100 dark:border-rose-400/50 dark:bg-rose-500/20 dark:text-rose-400 dark:hover:bg-rose-500/30'
+                                                    : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:border-white/20 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/20 dark:hover:text-white'
                                             }`}
                                             aria-label={isBookmarked(articleIdNumber) ? '북마크 해제' : '북마크'}
                                         >
@@ -478,7 +463,7 @@ export default function ArticleDetailPage() {
                                         </button>
                                     )}
                                 </div>
-                                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-gray-400">
                                     {articleDetail.publisher && <span>{articleDetail.publisher}</span>}
                                     {articleDetail.publishedAt && (
                                         <>
@@ -497,14 +482,16 @@ export default function ArticleDetailPage() {
 
                             <div className="mt-6 grid w-full grid-cols-1 gap-6 md:grid-cols-[7.5fr_3.5fr] md:gap-8 lg:grid-cols-[7fr_3.2fr]">
                                 <div className="min-w-0 flex flex-col space-y-6">
-                                    <ArticleSummary
-                                        summary={articleDetail.summary}
-                                        isLoading={summaryLoading}
-                                        error={summaryError}
-                                    />
+                                    <div onMouseUp={handleSelectionMouseUp}>
+                                        <ArticleSummary
+                                            summary={articleDetail.summary}
+                                            isLoading={summaryLoading}
+                                            error={summaryError}
+                                        />
+                                    </div>
                                     {articleDetail.image && (
                                         <div
-                                            className="relative w-full overflow-hidden rounded-2xl bg-white shadow-lg"
+                                            className="relative w-full overflow-hidden rounded-2xl bg-white shadow-lg dark:bg-[#1a1c20]"
                                             style={{ aspectRatio: imageAspectRatio ?? 16 / 9 }}
                                         >
                                             <img
@@ -516,11 +503,11 @@ export default function ArticleDetailPage() {
                                             />
                                         </div>
                                     )}
-                                    <section className="rounded-2xl border border-slate-200 bg-white p-9 shadow-lg">
+                                    <section className="rounded-2xl border border-slate-200 bg-white p-9 shadow-lg dark:border-white/10 dark:bg-[#15181f]">
                                         <div
                                             ref={articleBodyRef}
                                             onMouseUp={handleSelectionMouseUp}
-                                            className="article-body max-h-[70vh] overflow-y-auto pr-2 text-lg leading-8 text-slate-700"
+                                            className="article-body max-h-[70vh] overflow-y-auto pr-2 text-lg leading-8 text-slate-700 dark:text-gray-300"
                                         >
                                             {articleDetail.body.map((paragraph, index) => (
                                                 <p key={index} className="mb-6 last:mb-0">
@@ -554,10 +541,10 @@ export default function ArticleDetailPage() {
                         <button
                             type="button"
                             onClick={handleAskSelection}
-                            className="fixed z-50 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-lg transition hover:bg-slate-800"
+                            className="fixed z-50 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-lg transition hover:bg-slate-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
                             style={{ top: selectionPopup.top, left: selectionPopup.left }}
                         >
-                            💬 GPT에게 질문하기
+                            💬 AI에게 질문하기
                         </button>
                     )}
                 </>
@@ -610,19 +597,19 @@ function ArticleSummary({
     const lines = Array.isArray(summary) ? summary : [];
     const hasSummary = lines.length > 0;
     return (
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">AI SUMMARY</div>
-            {isLoading && <p className="mt-3 text-sm text-slate-500">AI 요약을 불러오는 중입니다...</p>}
-            {error && !isLoading && <p className="mt-3 text-sm text-rose-500">{error}</p>}
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#15181f] md:p-6">
+            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-gray-400">AI SUMMARY</div>
+            {isLoading && <p className="mt-3 text-sm text-slate-500 dark:text-gray-400">AI 요약을 불러오는 중입니다...</p>}
+            {error && !isLoading && <p className="mt-3 text-sm text-rose-500 dark:text-rose-400">{error}</p>}
             {!isLoading && !error && hasSummary && (
-                <ul className="mt-3 space-y-2 text-lg leading-8 text-slate-700">
+                <ul className="mt-3 space-y-2 text-lg leading-8 text-slate-700 dark:text-gray-300">
                     {lines.map((line, index) => (
                         <li key={index}>{parseMarkdownBold(line)}</li>
                     ))}
                 </ul>
             )}
             {!isLoading && !error && !hasSummary && (
-                <p className="mt-3 text-sm text-slate-500">현재 요약된 기사 내용이 없습니다.</p>
+                <p className="mt-3 text-sm text-slate-500 dark:text-gray-400">현재 요약된 기사 내용이 없습니다.</p>
             )}
         </section>
     );
@@ -721,10 +708,10 @@ function KeywordSection({ keywords }: { keywords: Keyword[] }) {
     };
 
     return (
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md md:p-7">
+        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7">
             <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-slate-900 md:text-base">핵심 키워드</h2>
-                {user && <span className="text-xs text-slate-400">클릭하여 관심 키워드 등록</span>}
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-white md:text-base">핵심 키워드</h2>
+                {user && <span className="text-xs text-slate-400 dark:text-gray-500">클릭하여 관심 키워드 등록</span>}
             </div>
             {hasKeywords ? (
                 <div className="mt-4 flex flex-wrap gap-2.5">
@@ -739,8 +726,8 @@ function KeywordSection({ keywords }: { keywords: Keyword[] }) {
                                 disabled={isAdded || isCurrentlyAdding || !user}
                                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs md:text-sm transition ${
                                     isAdded
-                                        ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200'
-                                        : 'bg-slate-100 text-slate-700 ring-1 ring-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:ring-blue-200'
+                                        ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:ring-blue-500/40'
+                                        : 'bg-slate-100 text-slate-700 ring-1 ring-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:ring-blue-200 dark:bg-white/10 dark:text-gray-300 dark:ring-white/20 dark:hover:bg-blue-500/20 dark:hover:text-blue-400 dark:hover:ring-blue-500/40'
                                 } ${!user ? 'cursor-default' : 'cursor-pointer'}`}
                             >
                                 {keyword.term}
@@ -758,7 +745,7 @@ function KeywordSection({ keywords }: { keywords: Keyword[] }) {
                     })}
                 </div>
             ) : (
-                <p className="mt-4 text-sm text-slate-500">현재 해당되는 키워드를 찾을 수 없습니다.</p>
+                <p className="mt-4 text-sm text-slate-500 dark:text-gray-400">현재 해당되는 키워드를 찾을 수 없습니다.</p>
             )}
         </section>
     );
@@ -769,19 +756,19 @@ function GlossarySection({ glossary }: { glossary: GlossaryEntry[] }) {
     const hasEntries = entries.length > 0;
 
     return (
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md md:p-7">
-            <h2 className="text-sm font-semibold text-slate-900 md:text-base">단어 해석</h2>
+        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7">
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white md:text-base">단어 해석</h2>
             {hasEntries ? (
                 <div className="mt-4 flex flex-col gap-2.5 md:gap-3.5">
                     {entries.map((entry) => (
                         <div key={entry.word}>
-                            <span className="font-semibold text-slate-900">{entry.word}</span>
-                            <span className="ml-2 text-sm text-slate-600">{entry.meaning}</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">{entry.word}</span>
+                            <span className="ml-2 text-sm text-slate-600 dark:text-gray-400">{entry.meaning}</span>
                         </div>
                     ))}
                 </div>
             ) : (
-                <p className="mt-4 text-sm text-slate-500">현재 기사에 해당하는 단어를 찾을 수 없습니다.</p>
+                <p className="mt-4 text-sm text-slate-500 dark:text-gray-400">현재 기사에 해당하는 단어를 찾을 수 없습니다.</p>
             )}
         </section>
     );
@@ -829,16 +816,16 @@ function ChatSection({
 
     return (
         <section
-            className={`flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-md md:p-7 ${
+            className={`flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7 ${
                 className ?? ''
             }`.trim()}
         >
-            <h2 className="text-base font-semibold text-slate-900">AI에게 질문하기</h2>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">AI에게 질문하기</h2>
 
             <div className="mt-4 flex flex-col gap-3">
-                <div className="max-h-[280px] min-h-[220px] overflow-y-auto rounded-xl bg-slate-50/90 p-4 ring-1 ring-slate-200">
+                <div className="max-h-[280px] min-h-[220px] overflow-y-auto rounded-xl bg-slate-50/90 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                     {messages.length === 0 ? (
-                        <p className="text-sm text-slate-500">아직 대화한 내용이 없습니다. 첫 질문을 남겨보세요.</p>
+                        <p className="text-sm text-slate-500 dark:text-gray-400">아직 대화한 내용이 없습니다. 첫 질문을 남겨보세요.</p>
                     ) : (
                         <ul className="space-y-3">
                             {messages.map((message) => (
@@ -849,19 +836,19 @@ function ChatSection({
                                     <div
                                         className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-6 shadow-sm ${
                                             message.role === 'user'
-                                                ? 'bg-slate-900 text-white'
-                                                : 'bg-white text-slate-800 ring-1 ring-slate-200'
+                                                ? 'bg-slate-900 text-white dark:bg-white dark:text-black'
+                                                : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-[#1a1c20] dark:text-gray-200 dark:ring-white/10'
                                         }`}
                                     >
                                         {formatSnippetPreview(message.snippet) && (
-                                            <div className="mb-2 rounded bg-slate-100 p-2 text-xs text-slate-700">
+                                            <div className="mb-2 rounded bg-slate-100 p-2 text-xs text-slate-700 dark:bg-white/10 dark:text-gray-300">
                                                 {formatSnippetPreview(message.snippet)}
                                             </div>
                                         )}
                                         <p>{message.content}</p>
                                         <span
                                             className={`mt-1 block text-xs ${
-                                                message.role === 'user' ? 'text-slate-200/70' : 'text-slate-500'
+                                                message.role === 'user' ? 'text-slate-200/70 dark:text-black/50' : 'text-slate-500 dark:text-gray-500'
                                             }`}
                                         >
                                             {message.timestamp}
@@ -871,33 +858,33 @@ function ChatSection({
                             ))}
                         </ul>
                     )}
-                    {isLoading && <p className="mt-3 text-center text-xs text-slate-500">AI가 생각 중입니다...</p>}
+                    {isLoading && <p className="mt-3 text-center text-xs text-slate-500 dark:text-gray-400">AI가 생각 중입니다...</p>}
                 </div>
 
-                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">새로운 질문</label>
+                <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-gray-500">새로운 질문</label>
                 {snippetPreview && (
-                    <div className="mb-0 flex items-center gap-2 rounded-t-lg rounded-b-none border border-slate-200 border-b-0 bg-slate-100 px-3 py-1.5 text-sm text-slate-800">
+                    <div className="mb-0 flex items-center gap-2 rounded-t-lg rounded-b-none border border-slate-200 border-b-0 bg-slate-100 px-3 py-1.5 text-sm text-slate-800 dark:border-white/10 dark:bg-white/10 dark:text-gray-200">
                         <button
                             type="button"
                             onClick={onApplySnippet}
                             aria-label="선택한 문장을 입력창으로 이동"
-                            className="rounded border border-slate-300 px-2 py-1 text-base text-slate-700 shadow-sm transition hover:text-slate-900"
+                            className="rounded border border-slate-300 px-2 py-1 text-base text-slate-700 shadow-sm transition hover:text-slate-900 dark:border-white/20 dark:text-gray-300 dark:hover:text-white"
                         >
                             ↳
                         </button>
-                        <p className="flex-1 truncate font-medium text-slate-800">“{snippetPreview}”</p>
+                        <p className="flex-1 truncate font-medium text-slate-800 dark:text-gray-200">"{snippetPreview}"</p>
                         <button
                             type="button"
                             onClick={onClearSnippet}
                             aria-label="선택한 문장 취소"
-                            className="rounded border border-slate-300 px-2 py-1 text-sm text-slate-500 shadow-sm transition hover:text-slate-900"
+                            className="rounded border border-slate-300 px-2 py-1 text-sm text-slate-500 shadow-sm transition hover:text-slate-900 dark:border-white/20 dark:text-gray-400 dark:hover:text-white"
                         >
                             ×
                         </button>
                     </div>
                 )}
                 <div className={`relative w-full ${snippetPreview ? '' : 'mt-1'}`}>
-                    <span className="pointer-events-none absolute left-3 top-3 text-lg text-slate-400">+</span>
+                    <span className="pointer-events-none absolute left-3 top-3 text-lg text-slate-400 dark:text-gray-500">+</span>
                     <textarea
                         value={question}
                         onChange={handleChange}
@@ -905,17 +892,17 @@ function ChatSection({
                         ref={inputRef}
                         rows={4}
                         placeholder="무엇이든 물어보세요"
-                        className={`w-full resize-none border border-slate-200 bg-white px-8 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none ${
+                        className={`w-full resize-none border border-slate-200 bg-white px-8 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-[#1a1c20] dark:text-white dark:placeholder:text-gray-500 dark:focus:border-white/30 ${
                             snippetPreview ? 'rounded-b-xl rounded-t-none border-t-0' : 'rounded-xl'
                         }`}
                     />
                 </div>
-                {errorMessage && <p className="text-xs text-rose-500">{errorMessage}</p>}
+                {errorMessage && <p className="text-xs text-rose-500 dark:text-rose-400">{errorMessage}</p>}
                 <button
                     type="button"
                     onClick={onSend}
                     disabled={isLoading || !question.trim()}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
                 >
                     <Send size={16} />
                     {isLoading ? '전송 중...' : '보내기'}
@@ -927,13 +914,13 @@ function ChatSection({
 
 function EmptyState({ errorMessage, onBack }: { errorMessage: string; onBack: () => void }) {
     return (
-        <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4 text-center text-slate-500">
-            <h2 className="text-xl font-semibold text-slate-800">기사를 불러오지 못했습니다</h2>
-            <p className="text-sm text-slate-500">{errorMessage}</p>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4 text-center text-slate-500 dark:text-gray-400">
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-white">기사를 불러오지 못했습니다</h2>
+            <p className="text-sm text-slate-500 dark:text-gray-400">{errorMessage}</p>
             <button
                 type="button"
                 onClick={onBack}
-                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
                 홈으로 돌아가기
             </button>
@@ -944,22 +931,22 @@ function EmptyState({ errorMessage, onBack }: { errorMessage: string; onBack: ()
 function ArticlePageSkeleton() {
     return (
         <div className="animate-pulse">
-            <div className="mx-auto h-8 w-48 rounded-full bg-slate-800/60" />
-            <div className="mx-auto mt-6 h-10 w-3/4 max-w-2xl rounded-full bg-slate-800/60" />
+            <div className="mx-auto h-8 w-48 rounded-full bg-slate-300/60 dark:bg-slate-700/60" />
+            <div className="mx-auto mt-6 h-10 w-3/4 max-w-2xl rounded-full bg-slate-300/60 dark:bg-slate-700/60" />
             <div className="mt-12 w-full flex justify-center">
                 <div className="w-full max-w-[1600px] px-4 md:px-6 lg:px-10">
-                    <div className="h-10 w-3/4 rounded-full bg-slate-300/60" />
-                    <div className="mt-3 h-4 w-44 rounded-full bg-slate-300/60" />
+                    <div className="h-10 w-3/4 rounded-full bg-slate-300/60 dark:bg-slate-700/40" />
+                    <div className="mt-3 h-4 w-44 rounded-full bg-slate-300/60 dark:bg-slate-700/40" />
                     <div className="mt-8 grid w-full grid-cols-1 gap-6 md:grid-cols-[7.5fr_3.5fr] md:gap-8 lg:grid-cols-[7fr_3.2fr]">
                         <div className="flex flex-col space-y-6">
-                            <div className="h-32 rounded-xl bg-slate-300/40" />
-                            <div className="h-60 rounded-2xl bg-slate-300/40" />
-                            <div className="h-64 rounded-2xl bg-slate-300/40" />
+                            <div className="h-32 rounded-xl bg-slate-300/40 dark:bg-slate-700/30" />
+                            <div className="h-60 rounded-2xl bg-slate-300/40 dark:bg-slate-700/30" />
+                            <div className="h-64 rounded-2xl bg-slate-300/40 dark:bg-slate-700/30" />
                         </div>
                         <div className="flex flex-col space-y-6">
-                            <div className="h-48 rounded-xl bg-slate-300/40" />
-                            <div className="h-48 rounded-xl bg-slate-300/40" />
-                            <div className="h-48 rounded-xl bg-slate-300/40" />
+                            <div className="h-48 rounded-xl bg-slate-300/40 dark:bg-slate-700/30" />
+                            <div className="h-48 rounded-xl bg-slate-300/40 dark:bg-slate-700/30" />
+                            <div className="h-48 rounded-xl bg-slate-300/40 dark:bg-slate-700/30" />
                         </div>
                     </div>
                 </div>
