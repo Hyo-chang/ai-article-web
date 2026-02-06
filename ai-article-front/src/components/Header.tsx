@@ -1,4 +1,4 @@
-import { Sparkles, Home, FileText, User as UserIcon, Clock3, Menu, X } from "lucide-react";
+import { Sparkles, Home, FileText, User as UserIcon, Clock3, Menu, X, History } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import type React from "react";
 import { Button } from "./ui/button";
@@ -174,6 +174,15 @@ export function Header({
           >
             <Sparkles className="h-4 w-4" />
             <span>체험하기</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/updates")}
+            className="mt-2 flex items-center gap-3 rounded-r-full px-4 py-3 text-xs uppercase tracking-[0.2em] text-[#9398a3] transition-colors duration-300 hover:text-white"
+          >
+            <History className="h-4 w-4" />
+            <span>업데이트</span>
           </button>
         </nav>
 
