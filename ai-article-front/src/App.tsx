@@ -467,6 +467,15 @@ function HomePage() {
 
   return (
     <div className={`min-h-screen ${AMBIENT_BACKGROUND} text-[#1f2937]`}>
+      {/* Beta 배너 */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-500/90 via-orange-500/90 to-amber-500/90 px-4 py-2 text-center text-sm font-medium text-white backdrop-blur-sm md:left-auto">
+        <span className="mr-2 inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wider">
+          Beta
+        </span>
+        <span className="hidden sm:inline">현재 베타 테스트 중입니다. 일부 기능이 불안정할 수 있습니다.</span>
+        <span className="sm:hidden">베타 테스트 중</span>
+      </div>
+
       <Header
         sidebarWidth={sidebarWidth}
         onLoginClick={() => {
@@ -497,7 +506,7 @@ function HomePage() {
       />
 
       <main
-        className="flex min-h-screen flex-col px-4 py-10 pt-16 transition-[margin] duration-300 md:px-10 md:pt-10"
+        className="flex min-h-screen flex-col px-4 py-10 pt-20 transition-[margin] duration-300 md:px-10 md:pt-16"
         style={{ marginLeft: isMobile ? 0 : sidebarWidth }}
       >
         <div className="mx-auto w-full max-w-6xl">

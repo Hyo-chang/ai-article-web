@@ -79,9 +79,17 @@ export default function ExperiencePage() {
     <div
       className={`min-h-screen w-full overflow-x-hidden ${pageBackground} text-white`}
     >
+      {/* Beta 배너 */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-amber-500/90 via-orange-500/90 to-amber-500/90 px-4 py-2 text-center text-sm font-medium text-white backdrop-blur-sm">
+        <span className="mr-2 inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wider">
+          Beta
+        </span>
+        현재 베타 테스트 중입니다. 일부 기능이 불안정할 수 있습니다.
+      </div>
+
       {/* Hero Section */}
       <section
-        className={`${heroBackground} relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-24`}
+        className={`${heroBackground} relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-24 pt-32`}
       >
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center translate-y-[-2cm]">
           <span className="select-none font-['Playfair_Display',serif] text-[8rem] font-bold tracking-tight text-[#dcdcdc] opacity-10 sm:text-[10rem] md:text-[12rem]">
