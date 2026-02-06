@@ -191,9 +191,15 @@ class NewsKeywordExtractor:
         if not candidates:
             return {}
 
-        # SentenceTransformer의 encode 메서드 사용
-        doc_embedding = self.model.encode(text)
-        candidate_embeddings = self.model.encode(candidates)
+        # HuggingFaceEmbeddings와 SentenceTransformer 모두 지원
+        if hasattr(self.model, 'embed_query'):
+            # HuggingFaceEmbeddings (langchain)
+            doc_embedding = self.model.embed_query(text)
+            candidate_embeddings = self.model.embed_documents(candidates)
+        else:
+            # SentenceTransformer
+            doc_embedding = self.model.encode(text)
+            candidate_embeddings = self.model.encode(candidates)
 
         # 코사인 유사도 계산 (sklearn 사용)
         doc_embedding_reshaped = np.array(doc_embedding).reshape(1, -1)
