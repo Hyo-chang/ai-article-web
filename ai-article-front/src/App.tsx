@@ -459,9 +459,9 @@ function HomePage() {
   };
 
   const handleSearchSubmit = useCallback(
-    async (event?: React.FormEvent<HTMLFormElement>) => {
+    async (event?: React.FormEvent<HTMLFormElement>, overrideQuery?: string) => {
       event?.preventDefault();
-      const query = searchInput.trim();
+      const query = overrideQuery !== undefined ? overrideQuery : searchInput.trim();
       setSearchQuery(query);
 
       if (!query) {

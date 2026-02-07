@@ -18,7 +18,7 @@ interface ArticleCardListProps {
   searchInput?: string;
   searchQuery?: string;
   onSearchInputChange?: (value: string) => void;
-  onSearchSubmit?: (event?: React.FormEvent<HTMLFormElement>) => void;
+  onSearchSubmit?: (event?: React.FormEvent<HTMLFormElement>, overrideQuery?: string) => void;
   // 북마크 관련 props
   bookmarkedIds?: Set<number>;
   onToggleBookmark?: (articleId: number) => void;
@@ -146,7 +146,7 @@ export function ArticleCardList({
                   type="button"
                   onClick={() => {
                     onSearchInputChange?.("");
-                    onSearchSubmit?.();
+                    onSearchSubmit?.(undefined, "");
                   }}
                   className="rounded-full border border-[#d6dae3] bg-white/80 px-2 py-0.5 text-xs text-[#5b6472] hover:bg-white hover:text-[#1f2937] dark:border-white/20 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/20 dark:hover:text-white"
                 >
