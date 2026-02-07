@@ -134,6 +134,16 @@ const MyPage: React.FC = () => {
     setPreviewUrl(nextUrl);
   };
 
+  // 파일을 Base64로 변환하는 함수
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleNicknameSave = async () => {
     if (!typedUser?.token) {
       alert("로그인이 필요합니다.");
@@ -143,8 +153,18 @@ const MyPage: React.FC = () => {
     try {
       setIsSavingNickname(true);
 
-      // TODO: 프로필 이미지 업로드는 별도 파일 업로드 API 필요
-      // 현재는 닉네임(username)만 업데이트
+      // 새 이미지가 선택된 경우 Base64로 변환
+      let profileImageUrl = typedUser.profileImageUrl ?? null;
+      if (selectedFile) {
+        // 파일 크기 제한 (2MB)
+        if (selectedFile.size > 2 * 1024 * 1024) {
+          alert("이미지 크기는 2MB 이하로 업로드해주세요.");
+          setIsSavingNickname(false);
+          return;
+        }
+        profileImageUrl = await fileToBase64(selectedFile);
+      }
+
       const response = await fetch(`${getApiBaseUrl()}/api/mypage/profile`, {
         method: "PUT",
         headers: {
@@ -153,7 +173,7 @@ const MyPage: React.FC = () => {
         },
         body: JSON.stringify({
           username: nickname,
-          profileImageUrl: previewUrl,
+          profileImageUrl,
         }),
       });
 
