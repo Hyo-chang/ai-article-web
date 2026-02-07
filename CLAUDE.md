@@ -305,8 +305,11 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
 ### 4. 검색 기능 고도화
 - Backend: `GET /api/articles/search?q=키워드` 엔드포인트 추가
 - 제목 + 본문 내용 동시 검색 (LIKE 쿼리)
-- Frontend: 실시간 검색 → 백엔드 API 호출로 변경
-- 검색 결과 초기화 버튼 추가
+- Frontend: 클라이언트 필터링 → 백엔드 API 호출로 변경
+- 검색 결과 초기화 버튼 추가 (검색창 옆)
+- 검색 중 로딩 상태 표시
+- 플레이스홀더: "제목 또는 내용 검색"
+- 초기화 버튼 클릭 시 버튼 즉시 사라지도록 수정 (overrideQuery 파라미터)
 
 ## 다음 작업 (TODO)
 

@@ -23,8 +23,22 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.2.2",
+    date: "2026-02-07",
+    highlights: "AI 채팅, 프로필 이미지, 검색 고도화",
+    items: [
+      { type: "feature", text: "AI 채팅 기능: 기사 본문을 드래그하여 AI에게 질문 가능" },
+      { type: "feature", text: "프로필 이미지 업로드: 마이페이지에서 프로필 사진 변경 가능 (2MB 제한)" },
+      { type: "feature", text: "검색 기능 고도화: 제목뿐만 아니라 기사 본문 내용까지 검색" },
+      { type: "improvement", text: "검색 결과 초기화 버튼 추가: 검색 후 '초기화' 버튼으로 쉽게 리셋" },
+      { type: "improvement", text: "AI Summary 섹션에 드래그 질문 안내 문구 추가" },
+      { type: "improvement", text: "검색창 플레이스홀더 변경: '제목 또는 내용 검색'" },
+      { type: "bugfix", text: "검색 초기화 시 버튼이 바로 사라지도록 수정" },
+    ],
+  },
+  {
     version: "0.2.1",
-    date: "2026-02-06",
+    date: "2026-02-07",
     highlights: "다크 모드 지원",
     items: [
       { type: "feature", text: "다크 모드 / 라이트 모드 테마 전환 기능" },
