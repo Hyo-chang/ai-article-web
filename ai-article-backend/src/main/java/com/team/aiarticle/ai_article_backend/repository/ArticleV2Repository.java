@@ -21,6 +21,15 @@ public interface ArticleV2Repository extends JpaRepository<ArticleV2, Integer> {
     // Paged descending by id (for feeds)
     List<ArticleV2> findAllByOrderByArticleIdDesc(Pageable pageable);
 
+    // 검색: 제목 또는 본문에서 키워드 검색
+    @Query("""
+        SELECT a FROM ArticleV2 a
+        WHERE LOWER(a.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           OR LOWER(a.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        ORDER BY a.articleId DESC
+    """)
+    List<ArticleV2> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
     @Query(value = """
         SELECT v.*
         FROM articlev2 v

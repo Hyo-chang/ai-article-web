@@ -142,4 +142,24 @@ public class ArticleServiceV2 {
         return articleV2Repository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("ID가 " + id + "인 기사를 찾을 수 없습니다."));
     }
+
+    @Transactional(readOnly = true)
+    public List<ArticleListResponse> searchByKeyword(String keyword, int limit) {
+        // 카테고리 코드 → 이름 매핑 생성
+        Map<String, String> categoryNameMap = categoryRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        CategoryDictV2::getCategoryCode,
+                        CategoryDictV2::getCategoryName,
+                        (existing, replacement) -> existing
+                ));
+
+        List<ArticleV2> articles = articleV2Repository.searchByKeyword(keyword, PageRequest.of(0, limit));
+
+        return articles.stream()
+                .map(article -> {
+                    String categoryName = categoryNameMap.getOrDefault(article.getCategoryCode(), "미분류");
+                    return ArticleListResponse.from(article, categoryName);
+                })
+                .collect(Collectors.toList());
+    }
 }

@@ -7,6 +7,7 @@ import { cn } from "./ui/utils";
 interface ArticleCardListProps {
   articles: Article[];
   isLoading?: boolean;
+  isSearching?: boolean;
   error?: string | null;
   itemsPerPage?: number;
   onArticleClick?: (article: Article) => void;
@@ -30,6 +31,7 @@ const loadingPlaceholders = Array.from({ length: DEFAULT_ITEMS_PER_PAGE });
 export function ArticleCardList({
   articles,
   isLoading = false,
+  isSearching = false,
   error = null,
   itemsPerPage = DEFAULT_ITEMS_PER_PAGE,
   onArticleClick,
@@ -125,7 +127,7 @@ export function ArticleCardList({
                 type="text"
                 value={searchInput}
                 onChange={(event) => onSearchInputChange?.(event.target.value)}
-                placeholder="제목 검색"
+                placeholder="제목 또는 내용 검색"
                 className="h-10 w-full rounded-2xl border border-[#d3d9e5] bg-white px-3 text-sm text-[#1f2937] placeholder:text-[#94a3b8] focus:border-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c7d2fe] dark:border-white/10 dark:bg-[#1a1c20] dark:text-white dark:placeholder:text-gray-500 dark:focus:border-white/30 dark:focus:ring-white/20 sm:w-56"
               />
             </div>
@@ -136,15 +138,27 @@ export function ArticleCardList({
               검색하기
             </button>
             {searchQuery && (
-              <span className="text-right text-xs text-[#64748b] dark:text-gray-400 sm:ml-2 sm:text-sm">
-                "{searchQuery}" 검색 중
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-right text-xs text-[#64748b] dark:text-gray-400 sm:text-sm">
+                  "{searchQuery}" 검색 결과
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSearchInputChange?.("");
+                    onSearchSubmit?.();
+                  }}
+                  className="rounded-full border border-[#d6dae3] bg-white/80 px-2 py-0.5 text-xs text-[#5b6472] hover:bg-white hover:text-[#1f2937] dark:border-white/20 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/20 dark:hover:text-white"
+                >
+                  초기화
+                </button>
+              </div>
             )}
           </form>
         )}
       </header>
 
-      {isLoading ? (
+      {isLoading || isSearching ? (
         <div className="flex flex-col gap-3.5">
           {loadingPlaceholders.map((_, index) => (
             <div

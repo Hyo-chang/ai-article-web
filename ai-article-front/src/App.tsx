@@ -160,6 +160,8 @@ function HomePage() {
   const [selectedTextForQuestion, setSelectedTextForQuestion] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Article[] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Clean up any old global functions and event listeners from vanilla JS version
   useEffect(() => {
@@ -363,10 +365,11 @@ function HomePage() {
   };
 
   const filteredArticles = useMemo(() => {
-    const normalizedSearch = searchQuery.trim().toLowerCase();
+    // 검색 결과가 있으면 검색 결과를 사용
+    const sourceArticles = searchResults !== null ? searchResults : articles;
     const normalizedKeyword = selectedKeyword?.toLowerCase() ?? null;
 
-    const base = articles.filter((article) => {
+    const base = sourceArticles.filter((article) => {
       if (
         selectedCategoryId &&
         normalizeCategoryCode(article.categoryCode) !== selectedCategoryId
@@ -380,10 +383,6 @@ function HomePage() {
       const combined = `${title} ${content} ${categoryName}`;
 
       if (normalizedKeyword && !combined.includes(normalizedKeyword)) {
-        return false;
-      }
-
-      if (normalizedSearch && !title.includes(normalizedSearch)) {
         return false;
       }
 
@@ -413,7 +412,7 @@ function HomePage() {
     });
 
     return [...prioritized, ...rest];
-  }, [articles, selectedCategoryId, selectedKeyword, preferredKeywords, searchQuery]);
+  }, [articles, searchResults, selectedCategoryId, selectedKeyword, preferredKeywords]);
 
   const highlightedArticleIds = useMemo(() => {
     if (!preferredKeywords.length) {
@@ -460,9 +459,31 @@ function HomePage() {
   };
 
   const handleSearchSubmit = useCallback(
-    (event?: React.FormEvent<HTMLFormElement>) => {
+    async (event?: React.FormEvent<HTMLFormElement>) => {
       event?.preventDefault();
-      setSearchQuery(searchInput.trim());
+      const query = searchInput.trim();
+      setSearchQuery(query);
+
+      if (!query) {
+        setSearchResults(null);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/articles/search?q=${encodeURIComponent(query)}&limit=50`);
+        if (!response.ok) {
+          throw new Error("검색 실패");
+        }
+        const data = await response.json();
+        setSearchResults(data);
+      } catch (error) {
+        console.error("Search error:", error);
+        toast.error("검색 중 오류가 발생했습니다.");
+        setSearchResults(null);
+      } finally {
+        setIsSearching(false);
+      }
     },
     [searchInput],
   );
@@ -534,6 +555,7 @@ function HomePage() {
                   preferredKeywords={preferredKeywords}
                   highlightedArticleIds={highlightedArticleIds}
                   isLoading={isArticlesLoading}
+                  isSearching={isSearching}
                   error={articlesError}
                   onArticleClick={handleArticleNavigate}
                   searchInput={searchInput}

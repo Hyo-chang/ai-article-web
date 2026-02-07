@@ -255,7 +255,7 @@ ngrok http 8020
 **3. 자동 크롤링 (무한 루프)**
 ```bash
 cd C:\ai-article-web\ai-article-web\scripts
-C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회" "생활" "세계" "IT" "연예" --max-articles-per-keyword 5 --total-phases 1 --loop --wait-min 300 --wait-max 600
+C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회" "생활/문화" "IT/과학" "세계" "연예" --max-articles-per-keyword 5 --total-phases 1 --loop --wait-min 300 --wait-max 600
 ```
 
 ## 최근 수정 사항 (2026-02-04)
@@ -297,21 +297,18 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
 - 텍스트 드래그 → AI 질문 기능
 - AI Summary 섹션에 드래그 질문 안내 문구 추가
 
+### 3. 프로필 이미지 업로드
+- Base64 인코딩으로 DB 저장 방식 구현
+- 2MB 파일 크기 제한
+- MyPage.tsx에서 파일 선택 → Base64 변환 → 저장
+
+### 4. 검색 기능 고도화
+- Backend: `GET /api/articles/search?q=키워드` 엔드포인트 추가
+- 제목 + 본문 내용 동시 검색 (LIKE 쿼리)
+- Frontend: 실시간 검색 → 백엔드 API 호출로 변경
+- 검색 결과 초기화 버튼 추가
+
 ## 다음 작업 (TODO)
-
-### 🟡 우선순위 중간
-- [ ] **프로필 이미지 업로드 기능**
-  - 현재: UI만 있고 실제 파일 업로드 미구현
-  - User 엔티티에 `profileImageUrl` 필드 있음
-  - 구현 방식 선택 필요:
-    1. Base64로 DB 저장 (간단, DB 용량 증가)
-    2. Cloudinary 사용 (권장, 무료 티어 월 25GB)
-  - 백엔드: MultipartFile 받는 API 추가 필요
-  - 프론트엔드: 파일 업로드 로직 추가
-
-- [ ] **검색 기능 고도화**
-  - 현재: 제목만 검색
-  - 개선: 본문 내용 검색 추가
 
 ### 🟢 우선순위 낮음
 - [ ] Tailscale 원격 개발 환경 구축

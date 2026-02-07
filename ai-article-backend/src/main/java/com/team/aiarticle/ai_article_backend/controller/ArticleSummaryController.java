@@ -44,6 +44,18 @@ public class ArticleSummaryController {
         return ResponseEntity.ok(articles);
     }
 
+    @GetMapping("/articles/search")
+    public ResponseEntity<List<ArticleListResponse>> searchArticles(
+            @RequestParam(name = "q") String query,
+            @RequestParam(name = "limit", defaultValue = "50") int limit) {
+        if (query == null || query.trim().isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        List<ArticleListResponse> results = articleServiceV2.searchByKeyword(query.trim(), limit);
+        log.info("[SEARCH] query='{}' found {} results", query, results.size());
+        return ResponseEntity.ok(results);
+    }
+
     @GetMapping("/article/{id}") // Moved /article to GetMapping
     public ResponseEntity<ArticleSummaryResponse> getArticle(@PathVariable Integer id) {
         return ResponseEntity.ok(articleSummaryService.getArticleWithSummary(id));
