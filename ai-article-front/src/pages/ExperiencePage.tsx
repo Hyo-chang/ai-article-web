@@ -91,7 +91,7 @@ export default function ExperiencePage() {
       <section
         className={`${heroBackground} relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-24 pt-32`}
       >
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center translate-y-[-2cm]">
+        <div className="pointer-events-none absolute inset-0 flex items-start justify-center pt-24 sm:pt-32">
           <span className="select-none font-['Playfair_Display',serif] text-[8rem] font-bold tracking-tight text-[#dcdcdc] opacity-10 sm:text-[10rem] md:text-[12rem]">
             EASY READ
           </span>
