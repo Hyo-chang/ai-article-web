@@ -62,9 +62,17 @@ public class ArticleSummaryController {
     }
 
     @PostMapping("/articles/v2") // New endpoint for article ingestion
-    public ResponseEntity<ArticleV2> ingestArticle(@RequestBody ArticleIngestRequest ingestRequest) {
-        ArticleV2 createdArticle = articleServiceV2.createArticle(ingestRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdArticle);
+    public ResponseEntity<?> ingestArticle(@RequestBody ArticleIngestRequest ingestRequest) {
+        try {
+            log.info("[INGEST] 기사 수집 시작: {}", ingestRequest.getTitle());
+            ArticleV2 createdArticle = articleServiceV2.createArticle(ingestRequest);
+            log.info("[INGEST] 기사 수집 완료: {}", ingestRequest.getTitle());
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdArticle);
+        } catch (Exception e) {
+            log.error("[INGEST] 기사 수집 실패: {} - 오류: {}", ingestRequest.getTitle(), e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage(), "title", ingestRequest.getTitle()));
+        }
     }
 
     @PostMapping("/articles/analyze")
