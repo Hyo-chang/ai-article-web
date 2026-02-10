@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { usePosts } from '../../hooks/usePosts';
 import { useAuth } from '../../services/AuthContext';
-import { Eye, Heart, Search, PenSquare } from 'lucide-react';
+import { Eye, Heart, Search, PenSquare, ArrowLeft } from 'lucide-react';
 
 export default function BoardPage() {
   const navigate = useNavigate();
@@ -65,15 +65,34 @@ export default function BoardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090a0c] text-white py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* 헤더 */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-white">커뮤니티</h1>
+    <div className="min-h-screen bg-[#090a0c] text-white">
+      {/* 상단 헤더 */}
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#090a0c]/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            돌아가기
+          </button>
+          <span className="text-xs font-medium uppercase tracking-widest text-white/50">
+            Community
+          </span>
+        </div>
+      </header>
+
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* 타이틀 & 글쓰기 */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white">커뮤니티</h1>
+            <p className="mt-2 text-white/50">자유롭게 소통하고 정보를 공유하세요</p>
+          </div>
           {isLoggedIn && (
             <button
               onClick={() => navigate('/board/write')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
             >
               <PenSquare className="w-4 h-4" />
               글쓰기
@@ -234,7 +253,7 @@ export default function BoardPage() {
 
         {/* 비로그인 안내 */}
         {!isLoggedIn && (
-          <div className="mt-6 text-center text-sm text-white/50">
+          <div className="mt-8 text-center text-sm text-white/50">
             글을 작성하려면{' '}
             <button
               onClick={() => navigate('/login')}

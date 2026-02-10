@@ -80,12 +80,14 @@ export function usePosts() {
   // 게시글 작성
   const createPost = useCallback(async (categoryCode: string, title: string, content: string, isPinned?: boolean): Promise<number | null> => {
     const token = getToken();
+    console.log('createPost - token:', token ? 'exists' : 'null');
     if (!token) {
       setError('로그인이 필요합니다.');
       return null;
     }
 
     try {
+      console.log('createPost - sending request to:', `${API_BASE}/api/posts`);
       const res = await fetch(`${API_BASE}/api/posts`, {
         method: 'POST',
         headers: {
@@ -94,10 +96,16 @@ export function usePosts() {
         },
         body: JSON.stringify({ categoryCode, title, content, isPinned: isPinned || false })
       });
-      if (!res.ok) throw new Error('게시글 작성 실패');
+      console.log('createPost - response status:', res.status);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.log('createPost - error response:', errorData);
+        throw new Error(errorData.message || '게시글 작성 실패');
+      }
       const data = await res.json();
       return data.postId;
     } catch (err: any) {
+      console.error('createPost - error:', err);
       setError(err.message);
       return null;
     }
