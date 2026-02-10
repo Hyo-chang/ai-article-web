@@ -2,6 +2,7 @@ package com.team.aiarticle.ai_article_backend.service;
 
 import com.team.aiarticle.ai_article_backend.dto.*;
 import com.team.aiarticle.ai_article_backend.entity.*;
+import com.team.aiarticle.ai_article_backend.entity.ERole;
 import com.team.aiarticle.ai_article_backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,17 +45,25 @@ public class PostService {
         PostCategory category = categoryRepository.findByCategoryCode(request.getCategoryCode())
                 .orElseThrow(() -> new NoSuchElementException("카테고리를 찾을 수 없습니다."));
 
+        // 관리자 여부 확인
+        boolean isAdmin = author.getRoles().stream()
+                .anyMatch(role -> role.getName() == ERole.ROLE_ADMIN);
+
+        // 공지글은 관리자만 작성 가능
+        boolean isPinned = isAdmin && Boolean.TRUE.equals(request.getIsPinned());
+
         Post post = Post.builder()
                 .author(author)
                 .category(category)
                 .title(request.getTitle())
                 .content(request.getContent())
+                .isPinned(isPinned)
                 .build();
 
         return postRepository.save(post);
     }
 
-    // 게시글 목록 조회 (페이징)
+    // 게시글 목록 조회 (페이징) - 공지글 상단 고정
     @Transactional(readOnly = true)
     public Page<PostListResponse> getPostList(String categoryCode, Pageable pageable) {
         Page<Post> posts;
@@ -62,9 +71,9 @@ public class PostService {
         if (categoryCode != null && !categoryCode.isEmpty()) {
             PostCategory category = categoryRepository.findByCategoryCode(categoryCode)
                     .orElseThrow(() -> new NoSuchElementException("카테고리를 찾을 수 없습니다."));
-            posts = postRepository.findByCategoryAndIsDeletedFalseOrderByCreatedAtDesc(category, pageable);
+            posts = postRepository.findByCategoryAndIsDeletedFalseOrderByIsPinnedDescCreatedAtDesc(category, pageable);
         } else {
-            posts = postRepository.findByIsDeletedFalseOrderByCreatedAtDesc(pageable);
+            posts = postRepository.findByIsDeletedFalseOrderByIsPinnedDescCreatedAtDesc(pageable);
         }
 
         return posts.map(PostListResponse::from);

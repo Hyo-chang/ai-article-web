@@ -15,15 +15,16 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
 
-    Page<Post> findByCategoryAndIsDeletedFalseOrderByCreatedAtDesc(
+    // 공지글(isPinned) 우선, 그 다음 최신순 정렬
+    Page<Post> findByCategoryAndIsDeletedFalseOrderByIsPinnedDescCreatedAtDesc(
         PostCategory category, Pageable pageable);
 
-    Page<Post> findByIsDeletedFalseOrderByCreatedAtDesc(Pageable pageable);
+    Page<Post> findByIsDeletedFalseOrderByIsPinnedDescCreatedAtDesc(Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.isDeleted = false AND " +
            "(LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-           "ORDER BY p.createdAt DESC")
+           "ORDER BY p.isPinned DESC, p.createdAt DESC")
     Page<Post> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     List<Post> findByAuthorUserIdAndIsDeletedFalseOrderByCreatedAtDesc(Integer userId);

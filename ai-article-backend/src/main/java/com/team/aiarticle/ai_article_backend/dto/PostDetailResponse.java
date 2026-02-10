@@ -23,6 +23,7 @@ public class PostDetailResponse {
     private Integer commentCount;
     private Boolean isLikedByCurrentUser;
     private Boolean isAuthor;
+    private Boolean isPinned;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<CommentResponse> comments;
@@ -42,6 +43,7 @@ public class PostDetailResponse {
                 .commentCount(post.getCommentCount())
                 .isLikedByCurrentUser(isLiked)
                 .isAuthor(isAuthor)
+                .isPinned(post.getIsPinned())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .comments(comments)

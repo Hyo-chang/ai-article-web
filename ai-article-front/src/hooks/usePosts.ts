@@ -3,6 +3,17 @@ import { PostCategory, PostListItem, PageResponse } from '../types/post';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+const getToken = (): string | null => {
+  const userStr = localStorage.getItem('user');
+  if (!userStr) return null;
+  try {
+    const user = JSON.parse(userStr);
+    return user.token || null;
+  } catch {
+    return null;
+  }
+};
+
 export function usePosts() {
   const [categories, setCategories] = useState<PostCategory[]>([]);
   const [posts, setPosts] = useState<PostListItem[]>([]);
@@ -67,8 +78,8 @@ export function usePosts() {
   }, []);
 
   // 게시글 작성
-  const createPost = useCallback(async (categoryCode: string, title: string, content: string): Promise<number | null> => {
-    const token = localStorage.getItem('token');
+  const createPost = useCallback(async (categoryCode: string, title: string, content: string, isPinned?: boolean): Promise<number | null> => {
+    const token = getToken();
     if (!token) {
       setError('로그인이 필요합니다.');
       return null;
@@ -81,7 +92,7 @@ export function usePosts() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ categoryCode, title, content })
+        body: JSON.stringify({ categoryCode, title, content, isPinned: isPinned || false })
       });
       if (!res.ok) throw new Error('게시글 작성 실패');
       const data = await res.json();
@@ -94,7 +105,7 @@ export function usePosts() {
 
   // 게시글 삭제
   const deletePost = useCallback(async (postId: number): Promise<boolean> => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       setError('로그인이 필요합니다.');
       return false;

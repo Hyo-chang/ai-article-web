@@ -17,6 +17,7 @@ export interface PostListItem {
   viewCount: number;
   likeCount: number;
   commentCount: number;
+  isPinned: boolean;
   createdAt: string;
 }
 
@@ -34,6 +35,7 @@ export interface PostDetail {
   commentCount: number;
   isLikedByCurrentUser: boolean;
   isAuthor: boolean;
+  isPinned: boolean;
   createdAt: string;
   updatedAt: string;
   comments: CommentItem[];
@@ -59,6 +61,7 @@ export interface PostCreateRequest {
   categoryCode: string;
   title: string;
   content: string;
+  isPinned?: boolean;
 }
 
 export interface PostUpdateRequest {

@@ -18,6 +18,7 @@ public class PostListResponse {
     private Integer viewCount;
     private Integer likeCount;
     private Integer commentCount;
+    private Boolean isPinned;
     private LocalDateTime createdAt;
 
     public static PostListResponse from(Post post) {
@@ -31,6 +32,7 @@ public class PostListResponse {
                 .viewCount(post.getViewCount())
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getCommentCount())
+                .isPinned(post.getIsPinned())
                 .createdAt(post.getCreatedAt())
                 .build();
     }

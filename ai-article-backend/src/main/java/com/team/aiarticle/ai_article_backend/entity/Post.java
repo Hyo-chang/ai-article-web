@@ -58,6 +58,10 @@ public class Post {
     @Builder.Default
     private Boolean isDeleted = false;
 
+    @Column(name = "is_pinned")
+    @Builder.Default
+    private Boolean isPinned = false;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

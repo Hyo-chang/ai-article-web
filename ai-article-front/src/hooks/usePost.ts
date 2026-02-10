@@ -9,8 +9,14 @@ export function usePost() {
   const [error, setError] = useState<string | null>(null);
 
   const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { 'Authorization': `Bearer ${token}` } : {};
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return {};
+    try {
+      const user = JSON.parse(userStr);
+      return user.token ? { 'Authorization': `Bearer ${user.token}` } : {};
+    } catch {
+      return {};
+    }
   };
 
   // 게시글 상세 조회

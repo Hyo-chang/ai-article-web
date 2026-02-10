@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePosts } from '../../hooks/usePosts';
 import { usePost } from '../../hooks/usePost';
@@ -15,10 +15,22 @@ export default function PostWritePage() {
   const [categoryCode, setCategoryCode] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [isPinned, setIsPinned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isLoggedIn = !!localStorage.getItem('token');
+  const user = useMemo(() => {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+    try {
+      return JSON.parse(userStr);
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const isLoggedIn = !!user?.token;
+  const isAdmin = user?.roles?.includes('ROLE_ADMIN') || false;
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -77,7 +89,7 @@ export default function PostWritePage() {
           setError('수정에 실패했습니다.');
         }
       } else {
-        const newPostId = await createPost(categoryCode, title.trim(), content.trim());
+        const newPostId = await createPost(categoryCode, title.trim(), content.trim(), isPinned);
         if (newPostId) {
           navigate(`/board/post/${newPostId}`);
         } else {
@@ -166,6 +178,22 @@ export default function PostWritePage() {
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+
+            {/* 관리자 전용: 공지 설정 */}
+            {isAdmin && !isEditMode && (
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="isPinned"
+                  checked={isPinned}
+                  onChange={(e) => setIsPinned(e.target.checked)}
+                  className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <label htmlFor="isPinned" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  공지로 등록 (상단 고정)
+                </label>
+              </div>
+            )}
 
             {/* 버튼 */}
             <div className="flex justify-end gap-3">

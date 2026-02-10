@@ -110,14 +110,14 @@ export default function BoardPage() {
         {/* 검색 */}
         <form onSubmit={handleSearch} className="mb-6">
           <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             <input
               type="text"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               placeholder="게시글 검색..."
-              className="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full py-3 pl-10 pr-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           </div>
         </form>
 
@@ -162,11 +162,20 @@ export default function BoardPage() {
                 <div
                   key={post.postId}
                   onClick={() => navigate(`/board/post/${post.postId}`)}
-                  className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition"
+                  className={`p-4 cursor-pointer transition ${
+                    post.isPinned
+                      ? 'bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
+                        {post.isPinned && (
+                          <span className="text-xs px-2 py-0.5 rounded bg-red-500 text-white font-medium">
+                            공지
+                          </span>
+                        )}
                         <span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                           {post.categoryName}
                         </span>

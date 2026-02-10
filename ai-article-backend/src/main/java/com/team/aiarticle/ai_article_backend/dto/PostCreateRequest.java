@@ -9,4 +9,5 @@ public class PostCreateRequest {
     private String categoryCode;
     private String title;
     private String content;
+    private Boolean isPinned = false;
 }
