@@ -311,6 +311,79 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
 - 플레이스홀더: "제목 또는 내용 검색"
 - 초기화 버튼 클릭 시 버튼 즉시 사라지도록 수정 (overrideQuery 파라미터)
 
+## 게시판 기능 구현 중 (2026-02-10)
+
+### 구조
+- 카테고리별 게시판: 자유, 질문, 정보공유, 후기
+- CRUD + 댓글(대댓글) + 좋아요
+- 로그인 사용자만 작성 가능
+
+### Backend 완료
+**Entity (5개)**
+- `PostCategory.java` - 게시판 카테고리
+- `Post.java` - 게시글 (조회수, 좋아요수, 댓글수, 소프트삭제)
+- `Comment.java` - 댓글 (대댓글 지원)
+- `PostLike.java` - 게시글 좋아요
+- `CommentLike.java` - 댓글 좋아요
+
+**Repository (5개)**
+- `PostCategoryRepository.java`
+- `PostRepository.java`
+- `CommentRepository.java`
+- `PostLikeRepository.java`
+- `CommentLikeRepository.java`
+
+**DTO (7개)**
+- `PostCreateRequest.java`, `PostUpdateRequest.java`
+- `PostListResponse.java`, `PostDetailResponse.java`
+- `CommentCreateRequest.java`, `CommentResponse.java`
+- `PostCategoryResponse.java`
+
+**Service (3개)**
+- `PostService.java` - 게시글 CRUD, 검색, 페이징
+- `CommentService.java` - 댓글 CRUD
+- `LikeService.java` - 좋아요 토글
+
+**Controller (1개)**
+- `PostController.java` - 전체 API 엔드포인트
+
+### API 엔드포인트
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | `/api/posts/categories` | 카테고리 목록 | X |
+| GET | `/api/posts` | 게시글 목록 (페이징) | X |
+| GET | `/api/posts/{id}` | 게시글 상세 | X |
+| POST | `/api/posts` | 게시글 작성 | O |
+| PUT | `/api/posts/{id}` | 게시글 수정 | O |
+| DELETE | `/api/posts/{id}` | 게시글 삭제 | O |
+| GET | `/api/posts/search?q=` | 게시글 검색 | X |
+| POST | `/api/posts/{id}/like` | 좋아요 토글 | O |
+| POST | `/api/posts/{id}/comments` | 댓글 작성 | O |
+| PUT | `/api/posts/comments/{id}` | 댓글 수정 | O |
+| DELETE | `/api/posts/comments/{id}` | 댓글 삭제 | O |
+| POST | `/api/posts/comments/{id}/like` | 댓글 좋아요 | O |
+
+### 완료된 작업
+- [x] SecurityConfig - 기존 permitAll 설정으로 동작
+- [x] 초기 카테고리 데이터 SQL (`data-post-category.sql`)
+- [x] Frontend 구현 완료
+  - `BoardPage.tsx` - 게시글 목록, 카테고리 필터, 검색, 페이징
+  - `PostDetailPage.tsx` - 상세보기, 댓글, 좋아요
+  - `PostWritePage.tsx` - 글쓰기/수정
+- [x] Header에 커뮤니티 링크 추가
+- [x] 라우팅 설정 (`/board`, `/board/:category`, `/board/post/:postId`, `/board/write`, `/board/edit/:postId`)
+- [x] 빌드 성공 확인
+
+### 초기 카테고리 데이터
+DB에 직접 실행 필요 (`data-post-category.sql`):
+```sql
+INSERT INTO post_category (category_code, category_name, description, display_order)
+VALUES ('free', '자유게시판', '자유롭게 이야기를 나눠보세요', 1),
+       ('question', '질문게시판', '궁금한 점을 질문해보세요', 2),
+       ('info', '정보공유', '유용한 정보를 공유해주세요', 3),
+       ('review', '후기게시판', '서비스 이용 후기를 남겨주세요', 4);
+```
+
 ## 다음 작업 (TODO)
 
 ### 🟢 우선순위 낮음
@@ -320,10 +393,6 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
   - [ ] 이용약관 페이지 생성
   - [ ] AdSense 계정 신청 및 승인
   - [ ] 광고 코드 삽입
-
-### 🔵 향후 기능
-- [ ] 게시판 기능
-- [ ] 댓글 기능
 
 ## 현재 작업 브랜치
 

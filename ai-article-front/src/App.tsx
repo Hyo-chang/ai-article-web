@@ -14,6 +14,9 @@ import MyPage from "./pages/MyPage";
 import ExperiencePage from "./pages/ExperiencePage";
 import LoadingPage from "./pages/LoadingPage";
 import UpdatesPage from "./pages/UpdatesPage";
+import BoardPage from "./pages/board/BoardPage";
+import PostDetailPage from "./pages/board/PostDetailPage";
+import PostWritePage from "./pages/board/PostWritePage";
 import { Tabs, TabsContent } from "./components/ui/tabs";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
@@ -634,6 +637,11 @@ export default function App() {
           <Route path="/content/:articleId" element={<Content />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/updates" element={<UpdatesPage />} />
+          <Route path="/board" element={<BoardPage />} />
+          <Route path="/board/:category" element={<BoardPage />} />
+          <Route path="/board/post/:postId" element={<PostDetailPage />} />
+          <Route path="/board/write" element={<PostWritePage />} />
+          <Route path="/board/edit/:postId" element={<PostWritePage />} />
         </Routes>
       </AuthProvider>
     </ThemeProvider>

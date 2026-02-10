@@ -1,0 +1,241 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { usePosts } from '../../hooks/usePosts';
+import { Eye, Heart, MessageCircle, Search, PenSquare } from 'lucide-react';
+
+export default function BoardPage() {
+  const navigate = useNavigate();
+  const { category } = useParams<{ category?: string }>();
+  const [searchParams] = useSearchParams();
+  const { categories, posts, loading, error, page, totalPages, totalElements, fetchPosts, searchPosts } = usePosts();
+
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const isLoggedIn = !!localStorage.getItem('token');
+
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q) {
+      setSearchKeyword(q);
+      setIsSearching(true);
+      searchPosts(q, 0);
+    } else {
+      setIsSearching(false);
+      fetchPosts(category, 0);
+    }
+  }, [category, searchParams, fetchPosts, searchPosts]);
+
+  const handleCategoryClick = (code?: string) => {
+    setSearchKeyword('');
+    setIsSearching(false);
+    if (code) {
+      navigate(`/board/${code}`);
+    } else {
+      navigate('/board');
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchKeyword.trim()) {
+      setIsSearching(true);
+      navigate(`/board?q=${encodeURIComponent(searchKeyword.trim())}`);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (isSearching) {
+      searchPosts(searchKeyword, newPage);
+    } else {
+      fetchPosts(category, newPage);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    if (diffHours < 24) {
+      return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* 헤더 */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">커뮤니티</h1>
+          {isLoggedIn && (
+            <button
+              onClick={() => navigate('/board/write')}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              <PenSquare className="w-4 h-4" />
+              글쓰기
+            </button>
+          )}
+        </div>
+
+        {/* 카테고리 탭 */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          <button
+            onClick={() => handleCategoryClick()}
+            className={`px-4 py-2 rounded-full whitespace-nowrap transition ${
+              !category && !isSearching
+                ? 'bg-blue-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            전체
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat.categoryId}
+              onClick={() => handleCategoryClick(cat.categoryCode)}
+              className={`px-4 py-2 rounded-full whitespace-nowrap transition ${
+                category === cat.categoryCode && !isSearching
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              {cat.categoryName}
+            </button>
+          ))}
+        </div>
+
+        {/* 검색 */}
+        <form onSubmit={handleSearch} className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              placeholder="게시글 검색..."
+              className="w-full px-4 py-3 pl-12 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          </div>
+        </form>
+
+        {/* 검색 결과 안내 */}
+        {isSearching && (
+          <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+            "{searchKeyword}" 검색 결과: {totalElements}건
+            <button
+              onClick={() => {
+                setSearchKeyword('');
+                setIsSearching(false);
+                navigate('/board');
+              }}
+              className="ml-2 text-blue-600 hover:underline"
+            >
+              초기화
+            </button>
+          </div>
+        )}
+
+        {/* 로딩 */}
+        {loading && (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {/* 에러 */}
+        {error && (
+          <div className="text-center py-12 text-red-500">{error}</div>
+        )}
+
+        {/* 게시글 목록 */}
+        {!loading && !error && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow divide-y divide-gray-200 dark:divide-gray-700">
+            {posts.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                게시글이 없습니다.
+              </div>
+            ) : (
+              posts.map((post) => (
+                <div
+                  key={post.postId}
+                  onClick={() => navigate(`/board/post/${post.postId}`)}
+                  className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                          {post.categoryName}
+                        </span>
+                        <h3 className="text-gray-900 dark:text-white font-medium truncate">
+                          {post.title}
+                        </h3>
+                        {post.commentCount > 0 && (
+                          <span className="text-blue-600 text-sm">[{post.commentCount}]</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                        <span>{post.authorName}</span>
+                        <span>{formatDate(post.createdAt)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        {post.viewCount}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Heart className="w-4 h-4" />
+                        {post.likeCount}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <div className="flex justify-center gap-2 mt-6">
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 0}
+              className="px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              이전
+            </button>
+            <span className="px-4 py-2 text-gray-700 dark:text-gray-300">
+              {page + 1} / {totalPages}
+            </span>
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= totalPages - 1}
+              className="px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              다음
+            </button>
+          </div>
+        )}
+
+        {/* 비로그인 안내 */}
+        {!isLoggedIn && (
+          <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            글을 작성하려면{' '}
+            <button
+              onClick={() => navigate('/login')}
+              className="text-blue-600 hover:underline"
+            >
+              로그인
+            </button>
+            이 필요합니다.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,4 +1,4 @@
-import { Sparkles, Home, FileText, User as UserIcon, Clock3, Menu, X, History, Sun, Moon } from "lucide-react";
+import { Sparkles, Home, FileText, User as UserIcon, Clock3, Menu, X, History, Sun, Moon, MessageSquare } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import type React from "react";
 import { useTheme } from "next-themes";
@@ -195,6 +195,15 @@ export function Header({
           >
             <History className="h-4 w-4" />
             <span>업데이트</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/board")}
+            className="mt-2 flex items-center gap-3 rounded-r-full px-4 py-3 text-xs uppercase tracking-[0.2em] text-[#9398a3] transition-colors duration-300 hover:text-white"
+          >
+            <MessageSquare className="h-4 w-4" />
+            <span>커뮤니티</span>
           </button>
 
           {mounted && (
