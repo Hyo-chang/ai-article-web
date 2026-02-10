@@ -23,6 +23,20 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.3.0",
+    date: "2026-02-10",
+    highlights: "커뮤니티 게시판 기능",
+    items: [
+      { type: "feature", text: "커뮤니티 게시판: 카테고리별 게시판 (자유, 질문, 정보공유, 후기)" },
+      { type: "feature", text: "게시글 CRUD: 작성, 수정, 삭제, 검색 기능" },
+      { type: "feature", text: "댓글/대댓글: 게시글에 댓글 및 대댓글 작성 가능" },
+      { type: "feature", text: "좋아요 기능: 게시글과 댓글에 좋아요 표시" },
+      { type: "improvement", text: "사이드바에 커뮤니티 메뉴 추가" },
+      { type: "improvement", text: "로그인 사용자만 글쓰기 가능 (비로그인 시 안내)" },
+      { type: "improvement", text: "페이지네이션 지원" },
+    ],
+  },
+  {
     version: "0.2.2",
     date: "2026-02-07",
     highlights: "AI 채팅, 프로필 이미지, 검색 고도화",
