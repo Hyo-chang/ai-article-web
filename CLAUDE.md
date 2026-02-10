@@ -311,24 +311,25 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
 - 플레이스홀더: "제목 또는 내용 검색"
 - 초기화 버튼 클릭 시 버튼 즉시 사라지도록 수정 (overrideQuery 파라미터)
 
-## 게시판 기능 구현 중 (2026-02-10)
+## 게시판 기능 구현 (2026-02-10)
 
 ### 구조
 - 카테고리별 게시판: 자유, 질문, 정보공유, 후기
 - CRUD + 댓글(대댓글) + 좋아요
 - 로그인 사용자만 작성 가능
+- 관리자(ROLE_ADMIN)만 공지글 작성 가능
 
 ### Backend 완료
 **Entity (5개)**
 - `PostCategory.java` - 게시판 카테고리
-- `Post.java` - 게시글 (조회수, 좋아요수, 댓글수, 소프트삭제)
+- `Post.java` - 게시글 (조회수, 좋아요수, 댓글수, 소프트삭제, isPinned 공지)
 - `Comment.java` - 댓글 (대댓글 지원)
 - `PostLike.java` - 게시글 좋아요
 - `CommentLike.java` - 댓글 좋아요
 
 **Repository (5개)**
 - `PostCategoryRepository.java`
-- `PostRepository.java`
+- `PostRepository.java` - 공지글 우선 정렬 (isPinned DESC)
 - `CommentRepository.java`
 - `PostLikeRepository.java`
 - `CommentLikeRepository.java`
@@ -340,12 +341,12 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
 - `PostCategoryResponse.java`
 
 **Service (3개)**
-- `PostService.java` - 게시글 CRUD, 검색, 페이징
+- `PostService.java` - 게시글 CRUD, 검색, 페이징, 관리자 공지 처리
 - `CommentService.java` - 댓글 CRUD
 - `LikeService.java` - 좋아요 토글
 
 **Controller (1개)**
-- `PostController.java` - 전체 API 엔드포인트
+- `PostController.java` - 전체 API 엔드포인트 (null 체크로 401 반환)
 
 ### API 엔드포인트
 | Method | Endpoint | 설명 | 인증 |
@@ -363,16 +364,23 @@ C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회"
 | DELETE | `/api/posts/comments/{id}` | 댓글 삭제 | O |
 | POST | `/api/posts/comments/{id}/like` | 댓글 좋아요 | O |
 
-### 완료된 작업
-- [x] SecurityConfig - 기존 permitAll 설정으로 동작
-- [x] 초기 카테고리 데이터 SQL (`data-post-category.sql`)
-- [x] Frontend 구현 완료
-  - `BoardPage.tsx` - 게시글 목록, 카테고리 필터, 검색, 페이징
-  - `PostDetailPage.tsx` - 상세보기, 댓글, 좋아요
-  - `PostWritePage.tsx` - 글쓰기/수정
-- [x] Header에 커뮤니티 링크 추가
-- [x] 라우팅 설정 (`/board`, `/board/:category`, `/board/post/:postId`, `/board/write`, `/board/edit/:postId`)
-- [x] 빌드 성공 확인
+### Frontend 완료
+- `BoardPage.tsx` - 게시글 목록, 카테고리 필터, 검색, 페이징
+  - sticky 헤더 + 뒤로가기 버튼 (UpdatesPage 스타일)
+  - 다크 테마 UI (`bg-[#090a0c]`, `border-white/10`)
+- `PostDetailPage.tsx` - 상세보기, 댓글, 좋아요
+  - AuthContext 사용 (localStorage 직접 접근 X)
+  - 다크 테마 UI
+- `PostWritePage.tsx` - 글쓰기/수정
+  - 관리자만 공지글 체크박스 표시
+  - AuthContext 사용
+  - 다크 테마 UI
+- Header에 커뮤니티 링크 추가
+- 라우팅: `/board`, `/board/:category`, `/board/post/:postId`, `/board/write`, `/board/edit/:postId`
+
+### 관리자 권한 부여 완료
+- `wee7846@gmail.com` 계정에 `ROLE_ADMIN` 권한 부여됨
+- SQL: `INSERT INTO user_roles (user_id, role_id) VALUES (1, 2)`
 
 ### 초기 카테고리 데이터
 DB에 직접 실행 필요 (`data-post-category.sql`):
@@ -383,6 +391,29 @@ VALUES ('free', '자유게시판', '자유롭게 이야기를 나눠보세요', 
        ('info', '정보공유', '유용한 정보를 공유해주세요', 3),
        ('review', '후기게시판', '서비스 이용 후기를 남겨주세요', 4);
 ```
+
+### ⚠️ 현재 문제: 글쓰기 401 에러
+**증상**: 로그인 후에도 게시글 작성 시 401 Unauthorized 에러 발생
+
+**원인 추정**:
+1. JWT 토큰이 만료됨
+2. 로컬에서 발급받은 토큰을 배포 환경에서 사용 (시크릿 불일치)
+3. localStorage에 토큰이 제대로 저장되지 않음
+
+**디버깅 방법**:
+```javascript
+// 브라우저 콘솔에서 실행
+JSON.parse(localStorage.getItem('user'))
+// token 필드가 있는지 확인
+```
+
+**해결 방법**:
+1. 로그아웃 후 다시 로그인 (배포된 사이트에서)
+2. Railway 환경변수에서 `app.jwt.secret` 확인
+
+**추가된 디버깅 로그**:
+- `usePosts.ts`: createPost에 console.log 추가
+- `AuthTokenFilter.java`: JWT 인증 실패 시 warn 로그 추가
 
 ## 다음 작업 (TODO)
 
