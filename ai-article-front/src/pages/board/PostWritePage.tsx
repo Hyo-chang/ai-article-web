@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePosts } from '../../hooks/usePosts';
 import { usePost } from '../../hooks/usePost';
+import { useAuth } from '../../services/AuthContext';
 import { ArrowLeft } from 'lucide-react';
 
 export default function PostWritePage() {
@@ -9,8 +10,9 @@ export default function PostWritePage() {
   const { postId } = useParams<{ postId?: string }>();
   const isEditMode = !!postId;
 
+  const { user, isLoggedIn } = useAuth();
   const { categories, createPost } = usePosts();
-  const { post, fetchPost, updatePost } = usePost();
+  const { fetchPost, updatePost } = usePost();
 
   const [categoryCode, setCategoryCode] = useState('');
   const [title, setTitle] = useState('');
@@ -19,17 +21,6 @@ export default function PostWritePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const user = useMemo(() => {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) return null;
-    try {
-      return JSON.parse(userStr);
-    } catch {
-      return null;
-    }
-  }, []);
-
-  const isLoggedIn = !!user?.token;
   const isAdmin = user?.roles?.includes('ROLE_ADMIN') || false;
 
   useEffect(() => {
@@ -104,24 +95,26 @@ export default function PostWritePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-[#090a0c] text-white py-8">
       <div className="max-w-3xl mx-auto px-4">
-        {/* 뒤로가기 */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          뒤로가기
-        </button>
+        {/* 헤더 */}
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={() => navigate('/board')}
+            className="flex items-center gap-2 text-white/60 hover:text-white transition"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>목록으로</span>
+          </button>
+        </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-sm">
+          <h1 className="text-2xl font-bold text-white mb-8">
             {isEditMode ? '게시글 수정' : '새 게시글 작성'}
           </h1>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm">
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -129,18 +122,18 @@ export default function PostWritePage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* 카테고리 선택 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-white/70 mb-2">
                 카테고리
               </label>
               <select
                 value={categoryCode}
                 onChange={(e) => setCategoryCode(e.target.value)}
                 disabled={isEditMode}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 rounded-lg border border-white/20 bg-white/5 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="">카테고리 선택</option>
+                <option value="" className="bg-[#1a1c20]">카테고리 선택</option>
                 {categories.map((cat) => (
-                  <option key={cat.categoryId} value={cat.categoryCode}>
+                  <option key={cat.categoryId} value={cat.categoryCode} className="bg-[#1a1c20]">
                     {cat.categoryName}
                   </option>
                 ))}
@@ -149,7 +142,7 @@ export default function PostWritePage() {
 
             {/* 제목 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-white/70 mb-2">
                 제목
               </label>
               <input
@@ -158,16 +151,16 @@ export default function PostWritePage() {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="제목을 입력하세요"
                 maxLength={100}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-lg border border-white/20 bg-white/5 text-white placeholder-white/30 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+              <p className="mt-1 text-xs text-white/40 text-right">
                 {title.length}/100
               </p>
             </div>
 
             {/* 내용 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-white/70 mb-2">
                 내용
               </label>
               <textarea
@@ -175,32 +168,32 @@ export default function PostWritePage() {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="내용을 입력하세요"
                 rows={15}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-lg border border-white/20 bg-white/5 text-white placeholder-white/30 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             {/* 관리자 전용: 공지 설정 */}
             {isAdmin && !isEditMode && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/30">
                 <input
                   type="checkbox"
                   id="isPinned"
                   checked={isPinned}
                   onChange={(e) => setIsPinned(e.target.checked)}
-                  className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="w-4 h-4 text-red-600 bg-white/10 border-white/30 rounded focus:ring-red-500"
                 />
-                <label htmlFor="isPinned" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="isPinned" className="text-sm font-medium text-red-400">
                   공지로 등록 (상단 고정)
                 </label>
               </div>
             )}
 
             {/* 버튼 */}
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 pt-4">
               <button
                 type="button"
-                onClick={() => navigate(-1)}
-                className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                onClick={() => navigate('/board')}
+                className="px-6 py-3 border border-white/20 rounded-lg text-white/70 hover:bg-white/5 transition"
               >
                 취소
               </button>

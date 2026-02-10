@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { usePosts } from '../../hooks/usePosts';
-import { Eye, Heart, MessageCircle, Search, PenSquare } from 'lucide-react';
+import { useAuth } from '../../services/AuthContext';
+import { Eye, Heart, Search, PenSquare } from 'lucide-react';
 
 export default function BoardPage() {
   const navigate = useNavigate();
   const { category } = useParams<{ category?: string }>();
   const [searchParams] = useSearchParams();
   const { categories, posts, loading, error, page, totalPages, totalElements, fetchPosts, searchPosts } = usePosts();
+  const { isLoggedIn } = useAuth();
 
   const [searchKeyword, setSearchKeyword] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const isLoggedIn = !!localStorage.getItem('token');
 
   useEffect(() => {
     const q = searchParams.get('q');
@@ -64,11 +65,11 @@ export default function BoardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-[#090a0c] text-white py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">커뮤니티</h1>
+          <h1 className="text-2xl font-bold text-white">커뮤니티</h1>
           {isLoggedIn && (
             <button
               onClick={() => navigate('/board/write')}
@@ -87,7 +88,7 @@ export default function BoardPage() {
             className={`px-4 py-2 rounded-full whitespace-nowrap transition ${
               !category && !isSearching
                 ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                : 'bg-white/10 text-white/70 hover:bg-white/20'
             }`}
           >
             전체
@@ -99,7 +100,7 @@ export default function BoardPage() {
               className={`px-4 py-2 rounded-full whitespace-nowrap transition ${
                 category === cat.categoryCode && !isSearching
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  : 'bg-white/10 text-white/70 hover:bg-white/20'
               }`}
             >
               {cat.categoryName}
@@ -110,20 +111,20 @@ export default function BoardPage() {
         {/* 검색 */}
         <form onSubmit={handleSearch} className="mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40 pointer-events-none" />
             <input
               type="text"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               placeholder="게시글 검색..."
-              className="w-full py-3 pl-10 pr-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full py-3 pl-10 pr-4 rounded-lg border border-white/20 bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </form>
 
         {/* 검색 결과 안내 */}
         {isSearching && (
-          <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="mb-4 text-sm text-white/60">
             "{searchKeyword}" 검색 결과: {totalElements}건
             <button
               onClick={() => {
@@ -131,7 +132,7 @@ export default function BoardPage() {
                 setIsSearching(false);
                 navigate('/board');
               }}
-              className="ml-2 text-blue-600 hover:underline"
+              className="ml-2 text-blue-400 hover:underline"
             >
               초기화
             </button>
@@ -141,20 +142,20 @@ export default function BoardPage() {
         {/* 로딩 */}
         {loading && (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
         )}
 
         {/* 에러 */}
         {error && (
-          <div className="text-center py-12 text-red-500">{error}</div>
+          <div className="text-center py-12 text-red-400">{error}</div>
         )}
 
         {/* 게시글 목록 */}
         {!loading && !error && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/10 backdrop-blur-sm">
             {posts.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              <div className="text-center py-12 text-white/50">
                 게시글이 없습니다.
               </div>
             ) : (
@@ -164,8 +165,8 @@ export default function BoardPage() {
                   onClick={() => navigate(`/board/post/${post.postId}`)}
                   className={`p-4 cursor-pointer transition ${
                     post.isPinned
-                      ? 'bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                      ? 'bg-red-500/10 hover:bg-red-500/15'
+                      : 'hover:bg-white/5'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -176,22 +177,22 @@ export default function BoardPage() {
                             공지
                           </span>
                         )}
-                        <span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                        <span className="text-xs px-2 py-0.5 rounded bg-white/10 text-white/60">
                           {post.categoryName}
                         </span>
-                        <h3 className="text-gray-900 dark:text-white font-medium truncate">
+                        <h3 className="text-white font-medium truncate">
                           {post.title}
                         </h3>
                         {post.commentCount > 0 && (
-                          <span className="text-blue-600 text-sm">[{post.commentCount}]</span>
+                          <span className="text-blue-400 text-sm">[{post.commentCount}]</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-3 text-sm text-white/50">
                         <span>{post.authorName}</span>
                         <span>{formatDate(post.createdAt)}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center gap-4 text-sm text-white/50">
                       <span className="flex items-center gap-1">
                         <Eye className="w-4 h-4" />
                         {post.viewCount}
@@ -214,17 +215,17 @@ export default function BoardPage() {
             <button
               onClick={() => handlePageChange(page - 1)}
               disabled={page === 0}
-              className="px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-3 py-2 rounded-lg border border-white/20 bg-white/5 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10 transition"
             >
               이전
             </button>
-            <span className="px-4 py-2 text-gray-700 dark:text-gray-300">
+            <span className="px-4 py-2 text-white/70">
               {page + 1} / {totalPages}
             </span>
             <button
               onClick={() => handlePageChange(page + 1)}
               disabled={page >= totalPages - 1}
-              className="px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-3 py-2 rounded-lg border border-white/20 bg-white/5 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10 transition"
             >
               다음
             </button>
@@ -233,11 +234,11 @@ export default function BoardPage() {
 
         {/* 비로그인 안내 */}
         {!isLoggedIn && (
-          <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          <div className="mt-6 text-center text-sm text-white/50">
             글을 작성하려면{' '}
             <button
               onClick={() => navigate('/login')}
-              className="text-blue-600 hover:underline"
+              className="text-blue-400 hover:underline"
             >
               로그인
             </button>

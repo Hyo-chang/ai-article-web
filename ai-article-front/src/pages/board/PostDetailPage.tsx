@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePost } from '../../hooks/usePost';
+import { useAuth } from '../../services/AuthContext';
 import { CommentItem } from '../../types/post';
 import { Heart, Eye, MessageCircle, ArrowLeft, Edit, Trash2, CornerDownRight, Send } from 'lucide-react';
 
@@ -8,13 +9,12 @@ export default function PostDetailPage() {
   const navigate = useNavigate();
   const { postId } = useParams<{ postId: string }>();
   const { post, loading, error, fetchPost, togglePostLike, createComment, deleteComment, toggleCommentLike } = usePost();
+  const { isLoggedIn, user } = useAuth();
 
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState<{ commentId: number; authorName: string } | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  const isLoggedIn = !!localStorage.getItem('token');
 
   useEffect(() => {
     if (postId) {
@@ -69,7 +69,12 @@ export default function PostDetailPage() {
     if (!post) return;
     if (!confirm('게시글을 삭제하시겠습니까?')) return;
 
-    const token = localStorage.getItem('token');
+    const token = user?.token;
+    if (!token) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/posts/${post.postId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -112,7 +117,7 @@ export default function PostDetailPage() {
   const renderComment = (comment: CommentItem, isReply: boolean = false) => (
     <div key={comment.commentId} className={`${isReply ? 'ml-8 mt-3' : 'py-4'}`}>
       <div className="flex items-start gap-3">
-        {isReply && <CornerDownRight className="w-4 h-4 text-gray-400 mt-1" />}
+        {isReply && <CornerDownRight className="w-4 h-4 text-white/40 mt-1" />}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             {comment.authorProfileImageUrl ? (
@@ -122,23 +127,23 @@ export default function PostDetailPage() {
                 className="w-6 h-6 rounded-full"
               />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600" />
+              <div className="w-6 h-6 rounded-full bg-white/20" />
             )}
-            <span className="font-medium text-gray-900 dark:text-white text-sm">
+            <span className="font-medium text-white text-sm">
               {comment.authorName}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-white/50">
               {formatDate(comment.createdAt)}
             </span>
           </div>
-          <p className="text-gray-700 dark:text-gray-300 text-sm mb-2">
+          <p className="text-white/80 text-sm mb-2">
             {comment.content}
           </p>
-          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-4 text-xs text-white/50">
             <button
               onClick={() => handleCommentLike(comment.commentId)}
-              className={`flex items-center gap-1 hover:text-red-500 ${
-                comment.isLikedByCurrentUser ? 'text-red-500' : ''
+              className={`flex items-center gap-1 hover:text-red-400 ${
+                comment.isLikedByCurrentUser ? 'text-red-400' : ''
               }`}
             >
               <Heart className={`w-3.5 h-3.5 ${comment.isLikedByCurrentUser ? 'fill-current' : ''}`} />
@@ -147,7 +152,7 @@ export default function PostDetailPage() {
             {!isReply && isLoggedIn && (
               <button
                 onClick={() => setReplyTo({ commentId: comment.commentId, authorName: comment.authorName })}
-                className="hover:text-blue-500"
+                className="hover:text-blue-400"
               >
                 답글
               </button>
@@ -155,7 +160,7 @@ export default function PostDetailPage() {
             {comment.isAuthor && (
               <button
                 onClick={() => handleDeleteComment(comment.commentId)}
-                className="hover:text-red-500"
+                className="hover:text-red-400"
               >
                 삭제
               </button>
@@ -170,13 +175,13 @@ export default function PostDetailPage() {
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
                 placeholder={`@${replyTo.authorName}에게 답글...`}
-                className="flex-1 px-3 py-2 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 text-sm rounded-lg border border-white/20 bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                 autoFocus
               />
               <button
                 type="submit"
                 disabled={submitting || !replyContent.trim()}
-                className="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -186,7 +191,7 @@ export default function PostDetailPage() {
                   setReplyTo(null);
                   setReplyContent('');
                 }}
-                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600"
+                className="px-3 py-2 bg-white/10 text-white rounded-lg text-sm hover:bg-white/20"
               >
                 취소
               </button>
@@ -206,20 +211,20 @@ export default function PostDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-[#090a0c] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#090a0c] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || '게시글을 찾을 수 없습니다.'}</p>
+          <p className="text-red-400 mb-4">{error || '게시글을 찾을 수 없습니다.'}</p>
           <button
             onClick={() => navigate('/board')}
-            className="text-blue-600 hover:underline"
+            className="text-blue-400 hover:underline"
           >
             목록으로 돌아가기
           </button>
@@ -229,30 +234,30 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-[#090a0c] text-white py-8">
       <div className="max-w-3xl mx-auto px-4">
         {/* 뒤로가기 */}
         <button
           onClick={() => navigate('/board')}
-          className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6"
+          className="flex items-center gap-2 text-white/60 hover:text-white transition mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
           목록으로
         </button>
 
         {/* 게시글 */}
-        <article className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 mb-6 backdrop-blur-sm">
           <div className="mb-4">
-            <span className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+            <span className="text-xs px-2 py-1 rounded bg-white/10 text-white/60">
               {post.categoryName}
             </span>
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-2xl font-bold text-white mb-4">
             {post.title}
           </h1>
 
-          <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between pb-4 border-b border-white/10">
             <div className="flex items-center gap-3">
               {post.authorProfileImageUrl ? (
                 <img
@@ -261,11 +266,11 @@ export default function PostDetailPage() {
                   className="w-10 h-10 rounded-full"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600" />
+                <div className="w-10 h-10 rounded-full bg-white/20" />
               )}
               <div>
-                <p className="font-medium text-gray-900 dark:text-white">{post.authorName}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(post.createdAt)}</p>
+                <p className="font-medium text-white">{post.authorName}</p>
+                <p className="text-sm text-white/50">{formatDate(post.createdAt)}</p>
               </div>
             </div>
 
@@ -273,13 +278,13 @@ export default function PostDetailPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => navigate(`/board/edit/${post.postId}`)}
-                  className="p-2 text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                  className="p-2 text-white/50 hover:text-blue-400 hover:bg-white/10 rounded-lg transition"
                 >
                   <Edit className="w-5 h-5" />
                 </button>
                 <button
                   onClick={handleDeletePost}
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                  className="p-2 text-white/50 hover:text-red-400 hover:bg-white/10 rounded-lg transition"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
@@ -288,13 +293,13 @@ export default function PostDetailPage() {
           </div>
 
           <div
-            className="py-6 text-gray-700 dark:text-gray-300 whitespace-pre-wrap min-h-[200px]"
+            className="py-6 text-white/80 whitespace-pre-wrap min-h-[200px]"
           >
             {post.content}
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between pt-4 border-t border-white/10">
+            <div className="flex items-center gap-4 text-sm text-white/50">
               <span className="flex items-center gap-1">
                 <Eye className="w-4 h-4" />
                 {post.viewCount}
@@ -309,8 +314,8 @@ export default function PostDetailPage() {
               onClick={handleLike}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
                 post.isLikedByCurrentUser
-                  ? 'border-red-500 text-red-500 bg-red-50 dark:bg-red-900/20'
-                  : 'border-gray-300 dark:border-gray-600 text-gray-500 hover:border-red-500 hover:text-red-500'
+                  ? 'border-red-500 text-red-400 bg-red-500/20'
+                  : 'border-white/20 text-white/50 hover:border-red-500 hover:text-red-400'
               }`}
             >
               <Heart className={`w-5 h-5 ${post.isLikedByCurrentUser ? 'fill-current' : ''}`} />
@@ -320,8 +325,8 @@ export default function PostDetailPage() {
         </article>
 
         {/* 댓글 섹션 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
+          <h2 className="text-lg font-bold text-white mb-4">
             댓글 {post.commentCount}
           </h2>
 
@@ -333,22 +338,22 @@ export default function PostDetailPage() {
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="댓글을 입력하세요..."
                 rows={3}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-lg border border-white/20 bg-white/5 text-white placeholder-white/40 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <div className="flex justify-end mt-2">
                 <button
                   type="submit"
                   disabled={submitting || !newComment.trim()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
                   댓글 작성
                 </button>
               </div>
             </form>
           ) : (
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mb-6 text-sm text-white/50">
               댓글을 작성하려면{' '}
-              <button onClick={() => navigate('/login')} className="text-blue-600 hover:underline">
+              <button onClick={() => navigate('/login')} className="text-blue-400 hover:underline">
                 로그인
               </button>
               이 필요합니다.
@@ -356,9 +361,9 @@ export default function PostDetailPage() {
           )}
 
           {/* 댓글 목록 */}
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="divide-y divide-white/10">
             {post.comments.length === 0 ? (
-              <p className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <p className="text-center py-8 text-white/50">
                 첫 댓글을 작성해보세요!
               </p>
             ) : (
