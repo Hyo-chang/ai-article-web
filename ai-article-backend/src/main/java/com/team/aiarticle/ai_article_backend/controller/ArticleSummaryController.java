@@ -106,9 +106,9 @@ public class ArticleSummaryController {
             }
 
             if (!ragResponse.isSuccess()) {
-                log.error("RAG AI 분석 실패: {}", ragResponse.getError());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("error", ragResponse.getError() != null ? ragResponse.getError() : "분석 실패"));
+                log.warn("RAG AI 분석 실패 (URL 분석 불가): {}", ragResponse.getError());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", ragResponse.getError() != null ? ragResponse.getError() : "해당 URL을 분석할 수 없습니다."));
             }
 
             // 로그인한 사용자인 경우 DB에 저장
