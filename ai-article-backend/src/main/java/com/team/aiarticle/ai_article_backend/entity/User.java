@@ -29,7 +29,8 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "profile_image_url")
+    @Lob
+    @Column(name = "profile_image_url", columnDefinition = "LONGTEXT")
     private String profileImageUrl;
 
     // Optional VK integration: user roles mapping
