@@ -392,28 +392,29 @@ VALUES ('free', '자유게시판', '자유롭게 이야기를 나눠보세요', 
        ('review', '후기게시판', '서비스 이용 후기를 남겨주세요', 4);
 ```
 
-### ⚠️ 현재 문제: 글쓰기 401 에러
+### ✅ 해결됨: 글쓰기 401 에러 (2026-02-11)
 **증상**: 로그인 후에도 게시글 작성 시 401 Unauthorized 에러 발생
 
-**원인 추정**:
-1. JWT 토큰이 만료됨
-2. 로컬에서 발급받은 토큰을 배포 환경에서 사용 (시크릿 불일치)
-3. localStorage에 토큰이 제대로 저장되지 않음
+**원인**: `@AuthenticationPrincipal User` 타입 불일치
+- Spring Security가 `UserDetailsImpl`을 반환하는데 `User` 엔티티로 캐스팅 시도
+- 캐스팅 실패로 `currentUser`가 항상 null
 
-**디버깅 방법**:
-```javascript
-// 브라우저 콘솔에서 실행
-JSON.parse(localStorage.getItem('user'))
-// token 필드가 있는지 확인
+**해결 방법** (커밋 5cf9954):
+```java
+// Before: @AuthenticationPrincipal User currentUser (타입 불일치)
+// After: SecurityContextHolder에서 UserDetailsImpl 직접 추출
+private Integer getCurrentUserId() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth.getPrincipal() instanceof UserDetailsImpl details) {
+        return details.getUserId();
+    }
+    return null;
+}
 ```
 
-**해결 방법**:
-1. 로그아웃 후 다시 로그인 (배포된 사이트에서)
-2. Railway 환경변수에서 `app.jwt.secret` 확인
-
-**추가된 디버깅 로그**:
-- `usePosts.ts`: createPost에 console.log 추가
-- `AuthTokenFilter.java`: JWT 인증 실패 시 warn 로그 추가
+**추가 수정사항**:
+- 프로필 이미지 500 에러: DB 컬럼 `VARCHAR` → `LONGTEXT` 변경
+- 돌아가기 버튼: `navigate(-1)` → `navigate('/home')` 변경
 
 ## 다음 작업 (TODO)
 
