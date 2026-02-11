@@ -70,7 +70,7 @@ export default function BoardPage() {
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[#090a0c]/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/')}
             className="flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
