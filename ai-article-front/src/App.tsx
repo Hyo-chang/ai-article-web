@@ -261,33 +261,26 @@ function HomePage() {
       const data = await response.json();
       // 백엔드 응답: { article_id, title, publisher, summarize, keywords, keywordDefinitions }
 
-      // 저장된 기사가 있으면 (로그인 사용자) 해당 페이지로 이동
+      toast.success("분석 완료! 결과 페이지로 이동합니다.", { id: "analyze" });
+
+      // 저장된 기사가 있으면 (로그인 사용자) ID로 페이지 이동
       if (data.article_id && data.article_id > 0) {
-        toast.success("분석 완료! 결과 페이지로 이동합니다.", { id: "analyze" });
         navigate(`/analyzed/${data.article_id}`);
       } else {
-        // 비로그인 사용자: 현재 페이지에서 결과 표시
-        const analysisResult = {
-          articleId: data.article_id,
-          title: data.title,
-          publisher: data.publisher,
-          summary: data.summarize,
-          keywords: data.keywords,
-          definitions: data.keywordDefinitions,
-        };
-        setAnalysisData({
-          title: analysisResult.title || "",
-          summary: analysisResult.summary || "",
-          fullText: "",
-          keyPoints: [],
-          keywords: analysisResult.keywords || [],
-          importantWords: [],
-          readingTime: 5,
-          difficulty: "medium",
-          category: "일반",
-          sentiment: "neutral",
+        // 비로그인 사용자: state로 데이터 전달하여 같은 페이지 사용
+        navigate('/analyzed/temp', {
+          state: {
+            title: data.title || "",
+            body: data.body || "",
+            summary: data.summarize || "",
+            keywords: data.keywords || [],
+            keywordDefinitions: data.keywordDefinitions || {},
+            imageUrl: data.imageUrl || "",
+            articleUrl: articleUrl,
+            publisher: data.publisher || "",
+            createdAt: new Date().toISOString(),
+          }
         });
-        toast.success("분석 완료!", { id: "analyze" });
       }
 
     } catch (error) {

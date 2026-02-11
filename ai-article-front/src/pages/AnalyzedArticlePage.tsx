@@ -1,11 +1,23 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Building2 } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/api';
 import { useAuth } from '@/services/AuthContext';
 
 interface AnalyzedArticle {
-  id: number;
+  id?: number;
+  title: string;
+  body: string;
+  summary: string;
+  keywords: string[];
+  keywordDefinitions: Record<string, string>;
+  imageUrl: string;
+  articleUrl: string;
+  publisher: string;
+  createdAt: string;
+}
+
+interface LocationState {
   title: string;
   body: string;
   summary: string;
@@ -35,14 +47,42 @@ function parseMarkdownBold(text: string): React.ReactNode[] {
 export default function AnalyzedArticlePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [article, setArticle] = useState<AnalyzedArticle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
 
+  // router state로 전달된 데이터 확인 (비로그인 사용자용)
+  const stateData = location.state as LocationState | null;
+
   useEffect(() => {
-    if (!id || !user?.token) return;
+    // state로 데이터가 전달된 경우 (비로그인 사용자)
+    if (stateData) {
+      setArticle({
+        title: stateData.title,
+        body: stateData.body || "",
+        summary: stateData.summary,
+        keywords: stateData.keywords,
+        keywordDefinitions: stateData.keywordDefinitions,
+        imageUrl: stateData.imageUrl,
+        articleUrl: stateData.articleUrl,
+        publisher: stateData.publisher,
+        createdAt: stateData.createdAt,
+      });
+      setLoading(false);
+      return;
+    }
+
+    // API에서 데이터 가져오기 (로그인 사용자)
+    if (!id || id === 'temp' || !user?.token) {
+      setLoading(false);
+      if (!stateData) {
+        setError('분석 데이터를 찾을 수 없습니다.');
+      }
+      return;
+    }
 
     const fetchArticle = async () => {
       try {
@@ -66,7 +106,7 @@ export default function AnalyzedArticlePage() {
     };
 
     fetchArticle();
-  }, [id, user?.token]);
+  }, [id, user?.token, stateData]);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString('ko-KR', {
