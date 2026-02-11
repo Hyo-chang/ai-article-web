@@ -23,6 +23,17 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.3.1",
+    date: "2026-02-11",
+    highlights: "게시판 인증 버그 수정 및 안정화",
+    items: [
+      { type: "bugfix", text: "게시판 글쓰기/댓글/좋아요 401 인증 오류 수정 (JWT 타입 불일치 해결)" },
+      { type: "bugfix", text: "프로필 이미지 업로드 500 오류 수정 (DB 컬럼 VARCHAR→LONGTEXT)" },
+      { type: "bugfix", text: "커뮤니티 '돌아가기' 버튼이 홈으로 정상 이동하도록 수정" },
+      { type: "improvement", text: "게시판 전체 기능 정상 작동 확인 (글쓰기, 수정, 삭제, 댓글, 대댓글, 좋아요)" },
+    ],
+  },
+  {
     version: "0.3.0",
     date: "2026-02-10",
     highlights: "커뮤니티 게시판 기능",
