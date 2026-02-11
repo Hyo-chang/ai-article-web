@@ -466,6 +466,15 @@ private Integer getCurrentUserId() {
 
 ## 다음 작업 (TODO)
 
+### 🔴 우선순위 높음 (2026-02-12 수정 필요)
+- [ ] **AnalyzedArticlePage 본문 표시 안 됨**
+  - 분석하기 결과 페이지에서 기사 본문(body)이 표시되지 않음
+  - 원인: App.tsx에서 `data.body`를 전달하는데, 백엔드 응답에 body 필드가 없을 수 있음
+  - 확인 필요: `/api/articles/analyze` 응답에 body 포함 여부
+- [ ] **AnalyzedArticlePage에 "AI에게 질문하기" UI 추가**
+  - 기존 article_content.tsx의 ChatSection 컴포넌트 가져오기
+  - 분석 결과 페이지에서도 AI 질문 가능하도록
+
 ### 🟢 우선순위 낮음
 - [ ] Tailscale 원격 개발 환경 구축
 - [ ] **Google AdSense 적용**
