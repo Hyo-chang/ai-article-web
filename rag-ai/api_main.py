@@ -313,10 +313,11 @@ async def chat_with_article(request: ChatRequest):
 # --- 4. URL 크롤링 헬퍼 함수 ---
 
 def crawl_article_from_url(url: str) -> Dict[str, Any]:
-    """URL에서 기사를 크롤링합니다."""
+    """URL에서 기사를 크롤링합니다. 다양한 웹사이트 지원."""
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     }
 
     try:
@@ -325,47 +326,115 @@ def crawl_article_from_url(url: str) -> Dict[str, Any]:
         response.encoding = response.apparent_encoding or 'utf-8'
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # 제목 추출
+        # 불필요한 요소 미리 제거
+        for tag in soup.select("script, style, nav, footer, header, aside, .ad, .advertisement, .sidebar, .comment, .comments, #comment, #comments"):
+            tag.decompose()
+
+        # 제목 추출 (다양한 셀렉터 시도)
         title = None
-        title_selectors = ["h2.media_end_head_headline", "h1.media_end_head_headline", "meta[property='og:title']"]
+        title_selectors = [
+            # 네이버 뉴스
+            "h2.media_end_head_headline", "h1.media_end_head_headline",
+            # 일반적인 기사 제목
+            "h1.title", "h1.headline", "h1.article-title", "h1.post-title", "h1.entry-title",
+            ".article-header h1", ".post-header h1", ".entry-header h1",
+            "article h1", "main h1", ".content h1",
+            # 메타 태그 (fallback)
+            "meta[property='og:title']", "meta[name='title']",
+            # 일반 h1
+            "h1",
+        ]
         for sel in title_selectors:
             el = soup.select_one(sel)
             if el:
                 title = el.get("content") if el.name == "meta" else el.get_text(strip=True)
-                break
+                if title and len(title) > 5:  # 너무 짧은 제목은 스킵
+                    break
+                title = None
 
-        # 본문 추출
+        # title 태그 fallback
+        if not title:
+            title_tag = soup.find("title")
+            if title_tag:
+                title = title_tag.get_text(strip=True)
+
+        # 본문 추출 (다양한 셀렉터 시도)
         body = None
-        body_selectors = ["div#newsct_article", "article#dic_area", "div.article_body", "div.news_end"]
+        body_selectors = [
+            # 네이버 뉴스
+            "div#newsct_article", "article#dic_area", "div.article_body", "div.news_end",
+            # 일반적인 기사 본문
+            "article.content", "article.post", "article.entry",
+            ".article-content", ".article-body", ".post-content", ".post-body", ".entry-content",
+            ".content-body", ".story-body", ".news-content",
+            "#article-body", "#post-content", "#content-body",
+            "article", "main", ".content", "#content",
+            # 최후의 수단: 본문 영역 추정
+            ".container article", ".wrapper article",
+        ]
         for sel in body_selectors:
             el = soup.select_one(sel)
             if el:
                 # 캡션 등 불필요한 요소 제거
-                for caption in el.select(".end_photo_caption, figcaption, .img_desc"):
+                for caption in el.select("figcaption, .img_desc, .caption, .photo-caption, .image-caption"):
                     caption.decompose()
                 body = el.get_text(separator="\n", strip=True)
-                break
+                if body and len(body) > 100:  # 충분히 긴 본문만 인정
+                    break
+                body = None
+
+        # 본문을 못 찾았으면 모든 p 태그에서 추출 시도
+        if not body:
+            paragraphs = soup.find_all("p")
+            if paragraphs:
+                texts = [p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 30]
+                if texts:
+                    body = "\n\n".join(texts)
+
+        # og:description fallback
+        if not body or len(body) < 100:
+            og_desc = soup.select_one("meta[property='og:description']")
+            if og_desc and og_desc.get("content"):
+                desc = og_desc.get("content")
+                if len(desc) > (len(body) if body else 0):
+                    body = desc
 
         # 이미지 URL 추출
         image_url = None
         og_image = soup.select_one("meta[property='og:image']")
         if og_image:
             image_url = og_image.get("content")
+        if not image_url:
+            # 본문 내 첫 번째 이미지 시도
+            first_img = soup.select_one("article img, main img, .content img")
+            if first_img and first_img.get("src"):
+                image_url = first_img.get("src")
 
         # 발행일 추출
         published_at = None
-        time_selectors = ["meta[property='article:published_time']", "span.media_end_head_info_datestamp_time"]
+        time_selectors = [
+            "meta[property='article:published_time']",
+            "meta[name='pubdate']", "meta[name='publishdate']",
+            "time[datetime]", ".date", ".published", ".post-date",
+            "span.media_end_head_info_datestamp_time"
+        ]
         for sel in time_selectors:
             el = soup.select_one(sel)
             if el:
-                published_at = el.get("content") or el.get("data-date-time") or el.get_text(strip=True)
-                break
+                published_at = el.get("content") or el.get("datetime") or el.get("data-date-time") or el.get_text(strip=True)
+                if published_at:
+                    break
 
-        # 언론사 추출
+        # 언론사/사이트명 추출
         publisher = None
         pub_el = soup.select_one("meta[property='og:site_name']")
         if pub_el:
             publisher = pub_el.get("content")
+        if not publisher:
+            # URL에서 도메인 추출
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            publisher = parsed.netloc.replace("www.", "")
 
         # 저작권 문구 제거
         if body:
@@ -374,6 +443,7 @@ def crawl_article_from_url(url: str) -> Dict[str, Any]:
                 r'ⓒ\s*\S+.*?(?:무단.*?금지|저작권)',
                 r'\S+@\S+\.\S+',
                 r'무단\s*전재.*?금지',
+                r'Copyright.*?All rights reserved\.?',
             ]
             for pattern in patterns:
                 body = re.sub(pattern, '', body, flags=re.IGNORECASE)
@@ -411,11 +481,23 @@ async def analyze_article_by_url(request: AnalyzeUrlRequest):
     title = crawl_result.get("title")
     body = crawl_result.get("body")
 
-    if not title or not body:
+    # 본문이 없거나 너무 짧으면 실패
+    if not body or len(body) < 50:
         return AnalyzeUrlResponse(
             success=False,
-            error="기사 제목 또는 본문을 추출할 수 없습니다."
+            error="본문을 추출할 수 없습니다. 지원되지 않는 페이지 형식일 수 있습니다."
         )
+
+    # 제목이 없으면 URL에서 추출 또는 본문 앞부분 사용
+    if not title:
+        from urllib.parse import urlparse, unquote
+        parsed = urlparse(request.article_url)
+        path = unquote(parsed.path)
+        # URL 경로의 마지막 부분을 제목으로 사용
+        title = path.rstrip('/').split('/')[-1].replace('-', ' ').replace('_', ' ')
+        if not title or len(title) < 5:
+            # 본문의 첫 줄을 제목으로 사용
+            title = body.split('\n')[0][:100]
 
     print(f"[FastAPI] 크롤링 성공: {sanitize_text(title)}")
 
