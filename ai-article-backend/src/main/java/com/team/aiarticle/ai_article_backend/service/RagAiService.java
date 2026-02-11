@@ -1,14 +1,17 @@
 package com.team.aiarticle.ai_article_backend.service;
 
+import com.team.aiarticle.ai_article_backend.dto.AnalyzeUrlRequest;
+import com.team.aiarticle.ai_article_backend.dto.AnalyzeUrlResponse;
 import com.team.aiarticle.ai_article_backend.dto.ChatDto;
 import com.team.aiarticle.ai_article_backend.dto.RagRequestDto;
 import com.team.aiarticle.ai_article_backend.dto.RagResponseDto;
-// import lombok.RequiredArgsConstructor; // 이 어노테이션을 삭제하거나 주석 처리합니다.
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 
 @Service
 // @RequiredArgsConstructor // <- 이 부분을 삭제하거나 주석 처리합니다.
@@ -52,5 +55,24 @@ public class RagAiService {
                 .bodyToMono(ChatDto.Response.class)
                 .doOnSuccess(response -> log.info("AI 채팅 응답을 성공적으로 수신했습니다."))
                 .doOnError(error -> log.error("AI 채팅 중 오류가 발생했습니다.", error));
+    }
+
+    /**
+     * AI 서버에 URL 분석 요청을 전송하고 응답을 받아옵니다.
+     * (크롤링 + AI 분석을 RAG AI 서버에서 직접 수행)
+     */
+    public Mono<AnalyzeUrlResponse> requestAnalyzeUrl(String articleUrl) {
+        log.info("AI 서버로 URL 분석 요청을 전송합니다. (URL: {})", articleUrl);
+
+        AnalyzeUrlRequest request = new AnalyzeUrlRequest(articleUrl);
+
+        return ragAiWebClient.post()
+                .uri("/analyze-url")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(AnalyzeUrlResponse.class)
+                .timeout(Duration.ofMinutes(3))
+                .doOnSuccess(response -> log.info("AI URL 분석 응답을 성공적으로 수신했습니다. (success: {})", response.isSuccess()))
+                .doOnError(error -> log.error("AI URL 분석 중 오류가 발생했습니다.", error));
     }
 }

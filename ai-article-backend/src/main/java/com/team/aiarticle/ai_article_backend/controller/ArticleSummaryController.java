@@ -1,14 +1,14 @@
 package com.team.aiarticle.ai_article_backend.controller;
 
+import com.team.aiarticle.ai_article_backend.dto.AnalyzeUrlResponse;
 import com.team.aiarticle.ai_article_backend.dto.ArticleIngestRequest;
 import com.team.aiarticle.ai_article_backend.dto.ArticleListResponse;
 import com.team.aiarticle.ai_article_backend.dto.ArticleSummaryResponse;
-import com.team.aiarticle.ai_article_backend.dto.ManualCrawlResponse;
 import com.team.aiarticle.ai_article_backend.entity.ArticleV2;
 import com.team.aiarticle.ai_article_backend.repository.ArticleV2Repository;
 import com.team.aiarticle.ai_article_backend.service.ArticleServiceV2;
 import com.team.aiarticle.ai_article_backend.service.ArticleSummaryService;
-import com.team.aiarticle.ai_article_backend.service.CrawlingBridgeService;
+import com.team.aiarticle.ai_article_backend.service.RagAiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api") // Base path for API endpoints
@@ -35,7 +36,7 @@ public class ArticleSummaryController {
 
     private final ArticleSummaryService articleSummaryService;
     private final ArticleServiceV2 articleServiceV2;
-    private final CrawlingBridgeService crawlingBridgeService;
+    private final RagAiService ragAiService;
     private final ArticleV2Repository articleV2Repository;
 
     @GetMapping("/articles")
@@ -85,24 +86,43 @@ public class ArticleSummaryController {
         log.info("Analyzing article: {}", articleUrl);
 
         try {
-            // Call crawling service to crawl + analyze the article
-            ManualCrawlResponse crawlResult = crawlingBridgeService.crawlSingleArticle(articleUrl);
+            // RAG AI 서버로 URL 분석 요청
+            AnalyzeUrlResponse ragResponse = ragAiService.requestAnalyzeUrl(articleUrl).block();
 
-            if (!crawlResult.success()) {
-                log.error("Crawling failed with exit code {}: {}", crawlResult.exitCode(), crawlResult.log());
+            if (ragResponse == null) {
+                log.error("RAG AI 서버 응답이 null입니다.");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("error", "Article analysis failed", "log", crawlResult.log()));
+                        .body(Map.of("error", "AI 서버 응답 없음"));
             }
 
-            // Find the article by URL after crawling
-            var articleOpt = articleV2Repository.findByArticleUrl(articleUrl);
-            if (articleOpt.isPresent()) {
-                return ResponseEntity.ok(ArticleSummaryResponse.fromEntity(articleOpt.get()));
-            } else {
-                log.warn("Article not found after crawling: {}", articleUrl);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Article not found after crawling"));
+            if (!ragResponse.isSuccess()) {
+                log.error("RAG AI 분석 실패: {}", ragResponse.getError());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", ragResponse.getError() != null ? ragResponse.getError() : "분석 실패"));
             }
+
+            // 키워드 목록 추출
+            List<String> keywords = ragResponse.getKeywords() != null
+                    ? ragResponse.getKeywords().stream().map(AnalyzeUrlResponse.KeywordScore::getWord).collect(Collectors.toList())
+                    : List.of();
+
+            // 정의 정렬
+            Map<String, String> definitions = ragResponse.getDefinitions() != null
+                    ? ArticleSummaryResponse.normalizeDefinitions(ragResponse.getDefinitions(), keywords)
+                    : Map.of();
+
+            // ArticleSummaryResponse record 생성
+            ArticleSummaryResponse response = new ArticleSummaryResponse(
+                    null, // article_id는 DB 저장 안 하므로 null
+                    ragResponse.getTitle(),
+                    ragResponse.getPublisher(),
+                    ragResponse.getSummary(),
+                    keywords,
+                    definitions
+            );
+
+            log.info("Article analyzed successfully: {}", ragResponse.getTitle());
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             log.error("Error analyzing article: {}", e.getMessage(), e);

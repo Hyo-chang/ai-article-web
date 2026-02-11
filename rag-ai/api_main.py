@@ -4,7 +4,10 @@ import subprocess
 import time
 import atexit
 import random
+import re
 import mariadb  # mariadb 임포트 추가
+import requests
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict
@@ -57,6 +60,23 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     """AI 채팅 응답"""
     answer: str
+
+class AnalyzeUrlRequest(BaseModel):
+    """URL 기반 기사 분석 요청"""
+    article_url: str
+
+class AnalyzeUrlResponse(BaseModel):
+    """URL 기반 기사 분석 응답"""
+    success: bool
+    title: Optional[str] = None
+    body: Optional[str] = None
+    summary: Optional[str] = None
+    keywords: Optional[List[KeywordScore]] = None
+    definitions: Optional[Dict[str, str]] = None
+    image_url: Optional[str] = None
+    published_at: Optional[str] = None
+    publisher: Optional[str] = None
+    error: Optional[str] = None
 
 # --- 2. 전역 변수 및 생명주기 관리 ---
 
@@ -290,6 +310,166 @@ async def chat_with_article(request: ChatRequest):
             detail=f"AI 응답 생성 중 오류 발생: {e}"
         )
 
-# --- 4. Uvicorn 서버 실행 방법 ---
+# --- 4. URL 크롤링 헬퍼 함수 ---
+
+def crawl_article_from_url(url: str) -> Dict[str, Any]:
+    """URL에서 기사를 크롤링합니다."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+    }
+
+    try:
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        response.encoding = response.apparent_encoding or 'utf-8'
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # 제목 추출
+        title = None
+        title_selectors = ["h2.media_end_head_headline", "h1.media_end_head_headline", "meta[property='og:title']"]
+        for sel in title_selectors:
+            el = soup.select_one(sel)
+            if el:
+                title = el.get("content") if el.name == "meta" else el.get_text(strip=True)
+                break
+
+        # 본문 추출
+        body = None
+        body_selectors = ["div#newsct_article", "article#dic_area", "div.article_body", "div.news_end"]
+        for sel in body_selectors:
+            el = soup.select_one(sel)
+            if el:
+                # 캡션 등 불필요한 요소 제거
+                for caption in el.select(".end_photo_caption, figcaption, .img_desc"):
+                    caption.decompose()
+                body = el.get_text(separator="\n", strip=True)
+                break
+
+        # 이미지 URL 추출
+        image_url = None
+        og_image = soup.select_one("meta[property='og:image']")
+        if og_image:
+            image_url = og_image.get("content")
+
+        # 발행일 추출
+        published_at = None
+        time_selectors = ["meta[property='article:published_time']", "span.media_end_head_info_datestamp_time"]
+        for sel in time_selectors:
+            el = soup.select_one(sel)
+            if el:
+                published_at = el.get("content") or el.get("data-date-time") or el.get_text(strip=True)
+                break
+
+        # 언론사 추출
+        publisher = None
+        pub_el = soup.select_one("meta[property='og:site_name']")
+        if pub_el:
+            publisher = pub_el.get("content")
+
+        # 저작권 문구 제거
+        if body:
+            patterns = [
+                r'<저작권자[^>]*>.*?(?:금지|>)',
+                r'ⓒ\s*\S+.*?(?:무단.*?금지|저작권)',
+                r'\S+@\S+\.\S+',
+                r'무단\s*전재.*?금지',
+            ]
+            for pattern in patterns:
+                body = re.sub(pattern, '', body, flags=re.IGNORECASE)
+            body = re.sub(r'\n{3,}', '\n\n', body).strip()
+
+        return {
+            "success": True,
+            "title": title,
+            "body": body,
+            "image_url": image_url,
+            "published_at": published_at,
+            "publisher": publisher,
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@app.post("/analyze-url", response_model=AnalyzeUrlResponse, dependencies=[Depends(verify_api_key)])
+async def analyze_article_by_url(request: AnalyzeUrlRequest):
+    """URL을 받아 크롤링 + AI 분석을 수행합니다."""
+    print(f"\n--- [FastAPI] '/analyze-url' 요청 수신 (URL: {request.article_url}) ---")
+
+    # 1. URL에서 기사 크롤링
+    crawl_result = crawl_article_from_url(request.article_url)
+
+    if not crawl_result["success"]:
+        return AnalyzeUrlResponse(
+            success=False,
+            error=f"크롤링 실패: {crawl_result.get('error', 'Unknown error')}"
+        )
+
+    title = crawl_result.get("title")
+    body = crawl_result.get("body")
+
+    if not title or not body:
+        return AnalyzeUrlResponse(
+            success=False,
+            error="기사 제목 또는 본문을 추출할 수 없습니다."
+        )
+
+    print(f"[FastAPI] 크롤링 성공: {sanitize_text(title)}")
+
+    # 2. AI 분석 수행
+    try:
+        llm = global_models["llm"]
+        embeddings = global_models["embeddings"]
+
+        # 키워드 추출
+        keyword_extractor = NewsKeywordExtractor(embedding_model=embeddings)
+        extracted_keywords = keyword_extractor.extract_keywords(html_text=body, n=5, metadata={})
+        keywords_for_response = [KeywordScore(word=word, score=score) for word, score in extracted_keywords]
+        keyword_list = [item.word for item in keywords_for_response]
+
+        print(f"[FastAPI] 키워드 추출 완료: {keyword_list}")
+
+        # 요약 및 단어 정의
+        analyzer = AdvancedArticleAnalyzer(
+            article_text=body,
+            article_title=title,
+            key_words=keyword_list,
+            llm=llm,
+            embeddings=embeddings,
+            db_pool=global_models.get("db_pool"),
+            metadata={}
+        )
+
+        summary_result, definitions_result = analyzer.summarize_and_define()
+
+        print("[FastAPI] 분석 완료.")
+
+        return AnalyzeUrlResponse(
+            success=True,
+            title=title,
+            body=body,
+            summary=summary_result,
+            keywords=keywords_for_response,
+            definitions=definitions_result,
+            image_url=crawl_result.get("image_url"),
+            published_at=crawl_result.get("published_at"),
+            publisher=crawl_result.get("publisher"),
+        )
+
+    except Exception as e:
+        print(f"[!!! FastAPI 오류 !!!] 분석 중 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        return AnalyzeUrlResponse(
+            success=False,
+            title=title,
+            body=body,
+            error=f"AI 분석 실패: {str(e)}"
+        )
+
+# --- 5. Uvicorn 서버 실행 방법 ---
 # 실행 명령어 : uvicorn api_main:app --host 127.0.0.1 --port 8020 --reload (--reload 옵션은 개발용)
 # uvicorn api_main:app --host 0.0.0.0 --port 8020 --reload 브로드캐스트용
