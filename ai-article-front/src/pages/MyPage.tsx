@@ -5,6 +5,7 @@ import { ArrowLeft, Heart, Trash2 } from "lucide-react";
 import { useAuth } from "../services/AuthContext";
 import { fetchJson, getApiBaseUrl } from "@/lib/api";
 import { BookmarkSection } from "@/components/BookmarkSection";
+import { AnalyzedArticleSection } from "@/components/AnalyzedArticleSection";
 import defaultUserImage from "@/image/userimage.png";
 
 type BookmarkedArticle = {
@@ -13,6 +14,15 @@ type BookmarkedArticle = {
   categoryName?: string;
   imageUrl?: string;
   publishedAt?: string;
+};
+
+type AnalyzedArticle = {
+  id: number;
+  title: string;
+  summary: string;
+  imageUrl?: string;
+  publisher?: string;
+  createdAt: string;
 };
 
 type CategoryWithKeywords = {
@@ -264,6 +274,11 @@ const MyPage: React.FC = () => {
   const [bookmarksLoading, setBookmarksLoading] = useState(true);
   const [bookmarksError, setBookmarksError] = useState<string | null>(null);
 
+  // 분석한 기사 상태
+  const [analyzedArticles, setAnalyzedArticles] = useState<AnalyzedArticle[]>([]);
+  const [analyzedLoading, setAnalyzedLoading] = useState(true);
+  const [analyzedError, setAnalyzedError] = useState<string | null>(null);
+
   // 북마크 목록 불러오기
   useEffect(() => {
     if (!typedUser?.token) {
@@ -304,6 +319,73 @@ const MyPage: React.FC = () => {
     loadBookmarks();
     return () => controller.abort();
   }, [typedUser?.token]);
+
+  // 분석한 기사 목록 불러오기
+  useEffect(() => {
+    if (!typedUser?.token) {
+      setAnalyzedArticles([]);
+      setAnalyzedLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    async function loadAnalyzedArticles() {
+      try {
+        setAnalyzedLoading(true);
+        setAnalyzedError(null);
+        const response = await fetch(`${getApiBaseUrl()}/api/mypage/analyzed-articles`, {
+          headers: {
+            Authorization: `Bearer ${typedUser.token}`,
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("분석 기록을 불러오지 못했습니다.");
+        }
+
+        const data = await response.json();
+        setAnalyzedArticles(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          return;
+        }
+        setAnalyzedError(
+          err instanceof Error ? err.message : "분석 기록을 불러오지 못했습니다."
+        );
+      } finally {
+        setAnalyzedLoading(false);
+      }
+    }
+    loadAnalyzedArticles();
+    return () => controller.abort();
+  }, [typedUser?.token]);
+
+  // 분석 기록 삭제
+  const handleRemoveAnalyzed = async (articleId: number) => {
+    if (!typedUser?.token) return;
+
+    const confirmed = window.confirm("이 분석 기록을 삭제하시겠습니까?");
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/analyzed-article/${articleId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${typedUser.token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setAnalyzedArticles((prev) => prev.filter((a) => a.id !== articleId));
+      }
+    } catch (err) {
+      console.error("Failed to remove analyzed article:", err);
+    }
+  };
 
   // 북마크 삭제
   const handleRemoveBookmark = async (articleId: number) => {
@@ -438,6 +520,14 @@ const MyPage: React.FC = () => {
           error={bookmarksError}
           onRemove={handleRemoveBookmark}
           onArticleClick={(articleId) => navigate(`/content/${articleId}`)}
+        />
+
+        <AnalyzedArticleSection
+          articles={analyzedArticles}
+          isLoading={analyzedLoading}
+          error={analyzedError}
+          onRemove={handleRemoveAnalyzed}
+          onArticleClick={(articleId) => navigate(`/analyzed/${articleId}`)}
         />
       </div>
     </div>

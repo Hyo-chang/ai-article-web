@@ -17,6 +17,7 @@ import UpdatesPage from "./pages/UpdatesPage";
 import BoardPage from "./pages/board/BoardPage";
 import PostDetailPage from "./pages/board/PostDetailPage";
 import PostWritePage from "./pages/board/PostWritePage";
+import AnalyzedArticlePage from "./pages/AnalyzedArticlePage";
 import { Tabs, TabsContent } from "./components/ui/tabs";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
@@ -229,11 +230,23 @@ function HomePage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 180000); // 3분 타임아웃
 
+      // 로그인한 사용자면 토큰 포함
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          if (userData.token) {
+            headers["Authorization"] = `Bearer ${userData.token}`;
+          }
+        } catch {}
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/articles/analyze`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({ articleUrl }),
         signal: controller.signal,
       });
@@ -247,17 +260,35 @@ function HomePage() {
 
       const data = await response.json();
       // 백엔드 응답: { article_id, title, publisher, summarize, keywords, keywordDefinitions }
-      const analysisResult = {
-        articleId: data.article_id,
-        title: data.title,
-        publisher: data.publisher,
-        summary: data.summarize,
-        keywords: data.keywords,
-        definitions: data.keywordDefinitions,
-      };
 
-      toast.success("분석 완료! 결과 페이지로 이동합니다.", { id: "analyze" });
-      navigate(`/loading/${analysisResult.articleId}`, { state: { analysisResult } });
+      // 저장된 기사가 있으면 (로그인 사용자) 해당 페이지로 이동
+      if (data.article_id && data.article_id > 0) {
+        toast.success("분석 완료! 결과 페이지로 이동합니다.", { id: "analyze" });
+        navigate(`/analyzed/${data.article_id}`);
+      } else {
+        // 비로그인 사용자: 현재 페이지에서 결과 표시
+        const analysisResult = {
+          articleId: data.article_id,
+          title: data.title,
+          publisher: data.publisher,
+          summary: data.summarize,
+          keywords: data.keywords,
+          definitions: data.keywordDefinitions,
+        };
+        setAnalysisData({
+          title: analysisResult.title || "",
+          summary: analysisResult.summary || "",
+          fullText: "",
+          keyPoints: [],
+          keywords: analysisResult.keywords || [],
+          importantWords: [],
+          readingTime: 5,
+          difficulty: "medium",
+          category: "일반",
+          sentiment: "neutral",
+        });
+        toast.success("분석 완료!", { id: "analyze" });
+      }
 
     } catch (error) {
       let message = "알 수 없는 오류가 발생했습니다.";
@@ -642,6 +673,7 @@ export default function App() {
           <Route path="/board/post/:postId" element={<PostDetailPage />} />
           <Route path="/board/write" element={<PostWritePage />} />
           <Route path="/board/edit/:postId" element={<PostWritePage />} />
+          <Route path="/analyzed/:id" element={<AnalyzedArticlePage />} />
         </Routes>
       </AuthProvider>
     </ThemeProvider>

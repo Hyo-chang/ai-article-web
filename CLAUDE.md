@@ -416,6 +416,54 @@ private Integer getCurrentUserId() {
 - 프로필 이미지 500 에러: DB 컬럼 `VARCHAR` → `LONGTEXT` 변경
 - 돌아가기 버튼: `navigate(-1)` → `navigate('/home')` 변경
 
+## 사용자별 기사 분석 기록 (2026-02-11)
+
+### 기능
+- 로그인 사용자가 URL로 기사 분석 시 결과를 DB에 저장
+- 마이페이지에서 분석 기록 조회/삭제 가능
+- RAG AI 서버 `/analyze-url` 엔드포인트 직접 호출 (Python 크롤러 불필요)
+
+### Backend
+
+**Entity**
+- `UserAnalyzedArticle.java` - 분석 기록 저장 (제목, 본문, 요약, 키워드, 정의, 이미지URL 등)
+
+**Repository**
+- `UserAnalyzedArticleRepository.java` - 사용자별 분석 기록 조회
+
+**Service**
+- `UserAnalyzedArticleService.java` - 분석 기록 CRUD
+
+**DTO**
+- `AnalyzeUrlRequest.java` - RAG AI 요청 (snake_case: `article_url`)
+- `AnalyzeUrlResponse.java` - RAG AI 응답
+- `UserAnalyzedArticleResponse.java` - 프론트엔드 응답
+
+**API 엔드포인트**
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| POST | `/api/articles/analyze` | URL 분석 + 결과 저장 | O |
+| GET | `/api/mypage/analyzed-articles` | 분석 기록 목록 | O |
+| GET | `/api/analyzed-article/{id}` | 분석 기록 상세 | O |
+| DELETE | `/api/analyzed-article/{id}` | 분석 기록 삭제 | O |
+
+### Frontend
+
+**새 파일**
+- `AnalyzedArticlePage.tsx` - 분석 결과 상세 페이지 (`/analyzed/:id`)
+- `AnalyzedArticleSection.tsx` - 마이페이지 분석 기록 목록 컴포넌트
+
+**수정된 파일**
+- `App.tsx` - 라우트 추가, `handleAnalyze()` 수정 (로그인 시 분석 결과 페이지로 이동)
+- `MyPage.tsx` - 분석 기록 섹션 추가
+
+### RAG AI
+
+**새 엔드포인트**
+- `POST /analyze-url` - URL에서 기사 크롤링 + AI 분석 수행
+  - 요청: `{ "article_url": "https://..." }`
+  - 응답: `{ "success": true, "title": "...", "summary": "...", "keywords": [...], "definitions": {...}, ... }`
+
 ## 다음 작업 (TODO)
 
 ### 🟢 우선순위 낮음
