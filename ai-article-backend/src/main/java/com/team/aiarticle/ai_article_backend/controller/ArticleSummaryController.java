@@ -150,7 +150,7 @@ public class ArticleSummaryController {
         } catch (Exception e) {
             log.error("Error analyzing article: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "알 수 없는 오류가 발생했습니다."));
         }
     }
 
