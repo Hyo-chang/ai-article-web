@@ -135,16 +135,20 @@ public class ArticleSummaryController {
 
             // 응답에 savedArticleId 포함
             log.info("Article analyzed successfully: {}", ragResponse.getTitle());
-            return ResponseEntity.ok(Map.of(
-                    "article_id", savedArticleId != null ? savedArticleId : -1,
-                    "title", ragResponse.getTitle() != null ? ragResponse.getTitle() : "",
-                    "publisher", ragResponse.getPublisher() != null ? ragResponse.getPublisher() : "",
-                    "summarize", ragResponse.getSummary() != null ? ragResponse.getSummary() : "",
-                    "keywords", keywords,
-                    "keywordDefinitions", definitions,
-                    "imageUrl", ragResponse.getImageUrl() != null ? ragResponse.getImageUrl() : "",
-                    "articleUrl", articleUrl
-            ));
+
+            // Map.of()는 최대 10개 엔트리만 지원하므로 HashMap 사용
+            Map<String, Object> responseMap = new java.util.HashMap<>();
+            responseMap.put("article_id", savedArticleId != null ? savedArticleId : -1);
+            responseMap.put("title", ragResponse.getTitle() != null ? ragResponse.getTitle() : "");
+            responseMap.put("body", ragResponse.getBody() != null ? ragResponse.getBody() : "");
+            responseMap.put("publisher", ragResponse.getPublisher() != null ? ragResponse.getPublisher() : "");
+            responseMap.put("summarize", ragResponse.getSummary() != null ? ragResponse.getSummary() : "");
+            responseMap.put("keywords", keywords);
+            responseMap.put("keywordDefinitions", definitions);
+            responseMap.put("imageUrl", ragResponse.getImageUrl() != null ? ragResponse.getImageUrl() : "");
+            responseMap.put("articleUrl", articleUrl);
+
+            return ResponseEntity.ok(responseMap);
 
         } catch (Exception e) {
             log.error("Error analyzing article: {}", e.getMessage(), e);
