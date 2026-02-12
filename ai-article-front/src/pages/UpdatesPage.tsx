@@ -23,6 +23,17 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.3.2",
+    date: "2026-02-12",
+    highlights: "내가 분석한 기사 기능 및 버그 수정",
+    items: [
+      { type: "feature", text: "내가 분석한 기사: 분석 결과를 마이페이지에서 다시 확인 가능" },
+      { type: "feature", text: "분석 결과 전용 페이지: 요약, 원문, 키워드, 단어 해석 한눈에 보기" },
+      { type: "feature", text: "비로그인 사용자도 분석 결과 페이지 동일하게 이용 가능" },
+      { type: "bugfix", text: "분석하기 결과에서 기사 원문(본문)이 표시되지 않던 문제 수정" },
+    ],
+  },
+  {
     version: "0.3.1",
     date: "2026-02-11",
     highlights: "게시판 인증 버그 수정 및 안정화",
