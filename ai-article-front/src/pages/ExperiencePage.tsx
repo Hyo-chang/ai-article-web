@@ -439,6 +439,36 @@ export default function ExperiencePage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 bg-[#060608] px-6 py-10">
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 text-center text-xs text-white/40">
+          <div className="flex gap-6">
+            <button
+              type="button"
+              onClick={() => navigate("/privacy")}
+              className="transition hover:text-white/70"
+            >
+              개인정보처리방침
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/terms")}
+              className="transition hover:text-white/70"
+            >
+              이용약관
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/updates")}
+              className="transition hover:text-white/70"
+            >
+              업데이트 내역
+            </button>
+          </div>
+          <p>&copy; 2026 AI Reader. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
