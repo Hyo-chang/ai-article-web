@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Building2 } from 'lucide-react';
+import { ArrowLeft, Building2, Send } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/api';
 import { useAuth } from '@/services/AuthContext';
+
+const API_URL = getApiBaseUrl();
 
 interface AnalyzedArticle {
   id?: number;
@@ -29,6 +31,14 @@ interface LocationState {
   createdAt: string;
 }
 
+type ChatMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  snippet?: string | null;
+};
+
 function parseMarkdownBold(text: string): React.ReactNode[] {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, index) => {
@@ -53,6 +63,13 @@ export default function AnalyzedArticlePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
+
+  // Chat states
+  const [question, setQuestion] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isSending, setIsSending] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const questionInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   // router state로 전달된 데이터 확인 (비로그인 사용자용)
   const stateData = location.state as LocationState | null;
@@ -124,6 +141,79 @@ export default function AnalyzedArticlePage() {
       setImageAspectRatio(naturalWidth / naturalHeight);
     }
   };
+
+  // Chat functionality
+  const submitQuestion = useCallback(
+    async (content: string) => {
+      if (!content || !article) return;
+
+      const timestamp = new Date().toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      const userMessage: ChatMessage = {
+        id: crypto.randomUUID?.() ?? `${Date.now()}`,
+        role: 'user',
+        content,
+        timestamp,
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+      setQuestion('');
+      setIsSending(true);
+      setChatError(null);
+
+      // 기사 맥락 준비 (요약 + 본문)
+      const articleContext = article.summary
+        ? `[요약]\n${article.summary}\n\n[본문]\n${article.body}`
+        : article.body;
+
+      try {
+        const response = await fetch(`${API_URL}/api/analysis/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            article_context: articleContext,
+            question: content,
+            snippet: null,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`AI 응답 오류 (${response.status})`);
+        }
+
+        const data = await response.json();
+        const assistantContent = data?.answer?.trim() ?? 'AI 응답을 가져오지 못했습니다.';
+
+        const assistantMessage: ChatMessage = {
+          id: crypto.randomUUID?.() ?? `${Date.now()}-assistant`,
+          role: 'assistant',
+          content: assistantContent,
+          timestamp: new Date().toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        };
+
+        setMessages((prev) => [...prev, assistantMessage]);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'AI 응답 중 문제가 발생했습니다.';
+        setChatError(message);
+      } finally {
+        setIsSending(false);
+      }
+    },
+    [article]
+  );
+
+  const handleSendQuestion = useCallback(async () => {
+    const trimmed = question.trim();
+    if (!trimmed) return;
+    await submitQuestion(trimmed);
+  }, [question, submitQuestion]);
 
   if (loading) {
     return (
@@ -252,7 +342,7 @@ export default function AnalyzedArticlePage() {
               </section>
             </div>
 
-            {/* 오른쪽: 키워드 + 단어 해석 */}
+            {/* 오른쪽: 키워드 + 단어 해석 + AI 질문 */}
             <div className="min-w-0 flex flex-col gap-6 md:sticky md:top-24 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto md:pr-2 lg:top-28">
               {/* 핵심 키워드 */}
               <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7">
@@ -297,6 +387,75 @@ export default function AnalyzedArticlePage() {
                   </p>
                 )}
               </section>
+
+              {/* AI에게 질문하기 */}
+              <section className="flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7">
+                <h2 className="text-base font-semibold text-slate-900 dark:text-white">AI에게 질문하기</h2>
+
+                <div className="mt-4 flex flex-col gap-3">
+                  <div className="max-h-[280px] min-h-[180px] overflow-y-auto rounded-xl bg-slate-50/90 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                    {messages.length === 0 ? (
+                      <p className="text-sm text-slate-500 dark:text-gray-400">아직 대화한 내용이 없습니다. 첫 질문을 남겨보세요.</p>
+                    ) : (
+                      <ul className="space-y-3">
+                        {messages.map((message) => (
+                          <li
+                            key={message.id}
+                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div
+                              className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-6 shadow-sm ${
+                                message.role === 'user'
+                                  ? 'bg-slate-900 text-white dark:bg-white dark:text-black'
+                                  : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-[#1a1c20] dark:text-gray-200 dark:ring-white/10'
+                              }`}
+                            >
+                              <p>{message.content}</p>
+                              <span
+                                className={`mt-1 block text-xs ${
+                                  message.role === 'user' ? 'text-slate-200/70 dark:text-black/50' : 'text-slate-500 dark:text-gray-500'
+                                }`}
+                              >
+                                {message.timestamp}
+                              </span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {isSending && <p className="mt-3 text-center text-xs text-slate-500 dark:text-gray-400">AI가 생각 중입니다...</p>}
+                  </div>
+
+                  <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-gray-500">새로운 질문</label>
+                  <div className="relative w-full mt-1">
+                    <span className="pointer-events-none absolute left-3 top-3 text-lg text-slate-400 dark:text-gray-500">+</span>
+                    <textarea
+                      value={question}
+                      onChange={(e) => setQuestion(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendQuestion();
+                        }
+                      }}
+                      ref={questionInputRef}
+                      rows={3}
+                      placeholder="무엇이든 물어보세요"
+                      className="w-full resize-none rounded-xl border border-slate-200 bg-white px-8 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-[#1a1c20] dark:text-white dark:placeholder:text-gray-500 dark:focus:border-white/30"
+                    />
+                  </div>
+                  {chatError && <p className="text-xs text-rose-500 dark:text-rose-400">{chatError}</p>}
+                  <button
+                    type="button"
+                    onClick={handleSendQuestion}
+                    disabled={isSending || !question.trim()}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                  >
+                    <Send size={16} />
+                    {isSending ? '전송 중...' : '보내기'}
+                  </button>
+                </div>
+              </section>
             </div>
           </div>
         </div>
@@ -336,6 +495,7 @@ function ArticlePageSkeleton() {
               <div className="h-64 rounded-2xl bg-slate-300/40 dark:bg-slate-700/30" />
             </div>
             <div className="flex flex-col space-y-6">
+              <div className="h-48 rounded-xl bg-slate-300/40 dark:bg-slate-700/30" />
               <div className="h-48 rounded-xl bg-slate-300/40 dark:bg-slate-700/30" />
               <div className="h-48 rounded-xl bg-slate-300/40 dark:bg-slate-700/30" />
             </div>

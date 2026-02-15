@@ -467,16 +467,21 @@ private Integer getCurrentUserId() {
 ## 다음 작업 (TODO)
 
 ### 🔴 우선순위 높음 (2026-02-12 수정 필요)
-- [ ] **AnalyzedArticlePage 본문 표시 안 됨**
-  - 분석하기 결과 페이지에서 기사 본문(body)이 표시되지 않음
-  - 원인: App.tsx에서 `data.body`를 전달하는데, 백엔드 응답에 body 필드가 없을 수 있음
-  - 확인 필요: `/api/articles/analyze` 응답에 body 포함 여부
-- [ ] **AnalyzedArticlePage에 "AI에게 질문하기" UI 추가**
+- [x] **AnalyzedArticlePage 본문 표시** ✅
+  - 확인 완료: 백엔드에서 body 필드 정상 반환
+  - App.tsx에서 data.body 전달 완료
+- [x] **AnalyzedArticlePage에 "AI에게 질문하기" UI 추가** ✅
   - 기존 article_content.tsx의 ChatSection 컴포넌트 가져오기
   - 분석 결과 페이지에서도 AI 질문 가능하도록
+- [ ] **키워드 추출 품질 개선**
+  - 형태소 분석기가 복합어를 너무 잘게 쪼갬 (예: "청년도약계좌" → "청년", "도약")
+  - "청년도약계좌", "청년미래적금", "세금환급" 같은 복합 키워드 유지 필요
+- [ ] **요약 품질 개선**
+  - 현재: "1. [청년미래적금]" 처럼 너무 축약됨
+  - 개선: "1. [청년미래적금]: 청년을 위한 저축 상품으로..." 설명 포함 필요
+  - LLM 프롬프트 수정 필요
 
 ### 🟢 우선순위 낮음
-- [ ] Tailscale 원격 개발 환경 구축
 - [ ] **Google AdSense 적용**
   - [ ] 개인정보처리방침 페이지 생성
   - [ ] 이용약관 페이지 생성
