@@ -9,6 +9,7 @@ import { AnalysisResult } from "./components/AnalysisResult";
 import { ArticleHistory } from "./components/ArticleHistory";
 import { ArticleCardList } from "./components/ArticleCardList";
 import { ReadHistoryTab } from "./components/ReadHistoryTab";
+import { Footer } from "./components/Footer";
 import Content from "./pages/article_content";
 import MyPage from "./pages/MyPage";
 import ExperiencePage from "./pages/ExperiencePage";
@@ -644,6 +645,8 @@ function HomePage() {
         </Tabs>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

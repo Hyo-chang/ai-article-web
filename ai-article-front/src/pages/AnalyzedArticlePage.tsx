@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Building2, Send } from 'lucide-react';
+import { ArrowLeft, Building2, Send, MessageCircle, X, Sparkles } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/api';
 import { useAuth } from '@/services/AuthContext';
 
@@ -69,7 +69,9 @@ export default function AnalyzedArticlePage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const questionInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
   // router state로 전달된 데이터 확인 (비로그인 사용자용)
   const stateData = location.state as LocationState | null;
@@ -388,77 +390,144 @@ export default function AnalyzedArticlePage() {
                 )}
               </section>
 
-              {/* AI에게 질문하기 */}
-              <section className="flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7">
-                <h2 className="text-base font-semibold text-slate-900 dark:text-white">AI에게 질문하기</h2>
-
-                <div className="mt-4 flex flex-col gap-3">
-                  <div className="max-h-[280px] min-h-[180px] overflow-y-auto rounded-xl bg-slate-50/90 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
-                    {messages.length === 0 ? (
-                      <p className="text-sm text-slate-500 dark:text-gray-400">아직 대화한 내용이 없습니다. 첫 질문을 남겨보세요.</p>
-                    ) : (
-                      <ul className="space-y-3">
-                        {messages.map((message) => (
-                          <li
-                            key={message.id}
-                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                          >
-                            <div
-                              className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-6 shadow-sm ${
-                                message.role === 'user'
-                                  ? 'bg-slate-900 text-white dark:bg-white dark:text-black'
-                                  : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-[#1a1c20] dark:text-gray-200 dark:ring-white/10'
-                              }`}
-                            >
-                              <p>{message.content}</p>
-                              <span
-                                className={`mt-1 block text-xs ${
-                                  message.role === 'user' ? 'text-slate-200/70 dark:text-black/50' : 'text-slate-500 dark:text-gray-500'
-                                }`}
-                              >
-                                {message.timestamp}
-                              </span>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    {isSending && <p className="mt-3 text-center text-xs text-slate-500 dark:text-gray-400">AI가 생각 중입니다...</p>}
-                  </div>
-
-                  <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-gray-500">새로운 질문</label>
-                  <div className="relative w-full mt-1">
-                    <span className="pointer-events-none absolute left-3 top-3 text-lg text-slate-400 dark:text-gray-500">+</span>
-                    <textarea
-                      value={question}
-                      onChange={(e) => setQuestion(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendQuestion();
-                        }
-                      }}
-                      ref={questionInputRef}
-                      rows={3}
-                      placeholder="무엇이든 물어보세요"
-                      className="w-full resize-none rounded-xl border border-slate-200 bg-white px-8 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-[#1a1c20] dark:text-white dark:placeholder:text-gray-500 dark:focus:border-white/30"
-                    />
-                  </div>
-                  {chatError && <p className="text-xs text-rose-500 dark:text-rose-400">{chatError}</p>}
-                  <button
-                    type="button"
-                    onClick={handleSendQuestion}
-                    disabled={isSending || !question.trim()}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-white dark:text-black dark:hover:bg-gray-200"
-                  >
-                    <Send size={16} />
-                    {isSending ? '전송 중...' : '보내기'}
-                  </button>
-                </div>
-              </section>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* 플로팅 AI 채팅 버튼 */}
+      <button
+        onClick={() => setIsChatOpen(true)}
+        className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+          isChatOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
+        }`}
+        aria-label="AI에게 질문하기"
+      >
+        <Sparkles className="h-6 w-6" />
+      </button>
+
+      {/* 확장된 AI 채팅창 */}
+      <div
+        ref={chatContainerRef}
+        className={`fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-[#15181f] ${
+          isChatOpen
+            ? 'h-[500px] w-[380px] scale-100 opacity-100 sm:h-[550px] sm:w-[420px]'
+            : 'h-14 w-14 scale-0 opacity-0'
+        }`}
+      >
+        {isChatOpen && (
+          <>
+            {/* 채팅창 헤더 */}
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+                  <Sparkles className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">AI 어시스턴트</h3>
+                  <p className="text-xs text-slate-500 dark:text-gray-400">기사에 대해 무엇이든 물어보세요</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-white"
+                aria-label="채팅창 닫기"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* 메시지 영역 */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {messages.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center text-center">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500/10 to-purple-600/10 dark:from-blue-500/20 dark:to-purple-600/20">
+                    <MessageCircle className="h-8 w-8 text-blue-500" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700 dark:text-gray-300">대화를 시작해보세요</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-gray-500">
+                    이 기사에 대해 궁금한 점을 물어보세요
+                  </p>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {messages.map((message) => (
+                    <li
+                      key={message.id}
+                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
+                          message.role === 'user'
+                            ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'
+                            : 'bg-slate-100 text-slate-800 dark:bg-white/10 dark:text-gray-200'
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        <span
+                          className={`mt-1 block text-xs ${
+                            message.role === 'user' ? 'text-white/70' : 'text-slate-500 dark:text-gray-500'
+                          }`}
+                        >
+                          {message.timestamp}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                  {isSending && (
+                    <li className="flex justify-start">
+                      <div className="flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-3 dark:bg-white/10">
+                        <div className="flex gap-1">
+                          <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
+                          <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
+                          <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+                        </div>
+                      </div>
+                    </li>
+                  )}
+                </ul>
+              )}
+            </div>
+
+            {/* 입력 영역 */}
+            <div className="border-t border-slate-200 p-3 dark:border-white/10">
+              {chatError && (
+                <p className="mb-2 text-xs text-rose-500 dark:text-rose-400">{chatError}</p>
+              )}
+              <div className="flex items-end gap-2">
+                <textarea
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendQuestion();
+                    }
+                  }}
+                  ref={questionInputRef}
+                  rows={1}
+                  placeholder="메시지를 입력하세요..."
+                  className="max-h-24 min-h-[40px] flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-500"
+                  style={{ height: 'auto' }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = Math.min(target.scrollHeight, 96) + 'px';
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleSendQuestion}
+                  disabled={isSending || !question.trim()}
+                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-md transition hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="보내기"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -124,29 +124,64 @@ class NewsKeywordExtractor:
     def _get_candidate_words(self, text: str):
         """
         Step 2: Kiwi 형태소 분석 및 후보군 추출 (명사, 어근).
+        복합 명사를 유지하기 위해 연속된 명사를 결합합니다.
 
         :param text: 분석할 전체 텍스트.
         :return: (토큰화된 문장 리스트, 후보 단어 set)
         """
-        # 신조어 자동 등록
-        self.kiwi.extract_add_words(text, min_cnt=2, max_word_len=10)
+        # 신조어 자동 등록 (복합어 인식 향상)
+        self.kiwi.extract_add_words(text, min_cnt=2, max_word_len=15)
 
         sentences = text.split('.') # 간단한 문장 분리
-        
+
         candidate_tokens = []
         tokenized_sentences = []
 
         for sentence in sentences:
             if not sentence.strip():
                 continue
-            
+
             tokens = self.kiwi.tokenize(sentence)
             sentence_words = []
-            for token in tokens:
-                # 명사(NNG, NNP), 어근(XR) 추출, 한 글자 단어 및 불용어 제외
-                if token.tag in ['NNG', 'NNP', 'XR'] and len(token.form) > 1 and token.form not in self.stopwords:
-                    candidate_tokens.append(token.form)
-                    sentence_words.append(token.form)
+
+            # 연속된 명사를 결합하여 복합 명사 생성
+            compound_word = ""
+            compound_start_pos = -1
+
+            for i, token in enumerate(tokens):
+                # 명사(NNG, NNP), 어근(XR) 추출
+                if token.tag in ['NNG', 'NNP', 'XR']:
+                    # 연속된 명사인지 확인 (위치가 바로 이어지는지)
+                    if compound_word and compound_start_pos != -1:
+                        # 이전 토큰과 현재 토큰이 연속된 위치인지 확인
+                        prev_token = tokens[i-1] if i > 0 else None
+                        if prev_token and prev_token.tag in ['NNG', 'NNP', 'XR']:
+                            expected_pos = compound_start_pos + len(compound_word)
+                            if token.start == expected_pos or token.start <= expected_pos + 1:
+                                compound_word += token.form
+                                continue
+
+                    # 이전 복합어가 있으면 저장
+                    if compound_word and len(compound_word) > 1 and compound_word not in self.stopwords:
+                        candidate_tokens.append(compound_word)
+                        sentence_words.append(compound_word)
+
+                    # 새 복합어 시작
+                    compound_word = token.form
+                    compound_start_pos = token.start
+                else:
+                    # 명사가 아닌 토큰을 만나면 복합어 저장
+                    if compound_word and len(compound_word) > 1 and compound_word not in self.stopwords:
+                        candidate_tokens.append(compound_word)
+                        sentence_words.append(compound_word)
+                    compound_word = ""
+                    compound_start_pos = -1
+
+            # 문장 끝에 남은 복합어 저장
+            if compound_word and len(compound_word) > 1 and compound_word not in self.stopwords:
+                candidate_tokens.append(compound_word)
+                sentence_words.append(compound_word)
+
             if sentence_words:
                 tokenized_sentences.append(sentence_words)
 
