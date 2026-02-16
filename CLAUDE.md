@@ -469,10 +469,32 @@ private Integer getCurrentUserId() {
 ### AI 채팅 UI 개선
 - 전체 색상 테마를 indigo/purple로 통일
 - 리사이즈 핸들을 왼쪽 위로 이동 (overflow:hidden으로 인한 클리핑 해결)
-- 사용자 메시지 배경색 개선: 그라데이션 → 솔리드 `bg-indigo-600`
+- 사용자 메시지 배경색 개선: `bg-indigo-100` + `text-black` (가독성 대폭 개선)
 - 다크모드 채팅 입력창 배경색 강화: `bg-white/5` → `bg-slate-700`
 - AI 응답 메시지 다크모드 대비 개선: `bg-white/10` → `bg-slate-700`
+- 채팅 입력창 및 메시지 텍스트를 검정색으로 변경
 - 적용 파일: `AnalyzedArticlePage.tsx`, `article_content.tsx`
+
+### prerender.io 연동 (SEO 개선)
+- **문제**: React SPA라서 네이버/구글 봇이 JavaScript를 실행 못해 빈 페이지로 인식
+- **해결**: prerender.io 미들웨어 추가하여 봇에게 렌더링된 HTML 제공
+- **설정 파일**: `ai-article-front/middleware.ts`
+- **환경변수**: Vercel에 `PRERENDER_TOKEN` 추가 필요
+- **prerender.io 계정**: 가입 완료 (무료 플랜, 월 250회)
+- **토큰**: Vercel 환경변수에 저장됨
+
+### 검색엔진 색인 현황
+- **Google**: 2페이지 색인됨, 3페이지 대기 중 (일일 할당량 제한)
+- **네이버**: prerender.io 설정 완료, 수집 요청 필요
+
+### 내일 할 일
+1. 네이버 서치어드바이저에서 웹 페이지 수집 요청
+   - `https://ai-article-web.vercel.app/`
+   - `https://ai-article-web.vercel.app/home`
+   - `https://ai-article-web.vercel.app/experience`
+2. Google Search Console에서 색인 요청 (할당량 초기화 후)
+   - `/home`, `/experience`, `/login` 페이지
+3. 색인 성공 확인 후 검색 테스트
 
 ## 다음 작업 (TODO)
 
