@@ -669,8 +669,8 @@ export default function ArticleDetailPage() {
                                                     <div
                                                         className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-md ${
                                                             message.role === 'user'
-                                                                ? 'bg-gradient-to-br from-indigo-600 to-purple-700 text-white'
-                                                                : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-white/10 dark:text-gray-200 dark:ring-white/10'
+                                                                ? 'bg-indigo-100 text-black ring-1 ring-indigo-200 dark:bg-indigo-200 dark:text-black'
+                                                                : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-700 dark:text-gray-100 dark:ring-slate-600'
                                                         }`}
                                                     >
                                                         {message.snippet && (
@@ -681,7 +681,7 @@ export default function ArticleDetailPage() {
                                                         <p className="whitespace-pre-wrap">{message.content}</p>
                                                         <span
                                                             className={`mt-1 block text-xs ${
-                                                                message.role === 'user' ? 'text-white/70' : 'text-slate-500 dark:text-gray-500'
+                                                                message.role === 'user' ? 'text-indigo-600 dark:text-indigo-700' : 'text-slate-500 dark:text-gray-500'
                                                             }`}
                                                         >
                                                             {message.timestamp}
@@ -722,7 +722,7 @@ export default function ArticleDetailPage() {
                                             ref={questionInputRef}
                                             rows={1}
                                             placeholder="메시지를 입력하세요..."
-                                            className="max-h-24 min-h-[40px] flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-500"
+                                            className="max-h-24 min-h-[40px] flex-1 resize-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-black placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-600 dark:bg-slate-700 dark:text-black dark:placeholder:text-gray-400 dark:focus:border-indigo-500"
                                             style={{ height: 'auto' }}
                                             onInput={(e) => {
                                                 const target = e.target as HTMLTextAreaElement;
@@ -1051,8 +1051,8 @@ function ChatSection({
                                     <div
                                         className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-6 shadow-sm ${
                                             message.role === 'user'
-                                                ? 'bg-slate-900 text-white dark:bg-white dark:text-black'
-                                                : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-[#1a1c20] dark:text-gray-200 dark:ring-white/10'
+                                                ? 'bg-indigo-100 text-black ring-1 ring-indigo-200 dark:bg-indigo-200 dark:text-black'
+                                                : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-700 dark:text-gray-100 dark:ring-slate-600'
                                         }`}
                                     >
                                         {formatSnippetPreview(message.snippet) && (
@@ -1063,7 +1063,7 @@ function ChatSection({
                                         <p>{message.content}</p>
                                         <span
                                             className={`mt-1 block text-xs ${
-                                                message.role === 'user' ? 'text-slate-200/70 dark:text-black/50' : 'text-slate-500 dark:text-gray-500'
+                                                message.role === 'user' ? 'text-indigo-600 dark:text-indigo-700' : 'text-slate-500 dark:text-gray-500'
                                             }`}
                                         >
                                             {message.timestamp}
@@ -1107,7 +1107,7 @@ function ChatSection({
                         ref={inputRef}
                         rows={4}
                         placeholder="무엇이든 물어보세요"
-                        className={`w-full resize-none border border-slate-200 bg-white px-8 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-[#1a1c20] dark:text-white dark:placeholder:text-gray-500 dark:focus:border-white/30 ${
+                        className={`w-full resize-none border border-slate-200 bg-white px-8 py-3 text-sm text-black placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-black dark:placeholder:text-gray-400 dark:focus:border-indigo-500 ${
                             snippetPreview ? 'rounded-b-xl rounded-t-none border-t-0' : 'rounded-xl'
                         }`}
                     />

@@ -513,14 +513,14 @@ export default function AnalyzedArticlePage() {
                       <div
                         className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-md ${
                           message.role === 'user'
-                            ? 'bg-indigo-600 text-white dark:bg-indigo-500'
+                            ? 'bg-indigo-100 text-black ring-1 ring-indigo-200 dark:bg-indigo-200 dark:text-black'
                             : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-700 dark:text-gray-100 dark:ring-slate-600'
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{message.content}</p>
                         <span
                           className={`mt-1 block text-xs ${
-                            message.role === 'user' ? 'text-white/70' : 'text-slate-500 dark:text-gray-500'
+                            message.role === 'user' ? 'text-indigo-600 dark:text-indigo-700' : 'text-slate-500 dark:text-gray-500'
                           }`}
                         >
                           {message.timestamp}
@@ -561,7 +561,7 @@ export default function AnalyzedArticlePage() {
                   ref={questionInputRef}
                   rows={1}
                   placeholder="메시지를 입력하세요..."
-                  className="max-h-24 min-h-[40px] flex-1 resize-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:border-indigo-500"
+                  className="max-h-24 min-h-[40px] flex-1 resize-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-black placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-600 dark:bg-slate-700 dark:text-black dark:placeholder:text-gray-400 dark:focus:border-indigo-500"
                   style={{ height: 'auto' }}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
