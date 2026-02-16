@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshCw, Send, Plus, Check, Heart, MessageCircle, X, Sparkles } from 'lucide-react';
+import { RefreshCw, Send, Plus, Check, Heart, MessageCircle, X, Sparkles, ArrowLeft } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useArticles } from '../hooks/useArticles';
 import { useBookmarks } from '../hooks/useBookmarks';
@@ -445,6 +445,13 @@ export default function ArticleDetailPage() {
                     <div className="mt-12 w-full flex justify-center">
                         <div className="w-full max-w-[1600px] px-4 md:px-6 lg:px-10">
                             <header className="space-y-3">
+                                <button
+                                    onClick={() => navigate('/home')}
+                                    className="mb-4 flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
+                                >
+                                    <ArrowLeft className="h-4 w-4" />
+                                    홈으로
+                                </button>
                                 <div className="flex items-start justify-between gap-4">
                                     <h1 className="text-left text-4xl font-bold tracking-tight text-slate-900 dark:text-white md:text-5xl">
                                         {articleDetail.title}
