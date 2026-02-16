@@ -398,7 +398,7 @@ export default function AnalyzedArticlePage() {
       {/* 플로팅 AI 채팅 버튼 */}
       <button
         onClick={() => setIsChatOpen(true)}
-        className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl ${
+        className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-700 text-white shadow-lg ring-2 ring-indigo-400/50 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:ring-indigo-400 ${
           isChatOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
         }`}
         aria-label="AI에게 질문하기"
@@ -409,18 +409,28 @@ export default function AnalyzedArticlePage() {
       {/* 확장된 AI 채팅창 */}
       <div
         ref={chatContainerRef}
-        className={`fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-[#15181f] ${
+        className={`fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl border-2 border-slate-300 bg-slate-50 shadow-2xl transition-opacity duration-300 dark:border-white/20 dark:bg-[#15181f] ${
           isChatOpen
-            ? 'h-[500px] w-[380px] scale-100 opacity-100 sm:h-[550px] sm:w-[420px]'
+            ? 'scale-100 opacity-100'
             : 'h-14 w-14 scale-0 opacity-0'
         }`}
+        style={isChatOpen ? {
+          width: '420px',
+          height: '550px',
+          minWidth: '320px',
+          minHeight: '400px',
+          maxWidth: '90vw',
+          maxHeight: '80vh',
+          resize: 'both',
+          overflow: 'hidden'
+        } : undefined}
       >
         {isChatOpen && (
           <>
             {/* 채팅창 헤더 */}
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-white/10">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-700">
                   <Sparkles className="h-4 w-4 text-white" />
                 </div>
                 <div>
@@ -457,10 +467,10 @@ export default function AnalyzedArticlePage() {
                       className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
+                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-md ${
                           message.role === 'user'
-                            ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'
-                            : 'bg-slate-100 text-slate-800 dark:bg-white/10 dark:text-gray-200'
+                            ? 'bg-gradient-to-br from-indigo-600 to-purple-700 text-white'
+                            : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-white/10 dark:text-gray-200 dark:ring-white/10'
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{message.content}</p>
@@ -519,7 +529,7 @@ export default function AnalyzedArticlePage() {
                   type="button"
                   onClick={handleSendQuestion}
                   disabled={isSending || !question.trim()}
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-md transition hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white shadow-md transition hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="보내기"
                 >
                   <Send className="h-4 w-4" />
