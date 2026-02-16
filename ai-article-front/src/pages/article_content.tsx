@@ -104,6 +104,44 @@ export default function ArticleDetailPage() {
     const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
     const [isChatOpen, setIsChatOpen] = useState(false);
 
+    // 채팅창 리사이즈 상태
+    const [chatSize, setChatSize] = useState({ width: 420, height: 550 });
+    const isResizingRef = useRef(false);
+    const resizeStartRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
+
+    // 리사이즈 핸들러
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isResizingRef.current) return;
+            const deltaX = resizeStartRef.current.x - e.clientX;
+            const deltaY = resizeStartRef.current.y - e.clientY;
+            const newWidth = Math.min(Math.max(resizeStartRef.current.width + deltaX, 320), window.innerWidth * 0.9);
+            const newHeight = Math.min(Math.max(resizeStartRef.current.height + deltaY, 400), window.innerHeight * 0.8);
+            setChatSize({ width: newWidth, height: newHeight });
+        };
+
+        const handleMouseUp = () => {
+            isResizingRef.current = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, []);
+
+    const handleResizeStart = (e: React.MouseEvent) => {
+        e.preventDefault();
+        isResizingRef.current = true;
+        resizeStartRef.current = { x: e.clientX, y: e.clientY, width: chatSize.width, height: chatSize.height };
+        document.body.style.cursor = 'nwse-resize';
+        document.body.style.userSelect = 'none';
+    };
+
     useEffect(() => {
         if (!user?.userId || !user.token) return;
         if (!isArticleIdValid || !resolvedArticle) return;
@@ -556,18 +594,24 @@ export default function ArticleDetailPage() {
                                 : 'h-14 w-14 scale-0 opacity-0'
                         }`}
                         style={isChatOpen ? {
-                            width: '420px',
-                            height: '550px',
-                            minWidth: '320px',
-                            minHeight: '400px',
-                            maxWidth: '90vw',
-                            maxHeight: '80vh',
-                            resize: 'both',
+                            width: chatSize.width,
+                            height: chatSize.height,
                             overflow: 'hidden'
                         } : undefined}
                     >
                         {isChatOpen && (
                             <>
+                                {/* 왼쪽 위 리사이즈 핸들 */}
+                                <div
+                                    onMouseDown={handleResizeStart}
+                                    className="absolute -left-1 -top-1 z-10 flex h-6 w-6 cursor-nwse-resize items-center justify-center rounded-full bg-slate-700 text-white shadow-md hover:bg-slate-600 dark:bg-slate-500 dark:hover:bg-slate-400"
+                                    title="드래그하여 크기 조절"
+                                >
+                                    <svg className="h-3 w-3" viewBox="0 0 10 10" fill="currentColor">
+                                        <path d="M0 10L10 0M0 6L6 0M0 2L2 0" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                                    </svg>
+                                </div>
+
                                 {/* 채팅창 헤더 */}
                                 <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-white/10">
                                     <div className="flex items-center gap-2">

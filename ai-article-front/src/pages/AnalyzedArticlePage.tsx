@@ -45,7 +45,7 @@ function parseMarkdownBold(text: string): React.ReactNode[] {
     if (part.startsWith('**') && part.endsWith('**')) {
       const boldText = part.slice(2, -2);
       return (
-        <span key={index} className="font-bold text-blue-600">
+        <span key={index} className="font-bold text-indigo-600 dark:text-indigo-400">
           {boldText}
         </span>
       );
@@ -72,6 +72,44 @@ export default function AnalyzedArticlePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const questionInputRef = useRef<HTMLTextAreaElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // 채팅창 리사이즈 상태
+  const [chatSize, setChatSize] = useState({ width: 420, height: 550 });
+  const isResizingRef = useRef(false);
+  const resizeStartRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
+
+  // 리사이즈 핸들러
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizingRef.current) return;
+      const deltaX = resizeStartRef.current.x - e.clientX;
+      const deltaY = resizeStartRef.current.y - e.clientY;
+      const newWidth = Math.min(Math.max(resizeStartRef.current.width + deltaX, 320), window.innerWidth * 0.9);
+      const newHeight = Math.min(Math.max(resizeStartRef.current.height + deltaY, 400), window.innerHeight * 0.8);
+      setChatSize({ width: newWidth, height: newHeight });
+    };
+
+    const handleMouseUp = () => {
+      isResizingRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizingRef.current = true;
+    resizeStartRef.current = { x: e.clientX, y: e.clientY, width: chatSize.width, height: chatSize.height };
+    document.body.style.cursor = 'nwse-resize';
+    document.body.style.userSelect = 'none';
+  };
 
   // router state로 전달된 데이터 확인 (비로그인 사용자용)
   const stateData = location.state as LocationState | null;
@@ -281,7 +319,7 @@ export default function AnalyzedArticlePage() {
                     href={article.articleUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
+                    className="text-indigo-500 hover:text-indigo-600 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
                   >
                     원문 보기
                   </a>
@@ -415,18 +453,24 @@ export default function AnalyzedArticlePage() {
             : 'h-14 w-14 scale-0 opacity-0'
         }`}
         style={isChatOpen ? {
-          width: '420px',
-          height: '550px',
-          minWidth: '320px',
-          minHeight: '400px',
-          maxWidth: '90vw',
-          maxHeight: '80vh',
-          resize: 'both',
+          width: chatSize.width,
+          height: chatSize.height,
           overflow: 'hidden'
         } : undefined}
       >
         {isChatOpen && (
           <>
+            {/* 왼쪽 위 리사이즈 핸들 */}
+            <div
+              onMouseDown={handleResizeStart}
+              className="absolute left-2 top-2 z-20 flex h-5 w-5 cursor-nwse-resize items-center justify-center rounded bg-slate-300/80 text-slate-600 transition-colors hover:bg-slate-400 dark:bg-white/20 dark:text-white dark:hover:bg-white/30"
+              title="드래그하여 크기 조절"
+            >
+              <svg className="h-3 w-3" viewBox="0 0 10 10">
+                <path d="M1 1L9 9M1 5L5 9M5 1L9 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+              </svg>
+            </div>
+
             {/* 채팅창 헤더 */}
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-white/10">
               <div className="flex items-center gap-2">
@@ -451,8 +495,8 @@ export default function AnalyzedArticlePage() {
             <div className="flex-1 overflow-y-auto p-4">
               {messages.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500/10 to-purple-600/10 dark:from-blue-500/20 dark:to-purple-600/20">
-                    <MessageCircle className="h-8 w-8 text-blue-500" />
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-600/10 dark:from-indigo-500/20 dark:to-purple-600/20">
+                    <MessageCircle className="h-8 w-8 text-indigo-500 dark:text-indigo-400" />
                   </div>
                   <p className="text-sm font-medium text-slate-700 dark:text-gray-300">대화를 시작해보세요</p>
                   <p className="mt-1 text-xs text-slate-500 dark:text-gray-500">
@@ -469,8 +513,8 @@ export default function AnalyzedArticlePage() {
                       <div
                         className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-md ${
                           message.role === 'user'
-                            ? 'bg-gradient-to-br from-indigo-600 to-purple-700 text-white'
-                            : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-white/10 dark:text-gray-200 dark:ring-white/10'
+                            ? 'bg-indigo-600 text-white dark:bg-indigo-500'
+                            : 'bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-700 dark:text-gray-100 dark:ring-slate-600'
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{message.content}</p>
@@ -517,7 +561,7 @@ export default function AnalyzedArticlePage() {
                   ref={questionInputRef}
                   rows={1}
                   placeholder="메시지를 입력하세요..."
-                  className="max-h-24 min-h-[40px] flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-500"
+                  className="max-h-24 min-h-[40px] flex-1 resize-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:border-indigo-500"
                   style={{ height: 'auto' }}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
