@@ -532,7 +532,7 @@ export default function ArticleDetailPage() {
                     {/* 플로팅 AI 채팅 버튼 */}
                     <button
                         onClick={() => setIsChatOpen(true)}
-                        className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-700 text-white shadow-lg ring-2 ring-indigo-400/50 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:ring-indigo-400 ${
+                        className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-[0_4px_20px_rgba(0,0,0,0.3)] ring-2 ring-slate-700 transition-all duration-300 hover:scale-110 hover:bg-slate-800 hover:shadow-[0_6px_25px_rgba(0,0,0,0.4)] dark:bg-indigo-600 dark:ring-indigo-400/50 dark:hover:bg-indigo-500 ${
                             isChatOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
                         }`}
                         aria-label="AI에게 질문하기"
