@@ -30,7 +30,7 @@ const releases: Release[] = [
       { type: "improvement", text: "AI 채팅 색상 테마를 indigo/purple로 통일" },
       { type: "improvement", text: "채팅창 리사이즈 핸들을 왼쪽 위로 이동 (사용성 개선)" },
       { type: "improvement", text: "다크모드 채팅 입력창 배경색 강화 (가독성 향상)" },
-      { type: "bugfix", text: "사용자 메시지가 배경과 대비되지 않아 안 보이던 문제 수정" },
+      { type: "bugfix", text: "채팅 입력창 및 사용자 메시지 텍스트를 검정색으로 변경 (가독성 대폭 개선)" },
       { type: "bugfix", text: "AI 응답 메시지 다크모드 대비 개선" },
     ],
   },
