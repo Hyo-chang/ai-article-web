@@ -464,6 +464,16 @@ private Integer getCurrentUserId() {
   - 요청: `{ "article_url": "https://..." }`
   - 응답: `{ "success": true, "title": "...", "summary": "...", "keywords": [...], "definitions": {...}, ... }`
 
+## 최근 수정 사항 (2026-02-16)
+
+### AI 채팅 UI 개선
+- 전체 색상 테마를 indigo/purple로 통일
+- 리사이즈 핸들을 왼쪽 위로 이동 (overflow:hidden으로 인한 클리핑 해결)
+- 사용자 메시지 배경색 개선: 그라데이션 → 솔리드 `bg-indigo-600`
+- 다크모드 채팅 입력창 배경색 강화: `bg-white/5` → `bg-slate-700`
+- AI 응답 메시지 다크모드 대비 개선: `bg-white/10` → `bg-slate-700`
+- 적용 파일: `AnalyzedArticlePage.tsx`, `article_content.tsx`
+
 ## 다음 작업 (TODO)
 
 ### 🔴 우선순위 높음 (2026-02-12 수정 필요)
