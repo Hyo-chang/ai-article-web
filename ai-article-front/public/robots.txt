@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://ai-article-web.vercel.app/sitemap.xml
+Sitemap: https://aharead.com/sitemap.xml
