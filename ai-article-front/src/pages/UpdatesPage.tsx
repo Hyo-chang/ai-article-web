@@ -23,6 +23,19 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.3.4",
+    date: "2026-02-17",
+    highlights: "커스텀 도메인 및 SEO 최적화",
+    items: [
+      { type: "feature", text: "커스텀 도메인 연결: aharead.com으로 접속 가능" },
+      { type: "feature", text: "Cloudflare CDN 적용: 더 빠른 로딩 속도" },
+      { type: "improvement", text: "SEO 최적화: prerender.io 연동으로 검색엔진 크롤링 개선" },
+      { type: "improvement", text: "네이버 서치어드바이저 등록 및 사이트맵 제출" },
+      { type: "improvement", text: "구글 서치콘솔 등록 및 사이트맵 제출" },
+      { type: "improvement", text: "검색봇(Googlebot, Yeti) 접근 허용 규칙 추가" },
+    ],
+  },
+  {
     version: "0.3.3",
     date: "2026-02-16",
     highlights: "AI 채팅 UI 개선",
