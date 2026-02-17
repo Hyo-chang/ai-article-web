@@ -464,6 +464,57 @@ private Integer getCurrentUserId() {
   - 요청: `{ "article_url": "https://..." }`
   - 응답: `{ "success": true, "title": "...", "summary": "...", "keywords": [...], "definitions": {...}, ... }`
 
+## 도메인 및 SEO 설정 (2026-02-17)
+
+### 커스텀 도메인
+- **도메인**: `aharead.com`
+- **구매처**: (도메인 등록 업체)
+- **DNS**: Cloudflare
+
+### 배포 구조 (업데이트)
+```
+[사용자] → aharead.com → Cloudflare Worker → prerender.io (봇) / Vercel (일반)
+                                    ↓
+                              Vercel (Frontend)
+                                    ↓
+                              Railway (Backend)
+```
+
+### Cloudflare 설정
+- **Worker 이름**: `aharead-prerender`
+- **기능**: 검색 봇 감지 → prerender.io로 프록시
+- **봇 허용 규칙**: Security → Security rules → Custom rules
+  - Rule: `Allow Naver Bot` - User Agent contains "Yeti" or "Googlebot" → Skip
+
+### prerender.io 설정
+- **계정**: 가입 완료 (무료 플랜, 월 250회)
+- **토큰**: Cloudflare Worker 환경변수에 저장
+- **캐시 관리**: https://prerender.io → Cache Manager
+- **주의**: 코드 변경 후 캐시 삭제 필요 (`clear cache`)
+
+### 검색엔진 등록 현황
+
+| 플랫폼 | 상태 | URL |
+|--------|------|-----|
+| 네이버 서치어드바이저 | ✅ 소유권 확인 완료, 사이트맵 제출 완료 | https://searchadvisor.naver.com |
+| 구글 서치콘솔 | ✅ 소유권 확인 완료, 사이트맵 제출 완료 | https://search.google.com/search-console |
+
+### 메타 태그 (index.html)
+```html
+<!-- 네이버 서치어드바이저 -->
+<meta name="naver-site-verification" content="dcd3d2f73f0409732734c882921df23527c6bf6c" />
+<meta name="naver-site-verification" content="bc4fc2c6977231b5e922cbae621f0aaf592d1b3a" />
+
+<!-- 구글 서치콘솔 -->
+<meta name="google-site-verification" content="LJoNpweN77r27SkzzvvWeT_7UqtAxWoIqwX_6L1hXvc" />
+```
+
+### 대기 중인 작업
+- [ ] **1~2주 후 색인 확인**: 구글/네이버에서 `site:aharead.com` 검색
+- [ ] **색인 확인되면 구글 애드센스 재신청**
+
+---
+
 ## 최근 수정 사항 (2026-02-16)
 
 ### AI 채팅 UI 개선
@@ -487,14 +538,10 @@ private Integer getCurrentUserId() {
 - **Google**: 2페이지 색인됨, 3페이지 대기 중 (일일 할당량 제한)
 - **네이버**: prerender.io 설정 완료, 수집 요청 필요
 
-### 내일 할 일
-1. 네이버 서치어드바이저에서 웹 페이지 수집 요청
-   - `https://ai-article-web.vercel.app/`
-   - `https://ai-article-web.vercel.app/home`
-   - `https://ai-article-web.vercel.app/experience`
-2. Google Search Console에서 색인 요청 (할당량 초기화 후)
-   - `/home`, `/experience`, `/login` 페이지
-3. 색인 성공 확인 후 검색 테스트
+### ✅ 완료됨 (2026-02-17)
+1. ~~네이버 서치어드바이저에서 웹 페이지 수집 요청~~ → aharead.com으로 완료
+2. ~~Google Search Console에서 색인 요청~~ → aharead.com으로 완료
+3. 색인 성공 확인 후 검색 테스트 → **1~2주 대기 중**
 
 ## 다음 작업 (TODO)
 
