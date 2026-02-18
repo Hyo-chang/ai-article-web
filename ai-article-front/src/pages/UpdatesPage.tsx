@@ -23,6 +23,17 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.3.5",
+    date: "2026-02-18",
+    highlights: "데이터베이스 인프라 개선",
+    items: [
+      { type: "feature", text: "Railway MySQL로 데이터베이스 이전: 더 안정적인 서비스" },
+      { type: "improvement", text: "클라우드 DB 적용: 디스크 공간 문제 해결" },
+      { type: "improvement", text: "데이터베이스 연결 안정성 향상" },
+      { type: "bugfix", text: "서버 502 에러 해결" },
+    ],
+  },
+  {
     version: "0.3.4",
     date: "2026-02-17",
     highlights: "커스텀 도메인 및 SEO 최적화",

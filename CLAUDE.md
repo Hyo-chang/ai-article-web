@@ -513,26 +513,32 @@ private Integer getCurrentUserId() {
 - [ ] **1~2주 후 색인 확인**: 구글/네이버에서 `site:aharead.com` 검색
 - [ ] **색인 확인되면 구글 애드센스 재신청**
 
-### 🔴 긴급: DB 서버 문제 해결 필요
-**현상**: Railway 백엔드 502 에러 (크래시)
-**원인**: MariaDB 서버(203.231.146.220) `/tmp` 디스크 공간 부족
+### ✅ 완료: Railway MySQL 이전 (2026-02-18)
+**기존 문제**: MariaDB 서버(203.231.146.220) `/tmp` 디스크 공간 부족으로 502 에러
+
+**해결**: Railway MySQL로 이전 완료!
+
+**새 DB 연결 정보**:
+| 항목 | 내부용 (백엔드) | 외부용 (HeidiSQL) |
+|------|----------------|-------------------|
+| 호스트 | `mysql.railway.internal` | `yamanote.proxy.rlwy.net` |
+| 포트 | `3306` | `59150` |
+| 사용자 | `root` | `root` |
+| 비밀번호 | `wIFypzjybWyEcAiqhTUIxJHstVKEvOaB` | (동일) |
+| 데이터베이스 | `railway` | `railway` |
+
+**백엔드 환경변수** (Railway Variables):
 ```
-"No space left on device" - Can't create/write to file '/tmp/#sql-temptable...'
+SPRING_DATASOURCE_URL=jdbc:mariadb://mysql.railway.internal:3306/railway?allowPublicKeyRetrieval=true&useSSL=false
+SPRING_DATASOURCE_USERNAME=root
+SPRING_DATASOURCE_PASSWORD=wIFypzjybWyEcAiqhTUIxJHstVKEvOaB
 ```
 
-**해결 방법 (택1)**:
-1. **기존 서버 정리** (담당자 연락 필요)
-   - SSH 접속 후 `/tmp` 폴더 정리
-   - `sudo rm -rf /tmp/#sql* /tmp/*.MAI`
-
-2. **Railway MySQL로 이전** (권장)
-   - Railway 대시보드 → + New → Database → MySQL
-   - 현재 DB 용량: 55MB (Railway 무료 티어 1GB로 충분)
-   - 백엔드 환경변수 수정:
-     - `SPRING_DATASOURCE_URL`
-     - `SPRING_DATASOURCE_USERNAME`
-     - `SPRING_DATASOURCE_PASSWORD`
-   - 기존 데이터는 새로 시작 (크롤링하면 다시 쌓임)
+### ✅ 초기 데이터 삽입 완료 (2026-02-18)
+- [x] 게시판 카테고리 (post_category) 삽입 완료
+- [x] 역할 데이터 (roles) 삽입 완료
+- [x] 관리자 권한 부여 완료
+- 참고: 뉴스 카테고리는 별도 테이블 없이 코드로 관리됨
 
 ---
 
