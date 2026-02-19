@@ -6,7 +6,6 @@ import { Header } from "./components/Header";
 import { KeywordCategories } from "./components/KeywordCategories";
 import { ArticleInput } from "./components/ArticleInput";
 import { AnalysisResult } from "./components/AnalysisResult";
-import { ArticleHistory } from "./components/ArticleHistory";
 import { ArticleCardList } from "./components/ArticleCardList";
 import { ReadHistoryTab } from "./components/ReadHistoryTab";
 import { Footer } from "./components/Footer";
