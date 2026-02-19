@@ -113,7 +113,7 @@ export default function ExperiencePage() {
           <div className="mt-10 space-y-8 sm:space-y-10">
             <div className="space-y-6">
               <motion.p
-                className="text-center text-4xl font-semibold tracking-[0.3em] text-gray-300 sm:text-5xl"
+                className="text-center text-2xl font-semibold tracking-[0.2em] text-gray-300 sm:text-4xl sm:tracking-[0.3em] md:text-5xl"
                 variants={fadeUpVariants}
                 initial="hidden"
                 animate="visible"
@@ -123,7 +123,7 @@ export default function ExperiencePage() {
               </motion.p>
 
               <motion.h1
-                className="text-center text-6xl font-semibold tracking-tight text-white sm:text-7xl md:text-8xl"
+                className="text-center text-4xl font-semibold tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl"
                 variants={fadeUpVariants}
                 initial="hidden"
                 animate="visible"
@@ -208,7 +208,7 @@ export default function ExperiencePage() {
             <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
               About
             </span>
-            <h2 className="text-5xl font-bold tracking-tight text-[#f1f1f1] sm:text-6xl">
+            <h2 className="text-3xl font-bold tracking-tight text-[#f1f1f1] sm:text-5xl md:text-6xl">
               정보의 홍수 속에서 길을 찾다
             </h2>
             <p className="mx-auto max-w-[640px] text-sm leading-relaxed text-gray-400 sm:text-base">
@@ -280,7 +280,7 @@ export default function ExperiencePage() {
             <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
               Future
             </span>
-            <h2 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
               AI가 그려내는 다음 장면
             </h2>
             <p className="mx-auto max-w-[720px] text-sm leading-relaxed text-white/65 sm:text-base">

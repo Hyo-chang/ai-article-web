@@ -82,29 +82,29 @@ export default function BoardPage() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
         {/* 타이틀 & 글쓰기 */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white">커뮤니티</h1>
-            <p className="mt-2 text-white/50">자유롭게 소통하고 정보를 공유하세요</p>
+            <h1 className="text-2xl font-bold text-white sm:text-3xl">커뮤니티</h1>
+            <p className="mt-1.5 text-sm text-white/50 sm:mt-2 sm:text-base">자유롭게 소통하고 정보를 공유하세요</p>
           </div>
           {isLoggedIn && (
             <button
               onClick={() => navigate('/board/write')}
-              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+              className="flex items-center gap-1.5 self-start px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition font-medium sm:gap-2 sm:px-5 sm:py-2.5 sm:text-base"
             >
-              <PenSquare className="w-4 h-4" />
+              <PenSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               글쓰기
             </button>
           )}
         </div>
 
         {/* 카테고리 탭 */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 sm:mb-6">
           <button
             onClick={() => handleCategoryClick()}
-            className={`px-4 py-2 rounded-full whitespace-nowrap transition ${
+            className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition sm:px-4 sm:py-2 sm:text-base ${
               !category && !isSearching
                 ? 'bg-blue-600 text-white'
                 : 'bg-white/10 text-white/70 hover:bg-white/20'
@@ -116,7 +116,7 @@ export default function BoardPage() {
             <button
               key={cat.categoryId}
               onClick={() => handleCategoryClick(cat.categoryCode)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap transition ${
+              className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition sm:px-4 sm:py-2 sm:text-base ${
                 category === cat.categoryCode && !isSearching
                   ? 'bg-blue-600 text-white'
                   : 'bg-white/10 text-white/70 hover:bg-white/20'
@@ -128,7 +128,7 @@ export default function BoardPage() {
         </div>
 
         {/* 검색 */}
-        <form onSubmit={handleSearch} className="mb-6">
+        <form onSubmit={handleSearch} className="mb-4 sm:mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40 pointer-events-none" />
             <input

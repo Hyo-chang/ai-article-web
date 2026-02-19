@@ -468,25 +468,25 @@ const MyPage: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0f1115] px-4 py-12 text-white">
+    <div className="relative min-h-screen bg-[#0f1115] px-3 py-8 text-white sm:px-4 sm:py-12">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.15),transparent_45%),radial-gradient(circle_at_bottom,_rgba(236,72,153,0.15),transparent_55%)]" />
       <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/50">My Space</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-white/50 sm:tracking-[0.35em]">My Space</p>
+            <h1 className="mt-2 text-2xl font-semibold text-white sm:mt-3 sm:text-3xl md:text-4xl">
               읽기 경험을 내 취향으로
             </h1>
-            <p className="mt-2 text-sm text-white/70">
+            <p className="mt-1.5 text-xs text-white/70 sm:mt-2 sm:text-sm">
               닉네임, 키워드, 프로필을 정리하면 맞춤 추천이 더 정교해집니다.
             </p>
           </div>
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 transition hover:text-white"
+            className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/80 transition hover:text-white sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             뒤로가기
           </button>
         </div>
@@ -560,8 +560,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   };
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-[#15181f]/95 p-6 shadow-2xl shadow-black/40">
-      <h2 className="text-xl font-semibold text-white md:text-2xl">기본 정보</h2>
+    <section className="rounded-2xl border border-white/10 bg-[#15181f]/95 p-4 shadow-2xl shadow-black/40 sm:rounded-3xl sm:p-6">
+      <h2 className="text-lg font-semibold text-white sm:text-xl md:text-2xl">기본 정보</h2>
       <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-center">
         <div className="flex flex-col items-center gap-4">
           <div className="h-28 w-28 rounded-full border border-white/20 bg-gradient-to-br from-white/10 to-white/5 p-1 shadow-inner">
@@ -651,11 +651,11 @@ const KeywordSection: React.FC<KeywordSectionProps> = ({
   maxSelections,
 }) => {
   return (
-    <section className="rounded-3xl border border-white/10 bg-[#15181f]/95 p-6 shadow-2xl shadow-black/40">
+    <section className="rounded-2xl border border-white/10 bg-[#15181f]/95 p-4 shadow-2xl shadow-black/40 sm:rounded-3xl sm:p-6">
       <div className="flex flex-col gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">Interests</p>
-          <h2 className="text-xl font-semibold text-white md:text-2xl">관심사 카테고리</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50 sm:tracking-[0.3em]">Interests</p>
+          <h2 className="text-lg font-semibold text-white sm:text-xl md:text-2xl">관심사 카테고리</h2>
           <p className="text-sm text-white/70">
             키워드 카테고리에서 최대 {maxSelections}개까지 선택하면 홈 화면 추천 기사에 우선 반영됩니다.
           </p>

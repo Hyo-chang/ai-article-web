@@ -210,15 +210,15 @@ export default function UpdatesPage() {
       </header>
 
       {/* 메인 콘텐츠 */}
-      <main className="mx-auto max-w-4xl px-6 py-16">
+      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
         <motion.div
-          className="mb-16 text-center"
+          className="mb-10 text-center sm:mb-16"
           variants={fadeUpVariants}
           initial="hidden"
           animate="visible"
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
             업데이트 내역
           </h1>
           <p className="mt-4 text-lg text-white/60">
@@ -248,7 +248,7 @@ export default function UpdatesPage() {
                 </div>
 
                 {/* 릴리즈 카드 */}
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm sm:p-6">
                   {/* 헤더 */}
                   <div className="mb-4 flex flex-wrap items-center gap-3">
                     <span className="text-xl font-bold text-white sm:text-2xl">

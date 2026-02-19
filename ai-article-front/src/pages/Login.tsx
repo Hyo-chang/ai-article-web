@@ -63,9 +63,9 @@ export function Login() {
       <button
         type="button"
         onClick={() => navigate("/home")}
-        className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white/80 transition hover:text-white focus:outline-none focus:ring-2 focus:ring-white/30"
+        className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:text-white focus:outline-none focus:ring-2 focus:ring-white/30 sm:left-6 sm:top-6 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
       >
-        <Home className="h-4 w-4" />
+        <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         홈으로
       </button>
       <div className="w-full max-w-md">
@@ -74,7 +74,7 @@ export function Login() {
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-br from-[#1e1e1e] via-[#2a2a2a] to-[#121212] text-[#f5f5f5] mb-4 shadow-[0_12px_28px_rgba(0,0,0,0.35)]">
             <Sparkles className="h-5 w-5 text-[#f5f5f5]" />
           </div>
-          <h1 className="text-3xl mb-2 font-semibold text-white">AI Reader</h1>
+          <h1 className="text-2xl mb-2 font-semibold text-white sm:text-3xl">AI Reader</h1>
           <p className="text-white/70">다시 오신 것을 환영합니다</p>
         </div>
 

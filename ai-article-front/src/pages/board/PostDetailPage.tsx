@@ -234,8 +234,8 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090a0c] text-white py-8">
-      <div className="max-w-3xl mx-auto px-4">
+    <div className="min-h-screen bg-[#090a0c] text-white py-6 sm:py-8">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4">
         {/* 뒤로가기 */}
         <button
           onClick={() => navigate('/board')}
@@ -246,14 +246,14 @@ export default function PostDetailPage() {
         </button>
 
         {/* 게시글 */}
-        <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 mb-6 backdrop-blur-sm">
+        <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 mb-4 backdrop-blur-sm sm:p-6 sm:mb-6">
           <div className="mb-4">
             <span className="text-xs px-2 py-1 rounded bg-white/10 text-white/60">
               {post.categoryName}
             </span>
           </div>
 
-          <h1 className="text-2xl font-bold text-white mb-4">
+          <h1 className="text-xl font-bold text-white mb-3 sm:text-2xl sm:mb-4">
             {post.title}
           </h1>
 
@@ -325,7 +325,7 @@ export default function PostDetailPage() {
         </article>
 
         {/* 댓글 섹션 */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm sm:p-6">
           <h2 className="text-lg font-bold text-white mb-4">
             댓글 {post.commentCount}
           </h2>

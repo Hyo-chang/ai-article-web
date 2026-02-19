@@ -288,9 +288,9 @@ export default function AnalyzedArticlePage() {
   const definitions = article.keywordDefinitions || {};
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] px-4 py-10 text-slate-900 dark:bg-[#0f1115] dark:text-white md:px-6 lg:px-8">
-      <div className="mt-12 w-full flex justify-center">
-        <div className="w-full max-w-[1600px] px-4 md:px-6 lg:px-10">
+    <div className="min-h-screen bg-[#f3f4f6] px-3 py-6 text-slate-900 dark:bg-[#0f1115] dark:text-white sm:px-4 sm:py-10 md:px-6 lg:px-8">
+      <div className="mt-8 w-full flex justify-center sm:mt-12">
+        <div className="w-full max-w-[1600px] px-1 sm:px-4 md:px-6 lg:px-10">
           {/* 헤더 */}
           <header className="space-y-3">
             <button
@@ -300,7 +300,7 @@ export default function AnalyzedArticlePage() {
               <ArrowLeft className="h-4 w-4" />
               홈으로
             </button>
-            <h1 className="text-left text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
+            <h1 className="text-left text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl">
               {article.title}
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-gray-400">
@@ -333,12 +333,12 @@ export default function AnalyzedArticlePage() {
             {/* 왼쪽: 요약 + 이미지 + 본문 */}
             <div className="min-w-0 flex flex-col space-y-6">
               {/* AI 요약 */}
-              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#15181f] md:p-6">
+              <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#15181f] sm:p-5 md:p-6">
                 <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-gray-400">
                   AI SUMMARY
                 </div>
                 {summaryLines.length > 0 ? (
-                  <ul className="mt-3 space-y-2 text-lg leading-8 text-slate-700 dark:text-gray-300">
+                  <ul className="mt-3 space-y-2 text-base leading-7 text-slate-700 dark:text-gray-300 sm:text-lg sm:leading-8">
                     {summaryLines.map((line, index) => (
                       <li key={index}>{parseMarkdownBold(line)}</li>
                     ))}
@@ -367,8 +367,8 @@ export default function AnalyzedArticlePage() {
               )}
 
               {/* 본문 */}
-              <section className="rounded-2xl border border-slate-200 bg-white p-9 shadow-lg dark:border-white/10 dark:bg-[#15181f]">
-                <div className="max-h-[70vh] overflow-y-auto pr-2 text-lg leading-8 text-slate-700 dark:text-gray-300">
+              <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-lg dark:border-white/10 dark:bg-[#15181f] sm:p-6 md:p-9">
+                <div className="max-h-[70vh] overflow-y-auto pr-2 text-base leading-7 text-slate-700 dark:text-gray-300 sm:text-lg sm:leading-8">
                   {bodyParagraphs.length > 0 ? (
                     bodyParagraphs.map((paragraph, index) => (
                       <p key={index} className="mb-6 last:mb-0">
@@ -385,7 +385,7 @@ export default function AnalyzedArticlePage() {
             {/* 오른쪽: 키워드 + 단어 해석 + AI 질문 */}
             <div className="min-w-0 flex flex-col gap-6 md:sticky md:top-24 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto md:pr-2 lg:top-28">
               {/* 핵심 키워드 */}
-              <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7">
+              <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-md dark:border-white/10 dark:bg-[#15181f] sm:p-5 md:p-6">
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-white md:text-base">
                   핵심 키워드
                 </h2>
@@ -408,7 +408,7 @@ export default function AnalyzedArticlePage() {
               </section>
 
               {/* 단어 해석 */}
-              <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7">
+              <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-md dark:border-white/10 dark:bg-[#15181f] sm:p-5 md:p-6">
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-white md:text-base">
                   단어 해석
                 </h2>
