@@ -491,13 +491,13 @@ export default function ArticleDetailPage() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#f3f4f6] px-4 py-10 text-slate-900 dark:bg-[#0f1115] dark:text-white md:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#f3f4f6] px-3 py-6 text-slate-900 dark:bg-[#0f1115] dark:text-white sm:px-4 sm:py-10 md:px-6 lg:px-8">
             {loading ? (
                 <ArticlePageSkeleton />
             ) : articleDetail ? (
                 <>
-                    <div className="mt-12 w-full flex justify-center">
-                        <div className="w-full max-w-[1600px] px-4 md:px-6 lg:px-10">
+                    <div className="mt-8 w-full flex justify-center sm:mt-12">
+                        <div className="w-full max-w-[1600px] px-1 sm:px-4 md:px-6 lg:px-10">
                             <header className="space-y-3">
                                 <button
                                     onClick={() => navigate('/home')}
@@ -507,7 +507,7 @@ export default function ArticleDetailPage() {
                                     홈으로
                                 </button>
                                 <div className="flex items-start justify-between gap-4">
-                                    <h1 className="text-left text-4xl font-bold tracking-tight text-slate-900 dark:text-white md:text-5xl">
+                                    <h1 className="text-left text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl md:text-4xl lg:text-5xl">
                                         {articleDetail.title}
                                     </h1>
                                     {user && isArticleIdValid && (
@@ -567,11 +567,11 @@ export default function ArticleDetailPage() {
                                             />
                                         </div>
                                     )}
-                                    <section className="rounded-2xl border border-slate-200 bg-white p-9 shadow-lg dark:border-white/10 dark:bg-[#15181f]">
+                                    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-lg dark:border-white/10 dark:bg-[#15181f] sm:p-6 md:p-9">
                                         <div
                                             ref={articleBodyRef}
                                             onMouseUp={handleSelectionMouseUp}
-                                            className="article-body max-h-[70vh] overflow-y-auto pr-2 text-lg leading-8 text-slate-700 dark:text-gray-300"
+                                            className="article-body max-h-[70vh] overflow-y-auto pr-2 text-base leading-7 text-slate-700 dark:text-gray-300 sm:text-lg sm:leading-8"
                                         >
                                             {articleDetail.body.map((paragraph, index) => (
                                                 <p key={index} className="mb-6 last:mb-0">
@@ -845,10 +845,10 @@ function ArticleSummary({
     const lines = Array.isArray(summary) ? summary : [];
     const hasSummary = lines.length > 0;
     return (
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#15181f] md:p-6">
-            <div className="flex items-center justify-between">
-                <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-gray-400">AI SUMMARY</div>
-                <div className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
+        <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#15181f] sm:p-5 md:p-6">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-gray-400 sm:tracking-[0.3em]">AI SUMMARY</div>
+                <div className="flex items-center gap-1.5 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 sm:px-3">
                     <span className="text-sm">💬</span>
                     <span className="hidden sm:inline">텍스트를 드래그하여 AI에게 질문해보세요!</span>
                     <span className="sm:hidden">드래그로 AI 질문</span>
@@ -857,7 +857,7 @@ function ArticleSummary({
             {isLoading && <p className="mt-3 text-sm text-slate-500 dark:text-gray-400">AI 요약을 불러오는 중입니다...</p>}
             {error && !isLoading && <p className="mt-3 text-sm text-rose-500 dark:text-rose-400">{error}</p>}
             {!isLoading && !error && hasSummary && (
-                <ul className="mt-3 space-y-2 text-lg leading-8 text-slate-700 dark:text-gray-300">
+                <ul className="mt-3 space-y-2 text-base leading-7 text-slate-700 dark:text-gray-300 sm:text-lg sm:leading-8">
                     {lines.map((line, index) => (
                         <li key={index}>{parseMarkdownBold(line)}</li>
                     ))}
@@ -963,7 +963,7 @@ function KeywordSection({ keywords }: { keywords: Keyword[] }) {
     };
 
     return (
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7">
+        <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-md dark:border-white/10 dark:bg-[#15181f] sm:p-5 md:p-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-white md:text-base">핵심 키워드</h2>
                 {user && <span className="text-xs text-slate-400 dark:text-gray-500">클릭하여 관심 키워드 등록</span>}
@@ -1011,7 +1011,7 @@ function GlossarySection({ glossary }: { glossary: GlossaryEntry[] }) {
     const hasEntries = entries.length > 0;
 
     return (
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7">
+        <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-md dark:border-white/10 dark:bg-[#15181f] sm:p-5 md:p-6">
             <h2 className="text-sm font-semibold text-slate-900 dark:text-white md:text-base">단어 해석</h2>
             {hasEntries ? (
                 <div className="mt-4 flex flex-col gap-2.5 md:gap-3.5">
@@ -1071,7 +1071,7 @@ function ChatSection({
 
     return (
         <section
-            className={`flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-md dark:border-white/10 dark:bg-[#15181f] md:p-7 ${
+            className={`flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-md dark:border-white/10 dark:bg-[#15181f] sm:p-5 md:p-6 ${
                 className ?? ''
             }`.trim()}
         >
