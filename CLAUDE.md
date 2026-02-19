@@ -35,10 +35,39 @@ cd rag-ai && C:\dev\venv\Scripts\uvicorn.exe api_main:app --host 0.0.0.0 --port 
 
 # 크롤러 (자동 루프)
 cd scripts && C:\dev\venv\Scripts\python.exe crawling.py \
-  --keywords "정치" "경제" "사회" "IT/과학" \
+  --keywords "정치" "경제" "사회" "생활/문화" "IT/과학" "세계" "연예" \
   --max-articles-per-keyword 5 --total-phases 1 \
   --loop --wait-min 300 --wait-max 600
 ```
+
+## 크롤링 명령어
+
+### 터미널 1: RAG AI 서버
+```bash
+cd C:\ai-article-web\ai-article-web\rag-ai
+C:\dev\venv\Scripts\uvicorn.exe api_main:app --host 0.0.0.0 --port 8020
+```
+
+### 터미널 2: ngrok 터널
+```bash
+ngrok http 8020
+```
+→ 나온 URL을 Railway `RAG_AI_URL` 환경변수에 설정
+
+### 터미널 3: 크롤링
+```bash
+cd C:\ai-article-web\ai-article-web\scripts
+C:\dev\venv\Scripts\python.exe crawling.py --keywords "정치" "경제" "사회" "생활/문화" "IT/과학" "세계" "연예" --max-articles-per-keyword 5 --total-phases 1 --loop --wait-min 300 --wait-max 600
+```
+
+### 크롤링 옵션
+| 옵션 | 설명 |
+|------|------|
+| `--total-phases 1` | 1단계만 (카테고리 검색, 권장) |
+| `--max-articles-per-keyword 5` | 카테고리당 최대 5개 |
+| `--loop` | 무한 반복 |
+| `--wait-min 300` | 최소 대기 5분 |
+| `--wait-max 600` | 최대 대기 10분 |
 
 ## 배포 환경
 
@@ -135,7 +164,7 @@ chore: 기타
 
 ---
 
-## 최근 작업 (2026-02-19)
+## 최근 작업 (2026-02-20)
 
 ### 코드 정리
 - 프론트엔드 미사용 컴포넌트 8개 삭제 (899줄)
@@ -147,6 +176,15 @@ chore: 기타
 ### AI 툴팁 추가
 - 기사 상세 페이지 AI 버튼 옆 말풍선 툴팁
 - "다시 보지 않기" 클릭 시 localStorage 저장
+
+### 카테고리 키워드 수정
+- `category_dict_v2` 테이블에 7개 카테고리 데이터 삽입
+- `CategoryService`: `extracted_keyword_v2` 대신 `articlev2.word`에서 키워드 직접 추출하도록 변경
+- 빈도순 정렬 후 상위 10개 키워드 반환
+
+### 문서 정리
+- `PROJECT_SUMMARY.md`: 자소서용 프로젝트 요약 문서 생성
+- `CLAUDE.md`: 개발 문서 간소화 및 최신화
 
 ---
 
