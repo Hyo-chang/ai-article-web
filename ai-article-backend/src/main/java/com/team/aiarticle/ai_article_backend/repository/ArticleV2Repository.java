@@ -41,4 +41,7 @@ public interface ArticleV2Repository extends JpaRepository<ArticleV2, Integer> {
         LIMIT :limit
     """, nativeQuery = true)
     List<ArticleV2> pickForPreprocessV2(@Param("limit") int limit);
+
+    // 카테고리별 기사 조회 (키워드 추출용)
+    List<ArticleV2> findByCategoryCode(String categoryCode);
 }
