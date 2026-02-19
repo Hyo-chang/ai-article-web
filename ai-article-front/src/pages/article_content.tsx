@@ -103,6 +103,22 @@ export default function ArticleDetailPage() {
     const chatContainerRef = useRef<HTMLDivElement | null>(null);
     const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [showAiTooltip, setShowAiTooltip] = useState(false);
+
+    // AI 툴팁 표시 여부 (localStorage 확인)
+    useEffect(() => {
+        const dismissed = localStorage.getItem('aiTooltipDismissed');
+        if (!dismissed) {
+            // 1초 후에 툴팁 표시 (페이지 로드 후 자연스럽게)
+            const timer = setTimeout(() => setShowAiTooltip(true), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
+    const handleDismissTooltip = () => {
+        localStorage.setItem('aiTooltipDismissed', 'true');
+        setShowAiTooltip(false);
+    };
 
     // 채팅창 리사이즈 상태
     const [chatSize, setChatSize] = useState({ width: 420, height: 550 });
@@ -574,9 +590,33 @@ export default function ArticleDetailPage() {
                         </div>
                     </div>
 
+                    {/* AI 툴팁 말풍선 */}
+                    {showAiTooltip && !isChatOpen && (
+                        <div className="fixed bottom-6 right-24 z-50 animate-fade-in">
+                            <div className="relative rounded-xl bg-white px-4 py-3 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-white/20">
+                                {/* 말풍선 화살표 */}
+                                <div className="absolute -right-2 top-1/2 -translate-y-1/2">
+                                    <div className="h-0 w-0 border-y-8 border-l-8 border-y-transparent border-l-white dark:border-l-slate-800" />
+                                </div>
+                                <p className="text-sm font-medium text-slate-800 dark:text-white">
+                                    AI에게 질문해보세요!
+                                </p>
+                                <button
+                                    onClick={handleDismissTooltip}
+                                    className="mt-1.5 text-xs text-slate-400 underline underline-offset-2 transition hover:text-slate-600 dark:text-gray-500 dark:hover:text-gray-300"
+                                >
+                                    다시 보지 않기
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* 플로팅 AI 채팅 버튼 */}
                     <button
-                        onClick={() => setIsChatOpen(true)}
+                        onClick={() => {
+                            setIsChatOpen(true);
+                            setShowAiTooltip(false);
+                        }}
                         className={`fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-[0_4px_20px_rgba(0,0,0,0.3)] ring-2 ring-slate-700 transition-all duration-300 hover:scale-110 hover:bg-slate-800 hover:shadow-[0_6px_25px_rgba(0,0,0,0.4)] dark:bg-indigo-600 dark:ring-indigo-400/50 dark:hover:bg-indigo-500 ${
                             isChatOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
                         }`}

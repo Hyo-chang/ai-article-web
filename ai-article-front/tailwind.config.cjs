@@ -19,7 +19,16 @@ module.exports = {
         },
         borderRadius: {
           '3xl': '1.5rem'
-        }
+        },
+        keyframes: {
+          'fade-in': {
+            '0%': { opacity: '0', transform: 'translateX(10px)' },
+            '100%': { opacity: '1', transform: 'translateX(0)' },
+          },
+        },
+        animation: {
+          'fade-in': 'fade-in 0.3s ease-out forwards',
+        },
       },
     },
     plugins: [
