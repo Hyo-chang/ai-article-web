@@ -151,7 +151,7 @@ export function Header({
         }`}
         style={{ width: sidebarWidth }}
       >
-        <div className="grid h-screen grid-rows-[auto_1fr_auto] px-6 py-10">
+        <div className="grid h-screen grid-rows-[auto_1fr_auto] px-6 pt-4 pb-10">
         <div className="flex flex-col items-center">
           <button
             type="button"
