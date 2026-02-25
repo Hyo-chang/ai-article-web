@@ -156,13 +156,16 @@ export function Header({
           <button
             type="button"
             onClick={handleHomeClick}
-            className="transition-transform duration-200 hover:scale-105 focus:outline-none"
+            className="flex flex-col items-center transition-transform duration-200 hover:scale-105 focus:outline-none"
           >
             <img
               src="/logo.png"
               alt="AHA Logo"
               className="h-48 w-48 object-contain"
             />
+            <span className="mt-1 text-[10px] font-medium tracking-wide text-[#7dd3d3]">
+              Article Highlights with AI
+            </span>
           </button>
         </div>
 
