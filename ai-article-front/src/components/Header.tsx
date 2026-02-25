@@ -156,9 +156,14 @@ export function Header({
           <button
             type="button"
             onClick={handleHomeClick}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#1e1e1e] via-[#2a2a2a] to-[#121212] text-[#f5f5f5] shadow-[0_12px_28px_rgba(0,0,0,0.35)] transition-transform duration-200 hover:scale-105 focus:outline-none"
+            className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-105 focus:outline-none"
           >
-            <Sparkles className="h-5 w-5" />
+            <img
+              src="/logo.png"
+              alt="AHA Logo"
+              className="h-14 w-14 object-contain drop-shadow-lg"
+            />
+            <span className="text-xs font-bold tracking-widest text-[#5dd3d3]">READ</span>
           </button>
         </div>
 
