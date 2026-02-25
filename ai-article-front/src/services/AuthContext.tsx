@@ -13,6 +13,7 @@ interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
   login: (identifier: string, password: string) => Promise<void>;
+  googleLogin: (credential: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -49,6 +50,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const googleLogin = async (credential: string) => {
+    try {
+      const loggedInUser = await authService.googleLogin(credential);
+      setUser(loggedInUser);
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.error("AuthContext.googleLogin failed:", error);
+      setUser(null);
+      setIsLoggedIn(false);
+      throw error;
+    }
+  };
+
   const logout = () => {
     authService.logout();
     setUser(null);
@@ -63,7 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoggedIn, login, logout, refreshUser }}
+      value={{ user, isLoggedIn, login, googleLogin, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

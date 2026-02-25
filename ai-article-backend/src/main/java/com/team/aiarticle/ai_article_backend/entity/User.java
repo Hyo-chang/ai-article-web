@@ -33,6 +33,13 @@ public class User {
     @Column(name = "profile_image_url", columnDefinition = "LONGTEXT")
     private String profileImageUrl;
 
+    // OAuth provider (local, google, etc.)
+    @Column(name = "provider")
+    private String provider = "local";
+
+    @Column(name = "provider_id")
+    private String providerId;
+
     // Optional VK integration: user roles mapping
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",

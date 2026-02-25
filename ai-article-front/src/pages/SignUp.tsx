@@ -7,6 +7,8 @@ import { Sparkles, Mail, Lock, Eye, EyeOff, User, Home } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { getApiBaseUrl } from "@/lib/api";
+import { useAuth } from "../services/AuthContext";
+import { GoogleLoginButton } from "../components/GoogleLoginButton";
 
 interface SignUpProps {
   onSignUp?: (name: string, email: string, password: string) => void;
@@ -22,6 +24,7 @@ export function SignUp({ onSignUp, onSwitchToLogin }: SignUpProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { googleLogin } = useAuth();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -190,6 +193,39 @@ export function SignUp({ onSignUp, onSwitchToLogin }: SignUpProps) {
               {isLoading ? "가입 중..." : "회원가입"}
             </Button>
           </form>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/20"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-[#15181f] px-4 text-white/50">또는</span>
+            </div>
+          </div>
+
+          {/* Google Login */}
+          <GoogleLoginButton
+            onSuccess={async (credential) => {
+              setIsLoading(true);
+              try {
+                await googleLogin(credential);
+                toast.success("Google 로그인 성공!");
+                navigate("/home");
+              } catch (error: any) {
+                const errorMessage =
+                  error.response?.data?.message ||
+                  error.message ||
+                  "Google 로그인에 실패했습니다.";
+                toast.error(errorMessage);
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            onError={() => {
+              toast.error("Google 로그인에 실패했습니다.");
+            }}
+          />
 
           <p className="text-xs text-white/50 text-center mt-5">
             회원가입을 진행하면{" "}

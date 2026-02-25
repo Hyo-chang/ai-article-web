@@ -35,6 +35,32 @@ class AuthService {
     }
   }
 
+  async googleLogin(credential: string): Promise<User> {
+    try {
+      const response = await axios.post(`${API_URL}/google`, {
+        credential,
+      });
+
+      const userData: User = {
+        userId: response.data.userId,
+        username: response.data.username,
+        email: response.data.email,
+        token: response.data.token,
+        roles: response.data.roles,
+        profileImageUrl: response.data.profileImageUrl,
+      };
+
+      if (userData.token) {
+        localStorage.setItem("user", JSON.stringify(userData));
+      }
+
+      return userData;
+    } catch (error) {
+      console.error("AuthService.googleLogin failed:", error);
+      throw error;
+    }
+  }
+
   logout() {
     localStorage.removeItem("user");
   }

@@ -8,6 +8,7 @@ import { toast } from "sonner"; // toast 알림을 위해 그대로 유지
 
 // ✅ AuthContext에서 useAuth 훅 임포트 (경로 확인)
 import { useAuth } from "../services/AuthContext";
+import { GoogleLoginButton } from "../components/GoogleLoginButton";
 
 // ✅ LoginProps 인터페이스는 이제 필요 없습니다. (onLogin prop을 사용하지 않을 것이므로)
 // interface LoginProps {
@@ -25,7 +26,7 @@ export function Login() {
   const navigate = useNavigate();
 
   // ✅ AuthContext에서 login 함수 가져오기
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -147,6 +148,39 @@ export function Login() {
               {isLoading ? "로그인 중..." : "로그인"}
             </Button>
           </form>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/20"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-[#15181f] px-4 text-white/50">또는</span>
+            </div>
+          </div>
+
+          {/* Google Login */}
+          <GoogleLoginButton
+            onSuccess={async (credential) => {
+              setIsLoading(true);
+              try {
+                await googleLogin(credential);
+                toast.success("Google 로그인 성공!");
+                navigate("/home");
+              } catch (error: any) {
+                const errorMessage =
+                  error.response?.data?.message ||
+                  error.message ||
+                  "Google 로그인에 실패했습니다.";
+                toast.error(errorMessage);
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            onError={() => {
+              toast.error("Google 로그인에 실패했습니다.");
+            }}
+          />
         </div>
 
         {/* Sign Up Link */}
