@@ -8,6 +8,7 @@ import { ArticleInput } from "./components/ArticleInput";
 import { AnalysisResult } from "./components/AnalysisResult";
 import { ArticleCardList } from "./components/ArticleCardList";
 import { ReadHistoryTab } from "./components/ReadHistoryTab";
+import { PopularArticlesSidebar } from "./components/PopularArticlesSidebar";
 import { Footer } from "./components/Footer";
 import Content from "./pages/article_content";
 import MyPage from "./pages/MyPage";
@@ -29,6 +30,7 @@ import { SignUp } from "./pages/SignUp";
 import { useArticles } from "./hooks/useArticles";
 import { useBookmarks } from "./hooks/useBookmarks";
 import { AuthProvider, useAuth } from "./services/AuthContext";
+import { getApiBaseUrl } from "./lib/api";
 import type { Article } from "./types/article";
 
 interface ImportantWord {
@@ -62,10 +64,7 @@ type HomeTab = "home" | "analyze" | "history" | "result";
 const AMBIENT_BACKGROUND =
   "bg-[radial-gradient(1200px_720px_at_12%_-5%,rgba(255,255,255,0.9),transparent),radial-gradient(1000px_640px_at_88%_0%,rgba(237,240,246,0.78),transparent),linear-gradient(185deg,#fbfcfe,#f1f3f8_58%,#e4e8f1)] dark:bg-[radial-gradient(1200px_720px_at_12%_-5%,rgba(30,30,35,0.9),transparent),radial-gradient(1000px_640px_at_88%_0%,rgba(20,22,28,0.78),transparent),linear-gradient(185deg,#0a0a0c,#0f1115_58%,#15171b)]";
 
-const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ??
-  "http://localhost:8080";
-const CRAWLER_ENDPOINT = `${API_BASE_URL}/api/articles/crawl/manual`;
+const CRAWLER_ENDPOINT = `${getApiBaseUrl()}/api/articles/crawl/manual`;
 
 const mockAnalysisData: AnalysisData = {
   title: "인공지능이 바꾸는 미래의 교육",
@@ -246,7 +245,7 @@ function HomePage() {
         } catch {}
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/articles/analyze`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/articles/analyze`, {
         method: "POST",
         headers,
         body: JSON.stringify({ articleUrl }),
@@ -500,7 +499,7 @@ function HomePage() {
 
       setIsSearching(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/articles/search?q=${encodeURIComponent(query)}&limit=50`);
+        const response = await fetch(`${getApiBaseUrl()}/api/articles/search?q=${encodeURIComponent(query)}&limit=50`);
         if (!response.ok) {
           throw new Error("검색 실패");
         }
@@ -558,10 +557,12 @@ function HomePage() {
       />
 
       <main
-        className="flex min-h-screen flex-col px-4 py-10 pt-20 transition-[margin] duration-300 md:px-10 md:pt-16"
+        className="flex min-h-screen flex-col px-4 py-10 pt-20 transition-[margin] duration-300 md:px-6 md:pt-16 lg:px-8"
         style={{ marginLeft: isMobile ? 0 : sidebarWidth }}
       >
-        <div className="mx-auto w-full max-w-6xl">
+        <div className="mx-auto flex w-full max-w-7xl gap-6">
+          {/* 메인 콘텐츠 영역 */}
+          <div className="min-w-0 flex-1">
           <Tabs value={currentTab} onValueChange={(value) => setCurrentTab(value as HomeTab)}>
             <TabsContent value="home">
               <div className="space-y-16 pb-12">
@@ -642,6 +643,10 @@ function HomePage() {
             </TabsContent>
           )}
         </Tabs>
+          </div>
+
+          {/* 오른쪽 사이드바: 인기 기사 */}
+          {currentTab === "home" && <PopularArticlesSidebar />}
         </div>
       </main>
 

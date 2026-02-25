@@ -19,4 +19,8 @@ public class ArticleIngestRequest {
     private String link;
     private String word;
     private String image_url;
+
+    // 인기 기사 관련 필드
+    private Boolean isPopular;
+    private Integer popularRank;
 }

@@ -66,6 +66,14 @@ public class ArticleSummaryController {
         return ResponseEntity.ok(results);
     }
 
+    @GetMapping("/articles/popular")
+    public ResponseEntity<List<ArticleListResponse>> getPopularArticles(
+            @RequestParam(name = "limit", defaultValue = "10") int limit) {
+        List<ArticleListResponse> popular = articleServiceV2.findPopularArticles(limit);
+        log.info("[POPULAR] found {} popular articles", popular.size());
+        return ResponseEntity.ok(popular);
+    }
+
     @GetMapping("/article/{id}") // Moved /article to GetMapping
     public ResponseEntity<ArticleSummaryResponse> getArticle(@PathVariable Integer id) {
         return ResponseEntity.ok(articleSummaryService.getArticleWithSummary(id));

@@ -537,6 +537,133 @@ def send_to_backend(session: requests.Session, cfg: Config, payload: Dict[str, A
         return False
 
 # ====================================================================
+# 🔥 인기 기사 크롤링 (네이버 뉴스 랭킹)
+# ====================================================================
+
+# 분야별 섹션 ID
+RANKING_SECTIONS = {
+    "전체": None,
+    "정치": 100,
+    "경제": 101,
+    "사회": 102,
+    "생활/문화": 103,
+    "세계": 104,
+    "IT/과학": 105,
+}
+
+def fetch_popular_articles(session: requests.Session, cfg: Config, section_id: Optional[int] = None, limit: int = 10) -> List[Dict[str, Any]]:
+    """네이버 뉴스 랭킹 페이지에서 인기 기사 목록을 크롤링합니다."""
+
+    # 랭킹 페이지 URL
+    if section_id:
+        url = f"https://news.naver.com/main/ranking/popularDay.naver?mid=etc&sid1={section_id}"
+    else:
+        url = "https://news.naver.com/main/ranking/popularDay.naver"
+
+    print(f"🔥 인기 기사 수집: {url}")
+
+    try:
+        time.sleep(random.uniform(cfg.sleep_min, cfg.sleep_max))
+        res = session.get(url, timeout=cfg.timeout)
+        res.raise_for_status()
+
+        soup = BeautifulSoup(res.text, "lxml")
+        popular_articles = []
+
+        # 랭킹 기사 목록 파싱
+        # 네이버 뉴스 랭킹 페이지 구조: div.rankingnews_box > ul > li
+        ranking_boxes = soup.select("div.rankingnews_box")
+
+        for box in ranking_boxes:
+            # 언론사 이름
+            publisher_el = box.select_one("a.rankingnews_box_head strong, strong.rankingnews_name")
+            publisher = publisher_el.get_text(strip=True) if publisher_el else ""
+
+            # 기사 목록
+            articles = box.select("ul.rankingnews_list li")
+            for idx, article_el in enumerate(articles[:limit], 1):
+                link_el = article_el.select_one("a")
+                if not link_el:
+                    continue
+
+                href = link_el.get("href", "")
+                if not href or "n.news.naver.com" not in href:
+                    # 상대 경로인 경우 절대 경로로 변환
+                    if href.startswith("/"):
+                        href = f"https://news.naver.com{href}"
+                    elif not href.startswith("http"):
+                        continue
+
+                title = link_el.get_text(strip=True)
+
+                # 썸네일 이미지
+                img_el = article_el.select_one("img")
+                thumbnail = img_el.get("src") if img_el else None
+
+                popular_articles.append({
+                    "link": href,
+                    "title": title,
+                    "publisher": publisher,
+                    "rank": idx,
+                    "thumbnail": thumbnail,
+                })
+
+        # 또 다른 구조 시도: div.ranking_list
+        if not popular_articles:
+            ranking_items = soup.select("div.ranking_list a, ul.ranking_list li a")
+            for idx, item in enumerate(ranking_items[:limit], 1):
+                href = item.get("href", "")
+                if not href:
+                    continue
+                if href.startswith("/"):
+                    href = f"https://news.naver.com{href}"
+
+                title = item.get_text(strip=True)
+                popular_articles.append({
+                    "link": href,
+                    "title": title,
+                    "rank": idx,
+                })
+
+        print(f"  ➡️ 인기 기사 {len(popular_articles)}개 발견")
+        return popular_articles
+
+    except requests.exceptions.RequestException as e:
+        print(f"❌ 인기 기사 크롤링 실패: {e}")
+        return []
+
+
+def crawl_popular_articles(session: requests.Session, cfg: Config, limit: int = 20) -> List[Dict[str, Any]]:
+    """인기 기사를 크롤링하고 상세 정보를 추출합니다."""
+
+    print("\n--- 🔥 인기 기사 수집 시작 ---")
+
+    popular_list = fetch_popular_articles(session, cfg, section_id=None, limit=limit)
+    processed_articles = []
+    processed_urls = set()
+
+    for article_data in popular_list:
+        url = article_data.get("link")
+        if not url or url in processed_urls:
+            continue
+        processed_urls.add(url)
+
+        # 상세 정보 크롤링
+        result = process_article(session, cfg, {"link": url})
+        if result:
+            # 인기 기사 표시 플래그 추가
+            result["payload"]["isPopular"] = True
+            result["payload"]["popularRank"] = article_data.get("rank")
+            processed_articles.append(result)
+
+            # 백엔드로 전송
+            send_to_backend(session, cfg, result["payload"])
+
+    print(f"\n--- ✅ 인기 기사 {len(processed_articles)}개 수집 완료 ---")
+    return processed_articles
+
+
+# ====================================================================
 # 🧠 API 기반 수집 및 처리 로직
 # ====================================================================
 
@@ -683,6 +810,8 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--loop", action="store_true", help="주기적으로 반복 수집")
     parser.add_argument("--article-url", default=DEFAULTS.article_url, help="단일 기사 URL 직접 처리")
+    parser.add_argument("--popular", action="store_true", help="인기 기사 크롤링 (네이버 뉴스 랭킹)")
+    parser.add_argument("--popular-limit", type=int, default=20, help="인기 기사 수집 개수 (기본: 20)")
     parser.add_argument("--wait-min", type=int, default=DEFAULTS.wait_min)
     parser.add_argument("--wait-max", type=int, default=DEFAULTS.wait_max)
 
@@ -715,6 +844,9 @@ def main():
             result = process_article(session, cfg, {"originallink": cfg.article_url})
             if result:
                 send_to_backend(session, cfg, result["payload"])
+        elif args.popular:
+            print("▶ 인기 기사 크롤링 모드 실행")
+            crawl_popular_articles(session, cfg, limit=args.popular_limit)
         else:
             crawl_with_api_2_phase(session, cfg, keyword_extractor)
 

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PostCategory, PostListItem, PageResponse } from '../types/post';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+import { getApiBaseUrl } from '@/lib/api';
 
 const getToken = (): string | null => {
   const userStr = localStorage.getItem('user');
@@ -26,7 +25,7 @@ export function usePosts() {
   // 카테고리 목록 조회
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/posts/categories`);
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/categories`);
       if (!res.ok) throw new Error('카테고리 조회 실패');
       const data = await res.json();
       setCategories(data);
@@ -40,7 +39,7 @@ export function usePosts() {
     setLoading(true);
     setError(null);
     try {
-      let url = `${API_BASE}/api/posts?page=${pageNum}&size=${size}`;
+      let url = `${getApiBaseUrl()}/api/posts?page=${pageNum}&size=${size}`;
       if (categoryCode) {
         url += `&category=${categoryCode}`;
       }
@@ -63,7 +62,7 @@ export function usePosts() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/posts/search?q=${encodeURIComponent(keyword)}&page=${pageNum}&size=${size}`);
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/search?q=${encodeURIComponent(keyword)}&page=${pageNum}&size=${size}`);
       if (!res.ok) throw new Error('검색 실패');
       const data: PageResponse<PostListItem> = await res.json();
       setPosts(data.content);
@@ -87,8 +86,8 @@ export function usePosts() {
     }
 
     try {
-      console.log('createPost - sending request to:', `${API_BASE}/api/posts`);
-      const res = await fetch(`${API_BASE}/api/posts`, {
+      console.log('createPost - sending request to:', `${getApiBaseUrl()}/api/posts`);
+      const res = await fetch(`${getApiBaseUrl()}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +119,7 @@ export function usePosts() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/posts/${postId}`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { PostDetail, CommentItem } from '../types/post';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+import { getApiBaseUrl } from '@/lib/api';
 
 export function usePost() {
   const [post, setPost] = useState<PostDetail | null>(null);
@@ -24,7 +23,7 @@ export function usePost() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/posts/${postId}`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/${postId}`, {
         headers: getAuthHeader()
       });
       if (!res.ok) throw new Error('게시글을 찾을 수 없습니다.');
@@ -42,7 +41,7 @@ export function usePost() {
   // 게시글 수정
   const updatePost = useCallback(async (postId: number, title: string, content: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/api/posts/${postId}`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/${postId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +60,7 @@ export function usePost() {
   // 게시글 좋아요 토글
   const togglePostLike = useCallback(async (postId: number): Promise<boolean | null> => {
     try {
-      const res = await fetch(`${API_BASE}/api/posts/${postId}/like`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/${postId}/like`, {
         method: 'POST',
         headers: getAuthHeader()
       });
@@ -87,7 +86,7 @@ export function usePost() {
   // 댓글 작성
   const createComment = useCallback(async (postId: number, content: string, parentCommentId?: number): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/api/posts/${postId}/comments`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/${postId}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +108,7 @@ export function usePost() {
   // 댓글 수정
   const updateComment = useCallback(async (commentId: number, content: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/api/posts/comments/${commentId}`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/comments/${commentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +127,7 @@ export function usePost() {
   // 댓글 삭제
   const deleteComment = useCallback(async (commentId: number, postId: number): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/api/posts/comments/${commentId}`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/comments/${commentId}`, {
         method: 'DELETE',
         headers: getAuthHeader()
       });
@@ -146,7 +145,7 @@ export function usePost() {
   // 댓글 좋아요 토글
   const toggleCommentLike = useCallback(async (commentId: number): Promise<boolean | null> => {
     try {
-      const res = await fetch(`${API_BASE}/api/posts/comments/${commentId}/like`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/posts/comments/${commentId}/like`, {
         method: 'POST',
         headers: getAuthHeader()
       });

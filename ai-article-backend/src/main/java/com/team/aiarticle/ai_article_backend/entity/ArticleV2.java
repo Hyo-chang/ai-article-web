@@ -54,4 +54,14 @@ public class ArticleV2 {
     
     @Column(name = "summarize", columnDefinition = "LONGTEXT")
     private String summarize;
+
+    // 인기 기사 관련 필드
+    @Column(name = "is_popular")
+    private Boolean isPopular = false;
+
+    @Column(name = "popular_rank")
+    private Integer popularRank;
+
+    @Column(name = "popular_fetched_at")
+    private LocalDateTime popularFetchedAt;
 }

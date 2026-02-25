@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/services/AuthContext";
+import { getApiBaseUrl } from "@/lib/api";
 import type { ReadHistoryEntry } from "@/types/readHistory";
 
 interface UseReadHistoryState {
@@ -8,10 +9,6 @@ interface UseReadHistoryState {
   error: string | null;
   refetch: () => Promise<void>;
 }
-
-const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ??
-  "http://localhost:8080";
 
 export function useReadHistory(): UseReadHistoryState {
   const { user } = useAuth();
@@ -33,7 +30,7 @@ export function useReadHistory(): UseReadHistoryState {
         setError(null);
 
         const response = await fetch(
-          `${API_BASE_URL}/api/users/${user.userId}/read-history`,
+          `${getApiBaseUrl()}/api/users/${user.userId}/read-history`,
           {
             headers: {
               Authorization: `Bearer ${user.token}`,

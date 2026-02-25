@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePost } from '../../hooks/usePost';
 import { useAuth } from '../../services/AuthContext';
+import { getApiBaseUrl } from '@/lib/api';
 import { CommentItem } from '../../types/post';
 import { Heart, Eye, MessageCircle, ArrowLeft, Edit, Trash2, CornerDownRight, Send } from 'lucide-react';
 
@@ -75,7 +76,7 @@ export default function PostDetailPage() {
       return;
     }
 
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/posts/${post.postId}`, {
+    const res = await fetch(`${getApiBaseUrl()}/api/posts/${post.postId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });

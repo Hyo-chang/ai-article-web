@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/services/AuthContext";
-
-const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ??
-  "http://localhost:8080";
+import { getApiBaseUrl } from "@/lib/api";
 
 export function useBookmarks() {
   const { user } = useAuth();
@@ -19,7 +16,7 @@ export function useBookmarks() {
 
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/mypage/bookmarks/ids`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/mypage/bookmarks/ids`, {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
@@ -54,7 +51,7 @@ export function useBookmarks() {
         if (isCurrentlyBookmarked) {
           // 북마크 삭제
           const response = await fetch(
-            `${API_BASE_URL}/api/mypage/bookmarks/${articleId}`,
+            `${getApiBaseUrl()}/api/mypage/bookmarks/${articleId}`,
             {
               method: "DELETE",
               headers: {
@@ -73,7 +70,7 @@ export function useBookmarks() {
           }
         } else {
           // 북마크 추가
-          const response = await fetch(`${API_BASE_URL}/api/mypage/bookmarks`, {
+          const response = await fetch(`${getApiBaseUrl()}/api/mypage/bookmarks`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

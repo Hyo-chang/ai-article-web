@@ -3,6 +3,7 @@ import { RefreshCw, Send, Plus, Check, Heart, MessageCircle, X, Sparkles, ArrowL
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useArticles } from '../hooks/useArticles';
 import { useBookmarks } from '../hooks/useBookmarks';
+import { getApiBaseUrl } from '@/lib/api';
 import type { Article } from '@/types/article';
 import { useAuth } from '@/services/AuthContext';
 
@@ -40,8 +41,6 @@ type ArticleSummaryResponsePayload = {
     keywordDefinitions?: Record<string, string>;
 };
 
-const API_URL =
-    (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() || 'http://localhost:8080';
 const MAX_SNIPPET_PREVIEW_CHARS = 200;
 const ARTICLE_SELECTION_STYLE_ID = 'article-selection-style';
 
@@ -169,7 +168,7 @@ export default function ArticleDetailPage() {
 
         async function recordReadHistory() {
             try {
-                const response = await fetch(`${API_URL}/api/mypage/history`, {
+                const response = await fetch(`${getApiBaseUrl()}/api/mypage/history`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -231,7 +230,7 @@ export default function ArticleDetailPage() {
                 setSummaryLoading(true);
                 setSummaryError(null);
 
-                const response = await fetch(`${API_URL}/api/article/${articleIdNumber}`, {
+                const response = await fetch(`${getApiBaseUrl()}/api/article/${articleIdNumber}`, {
                     signal: controller.signal,
                 });
 
@@ -386,7 +385,7 @@ export default function ArticleDetailPage() {
                 ? `[요약]\n${articleDetail.summary}\n\n[본문]\n${articleBodyText}`
                 : articleBodyText;
             try {
-                const response = await fetch(`${API_URL}/api/analysis/chat`, {
+                const response = await fetch(`${getApiBaseUrl()}/api/analysis/chat`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -937,7 +936,7 @@ function KeywordSection({ keywords }: { keywords: Keyword[] }) {
             const newKeywords = [...currentKeywords, term];
 
             // 백엔드에 저장
-            const response = await fetch(`${API_URL}/api/mypage/interests`, {
+            const response = await fetch(`${getApiBaseUrl()}/api/mypage/interests`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -133,6 +133,14 @@ public class ArticleServiceV2 {
         article.setIsFullContentCrawled(request.getIsFullContentCrawled());
         article.setImage_url(request.getImage_url());
 
+        // 인기 기사 필드 설정
+        if (request.getIsPopular() != null && request.getIsPopular()) {
+            article.setIsPopular(true);
+            article.setPopularRank(request.getPopularRank());
+            article.setPopularFetchedAt(LocalDateTime.now());
+            System.out.println("인기 기사로 설정됨 (순위: " + request.getPopularRank() + ")");
+        }
+
         System.out.println("--- 기사 DB 저장 시도 ---");
         return articleV2Repository.save(article);
     }
@@ -154,6 +162,33 @@ public class ArticleServiceV2 {
                 ));
 
         List<ArticleV2> articles = articleV2Repository.searchByKeyword(keyword, PageRequest.of(0, limit));
+
+        return articles.stream()
+                .map(article -> {
+                    String categoryName = categoryNameMap.getOrDefault(article.getCategoryCode(), "미분류");
+                    return ArticleListResponse.from(article, categoryName);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ArticleListResponse> findPopularArticles(int limit) {
+        // 카테고리 코드 → 이름 매핑 생성
+        Map<String, String> categoryNameMap = categoryRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        CategoryDictV2::getCategoryCode,
+                        CategoryDictV2::getCategoryName,
+                        (existing, replacement) -> existing
+                ));
+
+        // 최근 24시간 이내 인기 기사 조회
+        LocalDateTime since = LocalDateTime.now().minusHours(24);
+        List<ArticleV2> articles = articleV2Repository.findPopularArticles(since, PageRequest.of(0, limit));
+
+        // 인기 기사가 없으면 일반 최신 기사 반환
+        if (articles.isEmpty()) {
+            articles = articleV2Repository.findByIsPopularTrueOrderByPopularRankAsc(PageRequest.of(0, limit));
+        }
 
         return articles.stream()
                 .map(article -> {

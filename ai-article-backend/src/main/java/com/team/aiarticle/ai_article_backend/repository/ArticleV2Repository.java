@@ -44,4 +44,16 @@ public interface ArticleV2Repository extends JpaRepository<ArticleV2, Integer> {
 
     // 카테고리별 기사 조회 (키워드 추출용)
     List<ArticleV2> findByCategoryCode(String categoryCode);
+
+    // 인기 기사 조회 (최근 24시간 이내, 랭킹순)
+    @Query("""
+        SELECT a FROM ArticleV2 a
+        WHERE a.isPopular = true
+          AND a.popularFetchedAt >= :since
+        ORDER BY a.popularRank ASC
+    """)
+    List<ArticleV2> findPopularArticles(@Param("since") java.time.LocalDateTime since, Pageable pageable);
+
+    // 인기 기사 조회 (랭킹순, 최신 업데이트 기준)
+    List<ArticleV2> findByIsPopularTrueOrderByPopularRankAsc(Pageable pageable);
 }
