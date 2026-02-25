@@ -8,15 +8,17 @@ public class JwtResponse {
     private String username;
     private String email;
     private List<String> roles;
+    private String profileImageUrl;
 
     public JwtResponse() {}
 
-    public JwtResponse(String token, Integer userId, String username, String email, List<String> roles) {
+    public JwtResponse(String token, Integer userId, String username, String email, List<String> roles, String profileImageUrl) {
         this.token = token;
         this.userId = userId;
         this.username = username;
         this.email = email;
         this.roles = roles;
+        this.profileImageUrl = profileImageUrl;
     }
 
     public String getToken() { return token; }
@@ -29,5 +31,7 @@ public class JwtResponse {
     public void setEmail(String email) { this.email = email; }
     public List<String> getRoles() { return roles; }
     public void setRoles(List<String> roles) { this.roles = roles; }
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 }
 

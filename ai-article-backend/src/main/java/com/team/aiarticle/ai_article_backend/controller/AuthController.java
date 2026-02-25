@@ -65,7 +65,7 @@ public class AuthController {
         String token = jwtUtils.generateJwtToken(user.getEmail());
         List<String> roles = user.getRoles() == null ? Collections.emptyList() :
                 user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toList());
-        JwtResponse resp = new JwtResponse(token, user.getUserId(), user.getUsername(), user.getEmail(), roles);
+        JwtResponse resp = new JwtResponse(token, user.getUserId(), user.getUsername(), user.getEmail(), roles, user.getProfileImageUrl());
         return ResponseEntity.ok(resp);
     }
 
