@@ -810,7 +810,8 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--loop", action="store_true", help="주기적으로 반복 수집")
     parser.add_argument("--article-url", default=DEFAULTS.article_url, help="단일 기사 URL 직접 처리")
-    parser.add_argument("--popular", action="store_true", help="인기 기사 크롤링 (네이버 뉴스 랭킹)")
+    parser.add_argument("--popular", action="store_true", help="인기 기사만 크롤링")
+    parser.add_argument("--with-popular", action="store_true", help="키워드 크롤링 + 인기 기사 동시 수집")
     parser.add_argument("--popular-limit", type=int, default=20, help="인기 기사 수집 개수 (기본: 20)")
     parser.add_argument("--wait-min", type=int, default=DEFAULTS.wait_min)
     parser.add_argument("--wait-max", type=int, default=DEFAULTS.wait_max)
@@ -848,7 +849,13 @@ def main():
             print("▶ 인기 기사 크롤링 모드 실행")
             crawl_popular_articles(session, cfg, limit=args.popular_limit)
         else:
+            # 키워드 기반 크롤링
             crawl_with_api_2_phase(session, cfg, keyword_extractor)
+
+            # --with-popular 옵션: 인기 기사도 함께 수집
+            if args.with_popular:
+                print("\n▶ 인기 기사도 함께 수집합니다...")
+                crawl_popular_articles(session, cfg, limit=args.popular_limit)
 
     if not cfg.loop:
         crawl_job()
