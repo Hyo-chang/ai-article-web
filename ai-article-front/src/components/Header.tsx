@@ -163,7 +163,7 @@ export function Header({
               alt="AHA Logo"
               className="h-48 w-48 object-contain"
             />
-            <span className="-mt-4 text-lg font-medium tracking-wide text-[#7dd3d3]">
+            <span className="-mt-4 text-sm font-medium tracking-wide text-[#7dd3d3]">
               Article Highlights with AI
             </span>
           </button>
