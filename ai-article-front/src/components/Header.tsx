@@ -161,7 +161,7 @@ export function Header({
             <img
               src="/logo.png"
               alt="AHA Logo"
-              className="h-16 w-16 object-contain"
+              className="h-48 w-48 object-contain"
             />
           </button>
         </div>
