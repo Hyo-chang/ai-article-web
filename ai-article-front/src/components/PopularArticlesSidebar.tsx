@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flame, TrendingUp, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { usePopularArticles } from '@/hooks/usePopularArticles';
+import { useTrendingKeywords } from '@/hooks/useTrendingKeywords';
 
 interface PopularArticlesSidebarProps {
   className?: string;
@@ -10,6 +11,7 @@ interface PopularArticlesSidebarProps {
 export function PopularArticlesSidebar({ className = '' }: PopularArticlesSidebarProps) {
   const navigate = useNavigate();
   const { articles, isLoading, refetch } = usePopularArticles(20);
+  const { keywords: trendingKeywords, isLoading: isKeywordsLoading, refetch: refetchKeywords } = useTrendingKeywords(10);
   const [currentPage, setCurrentPage] = useState(0);
 
   const ITEMS_PER_PAGE = 5;
@@ -32,8 +34,11 @@ export function PopularArticlesSidebar({ className = '' }: PopularArticlesSideba
     (currentPage + 1) * ITEMS_PER_PAGE
   );
 
-  // 임시 급상승 키워드 (추후 API 연동)
-  const trendingKeywords = ['AI', '경제', '부동산', '금리', '주식', '반도체'];
+  // 키워드 클릭 시 검색 (추후 구현 가능)
+  const handleKeywordClick = (keyword: string) => {
+    // 홈에서 해당 키워드로 검색하도록 이동
+    navigate(`/home?search=${encodeURIComponent(keyword)}`);
+  };
 
   return (
     <aside className={`hidden xl:block w-72 flex-shrink-0 ${className}`}>
@@ -137,24 +142,46 @@ export function PopularArticlesSidebar({ className = '' }: PopularArticlesSideba
 
         {/* 급상승 키워드 섹션 */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#15181f]">
-          <div className="mb-2 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-emerald-500" />
-            <h3 className="font-bold text-slate-900 dark:text-white">급상승 키워드</h3>
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-emerald-500" />
+              <h3 className="font-bold text-slate-900 dark:text-white">급상승 키워드</h3>
+            </div>
+            <button
+              onClick={refetchKeywords}
+              className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-white"
+              title="새로고침"
+            >
+              <RefreshCw className={`h-4 w-4 ${isKeywordsLoading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
           <p className="mb-3 text-[10px] text-slate-400 dark:text-slate-500">
-            뉴스 키워드 기준
+            인기 기사 키워드 기준
           </p>
 
-          <div className="flex flex-wrap gap-2">
-            {trendingKeywords.map((keyword) => (
-              <span
-                key={keyword}
-                className="cursor-pointer rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20"
-              >
-                #{keyword}
-              </span>
-            ))}
-          </div>
+          {isKeywordsLoading && trendingKeywords.length === 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-6 w-16 animate-pulse rounded-full bg-slate-200 dark:bg-white/10" />
+              ))}
+            </div>
+          ) : trendingKeywords.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {trendingKeywords.map((item) => (
+                <button
+                  key={item.keyword}
+                  onClick={() => handleKeywordClick(item.keyword)}
+                  className="cursor-pointer rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20"
+                >
+                  #{item.keyword}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="py-2 text-center text-xs text-slate-400 dark:text-slate-500">
+              키워드가 없습니다
+            </p>
+          )}
         </div>
       </div>
     </aside>
