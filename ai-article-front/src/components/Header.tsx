@@ -263,7 +263,7 @@ export function Header({
               >
                 로그인하기
               </Button>
-              <p className="text-xs text-[#8f94a0]">AI Reader와 함께 맞춤형 인사이트를 만나보세요.</p>
+              <p className="text-xs text-[#8f94a0]">AHAread와 함께 맞춤형 인사이트를 만나보세요.</p>
             </div>
           )}
         </div>

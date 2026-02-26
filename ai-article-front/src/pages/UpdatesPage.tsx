@@ -237,9 +237,6 @@ export default function UpdatesPage() {
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
             업데이트 내역
           </h1>
-          <p className="mt-4 text-lg text-white/60">
-            AI Reader의 발전 과정을 확인하세요
-          </p>
         </motion.div>
 
         {/* 타임라인 */}

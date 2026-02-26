@@ -10,10 +10,10 @@ export function Footer() {
           {/* 로고 및 저작권 */}
           <div className="flex flex-col items-center gap-2 sm:items-start">
             <span className="text-lg font-bold text-gray-900 dark:text-white">
-              AI Reader
+              AHAread
             </span>
             <p className="text-xs text-gray-500 dark:text-white/50">
-              &copy; {currentYear} AI Reader. All rights reserved.
+              &copy; {currentYear} AHAread. All rights reserved.
             </p>
           </div>
 
@@ -45,7 +45,7 @@ export function Footer() {
         {/* 부가 정보 */}
         <div className="mt-6 border-t border-gray-200 pt-4 text-center dark:border-white/10">
           <p className="text-xs text-gray-400 dark:text-white/40">
-            AI Reader는 AI 기술을 활용하여 뉴스 기사를 요약하고 분석하는 서비스입니다.
+            AHAread는 AI 기술을 활용하여 뉴스 기사를 요약하고 분석하는 서비스입니다.
             <br className="sm:hidden" />
             <span className="hidden sm:inline"> · </span>
             분석 결과는 참고용이며 정확성을 보장하지 않습니다.

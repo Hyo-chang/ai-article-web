@@ -75,7 +75,7 @@ export function Login() {
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-br from-[#1e1e1e] via-[#2a2a2a] to-[#121212] text-[#f5f5f5] mb-4 shadow-[0_12px_28px_rgba(0,0,0,0.35)]">
             <Sparkles className="h-5 w-5 text-[#f5f5f5]" />
           </div>
-          <h1 className="text-2xl mb-2 font-semibold text-white sm:text-3xl">AI Reader</h1>
+          <h1 className="text-2xl mb-2 font-semibold text-white sm:text-3xl">AHAread</h1>
           <p className="text-white/70">다시 오신 것을 환영합니다</p>
         </div>
 

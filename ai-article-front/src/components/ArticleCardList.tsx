@@ -233,7 +233,7 @@ export function ArticleCardList({
                       </h3>
 
                       <div className="mt-auto flex items-center justify-between text-sm text-[#5b6472] dark:text-gray-400">
-                        <span className="font-medium text-[#394150] dark:text-gray-300">AI Reader</span>
+                        <span className="font-medium text-[#394150] dark:text-gray-300">AHAread</span>
                         {onToggleBookmark && (
                           <button
                             type="button"
@@ -308,7 +308,7 @@ export function ArticleCardList({
                   </div>
                   <div className="flex flex-1 flex-col justify-between gap-2">
                     <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-[#9aa3b3] dark:text-gray-500">
-                      <span>{article.categoryName ?? "AI Reader"}</span>
+                      <span>{article.categoryName ?? "AHAread"}</span>
                       <div className="flex items-center gap-2">
                         {isHighlighted && (
                           <span className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-700 dark:bg-sky-500/20 dark:text-sky-400">

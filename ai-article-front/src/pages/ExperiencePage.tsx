@@ -149,7 +149,7 @@ export default function ExperiencePage() {
               animate="visible"
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             >
-              AI Reader는 복잡한 정보를 선별해 정돈하고, 당신의 인사이트를 넓혀줄 경험을 제공합니다.
+              AHAread는 복잡한 정보를 선별해 정돈하고, 당신의 인사이트를 넓혀줄 경험을 제공합니다.
             </motion.p>
           </div>
 
@@ -212,7 +212,7 @@ export default function ExperiencePage() {
               정보의 홍수 속에서 길을 찾다
             </h2>
             <p className="mx-auto max-w-[640px] text-sm leading-relaxed text-gray-400 sm:text-base">
-              AI Reader는 방대한 문장을 정제해 의미를 구조화하고, 지금 알아야 할 핵심만 남겨 전달합니다. 균형 잡힌 시각과 깊이 있는 인사이트를 통해, 정보의 홍수 속에서도 스마트한 판단을 돕습니다.
+              AHAread는 방대한 문장을 정제해 의미를 구조화하고, 지금 알아야 할 핵심만 남겨 전달합니다. 균형 잡힌 시각과 깊이 있는 인사이트를 통해, 정보의 홍수 속에서도 스마트한 판단을 돕습니다.
             </p>
           </motion.div>
 
@@ -466,7 +466,7 @@ export default function ExperiencePage() {
               업데이트 내역
             </button>
           </div>
-          <p>&copy; 2026 AI Reader. All rights reserved.</p>
+          <p>&copy; 2026 AHAread. All rights reserved.</p>
         </div>
       </footer>
     </div>

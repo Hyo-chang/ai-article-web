@@ -88,7 +88,7 @@ export function SignUp({ onSignUp, onSwitchToLogin }: SignUpProps) {
           <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-br from-[#1e1e1e] via-[#2a2a2a] to-[#121212] text-[#f5f5f5] mb-4 shadow-[0_12px_28px_rgba(0,0,0,0.35)]">
             <Sparkles className="h-5 w-5 text-[#f5f5f5]" />
           </div>
-          <h1 className="text-2xl mb-2 font-semibold text-white sm:text-3xl">AI Reader 시작하기</h1>
+          <h1 className="text-2xl mb-2 font-semibold text-white sm:text-3xl">AHAread 시작하기</h1>
           <p className="text-sm text-white/70 sm:text-base">계정을 만들고 스마트한 독해를 경험하세요</p>
         </div>
 
