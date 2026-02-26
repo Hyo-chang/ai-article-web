@@ -23,6 +23,22 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.4.0",
+    date: "2026-02-26",
+    highlights: "인기 기사 & 급상승 키워드 기능",
+    items: [
+      { type: "feature", text: "인기 기사: 네이버 뉴스 랭킹 기준 실시간 인기 기사 표시" },
+      { type: "feature", text: "급상승 키워드: 인기 기사에서 추출한 트렌드 키워드 표시" },
+      { type: "feature", text: "Google 로그인: 구글 계정으로 간편 로그인 가능" },
+      { type: "feature", text: "AHA 로고: 새로운 브랜드 로고 및 'Article Highlights with AI' 태그라인 추가" },
+      { type: "improvement", text: "인기 기사/키워드 5-6개씩 슬라이드 페이지네이션" },
+      { type: "improvement", text: "좌우 화살표 및 페이지 인디케이터 추가" },
+      { type: "improvement", text: "키워드 추출 정확도 개선: 불용어 필터링 강화" },
+      { type: "improvement", text: "복합 명사 정리: '오늘이사회' → '이사회' 자동 분리" },
+      { type: "bugfix", text: "프로필 이미지 로그인 시 불러오지 못하던 문제 수정" },
+    ],
+  },
+  {
     version: "0.3.5",
     date: "2026-02-18",
     highlights: "데이터베이스 인프라 개선",
