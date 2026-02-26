@@ -44,9 +44,10 @@ public class TrendingKeywordController {
                     continue;
                 }
 
-                // 콤마로 구분된 키워드 파싱
-                String[] keywords = words.split(",");
-                for (String keyword : keywords) {
+                // JSON 배열 형태인 경우 파싱 (예: ["키워드1", "키워드2"])
+                List<String> keywordList = parseKeywords(words);
+
+                for (String keyword : keywordList) {
                     String trimmed = keyword.trim();
                     if (trimmed.isEmpty() || trimmed.length() < 2) {
                         continue;
@@ -78,6 +79,44 @@ public class TrendingKeywordController {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("message", "키워드 조회 실패"));
         }
+    }
+
+    /**
+     * 키워드 문자열 파싱 (JSON 배열 또는 콤마 구분)
+     */
+    private List<String> parseKeywords(String words) {
+        List<String> result = new ArrayList<>();
+
+        if (words == null || words.isBlank()) {
+            return result;
+        }
+
+        // JSON 배열 형태인 경우: ["키워드1", "키워드2"]
+        if (words.trim().startsWith("[")) {
+            // JSON 특수문자 제거하고 파싱
+            String cleaned = words
+                .replaceAll("\\[", "")
+                .replaceAll("\\]", "")
+                .replaceAll("\"", "")
+                .replaceAll("'", "");
+
+            for (String keyword : cleaned.split(",")) {
+                String trimmed = keyword.trim();
+                if (!trimmed.isEmpty()) {
+                    result.add(trimmed);
+                }
+            }
+        } else {
+            // 콤마로 구분된 일반 문자열
+            for (String keyword : words.split(",")) {
+                String trimmed = keyword.trim();
+                if (!trimmed.isEmpty()) {
+                    result.add(trimmed);
+                }
+            }
+        }
+
+        return result;
     }
 
     /**

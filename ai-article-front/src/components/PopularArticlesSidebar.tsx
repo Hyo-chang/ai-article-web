@@ -11,11 +11,14 @@ interface PopularArticlesSidebarProps {
 export function PopularArticlesSidebar({ className = '' }: PopularArticlesSidebarProps) {
   const navigate = useNavigate();
   const { articles, isLoading, refetch } = usePopularArticles(20);
-  const { keywords: trendingKeywords, isLoading: isKeywordsLoading, refetch: refetchKeywords } = useTrendingKeywords(10);
+  const { keywords: trendingKeywords, isLoading: isKeywordsLoading, refetch: refetchKeywords } = useTrendingKeywords(20);
   const [currentPage, setCurrentPage] = useState(0);
+  const [keywordPage, setKeywordPage] = useState(0);
 
   const ITEMS_PER_PAGE = 5;
+  const KEYWORDS_PER_PAGE = 6;
   const totalPages = Math.ceil(articles.length / ITEMS_PER_PAGE);
+  const totalKeywordPages = Math.ceil(trendingKeywords.length / KEYWORDS_PER_PAGE);
 
   const handleArticleClick = (articleId: number) => {
     navigate(`/loading/${articleId}`);
@@ -33,6 +36,19 @@ export function PopularArticlesSidebar({ className = '' }: PopularArticlesSideba
     currentPage * ITEMS_PER_PAGE,
     (currentPage + 1) * ITEMS_PER_PAGE
   );
+
+  const displayKeywords = trendingKeywords.slice(
+    keywordPage * KEYWORDS_PER_PAGE,
+    (keywordPage + 1) * KEYWORDS_PER_PAGE
+  );
+
+  const handlePrevKeywordPage = () => {
+    setKeywordPage((prev) => (prev > 0 ? prev - 1 : totalKeywordPages - 1));
+  };
+
+  const handleNextKeywordPage = () => {
+    setKeywordPage((prev) => (prev < totalKeywordPages - 1 ? prev + 1 : 0));
+  };
 
   // 키워드 클릭 시 검색 (추후 구현 가능)
   const handleKeywordClick = (keyword: string) => {
@@ -147,13 +163,31 @@ export function PopularArticlesSidebar({ className = '' }: PopularArticlesSideba
               <TrendingUp className="h-5 w-5 text-emerald-500" />
               <h3 className="font-bold text-slate-900 dark:text-white">급상승 키워드</h3>
             </div>
-            <button
-              onClick={refetchKeywords}
-              className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-white"
-              title="새로고침"
-            >
-              <RefreshCw className={`h-4 w-4 ${isKeywordsLoading ? 'animate-spin' : ''}`} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handlePrevKeywordPage}
+                disabled={trendingKeywords.length <= KEYWORDS_PER_PAGE}
+                className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-white/10 dark:hover:text-white"
+                title="이전"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                onClick={handleNextKeywordPage}
+                disabled={trendingKeywords.length <= KEYWORDS_PER_PAGE}
+                className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-white/10 dark:hover:text-white"
+                title="다음"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              <button
+                onClick={refetchKeywords}
+                className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-white"
+                title="새로고침"
+              >
+                <RefreshCw className={`h-4 w-4 ${isKeywordsLoading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
           <p className="mb-3 text-[10px] text-slate-400 dark:text-slate-500">
             인기 기사 키워드 기준
@@ -165,18 +199,37 @@ export function PopularArticlesSidebar({ className = '' }: PopularArticlesSideba
                 <div key={i} className="h-6 w-16 animate-pulse rounded-full bg-slate-200 dark:bg-white/10" />
               ))}
             </div>
-          ) : trendingKeywords.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {trendingKeywords.map((item) => (
-                <button
-                  key={item.keyword}
-                  onClick={() => handleKeywordClick(item.keyword)}
-                  className="cursor-pointer rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20"
-                >
-                  #{item.keyword}
-                </button>
-              ))}
-            </div>
+          ) : displayKeywords.length > 0 ? (
+            <>
+              <div className="flex flex-wrap gap-2">
+                {displayKeywords.map((item) => (
+                  <button
+                    key={item.keyword}
+                    onClick={() => handleKeywordClick(item.keyword)}
+                    className="cursor-pointer rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20"
+                  >
+                    #{item.keyword}
+                  </button>
+                ))}
+              </div>
+
+              {/* 페이지 인디케이터 */}
+              {totalKeywordPages > 1 && (
+                <div className="mt-3 flex justify-center gap-1">
+                  {[...Array(totalKeywordPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setKeywordPage(i)}
+                      className={`h-1.5 rounded-full transition-all ${
+                        i === keywordPage
+                          ? 'w-4 bg-emerald-500'
+                          : 'w-1.5 bg-slate-300 hover:bg-slate-400 dark:bg-white/20 dark:hover:bg-white/30'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <p className="py-2 text-center text-xs text-slate-400 dark:text-slate-500">
               키워드가 없습니다
