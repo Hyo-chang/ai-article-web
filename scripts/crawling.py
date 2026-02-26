@@ -137,6 +137,9 @@ class Config:
     dry_run: bool
     debug_save_page: bool
     article_url: Optional[str] = None
+    popular: bool = False
+    with_popular: bool = False
+    popular_limit: int = 20
 
 @dataclass(frozen=True)
 class DomainProfile:
@@ -800,6 +803,7 @@ def main():
         user_agent="Mozilla/5.0", accept_language="ko-KR,ko;q=0.9",
         referer="https://news.naver.com/", max_retries=2,
         loop=False, dry_run=False, debug_save_page=False, article_url=None,
+        popular=False, with_popular=False, popular_limit=20,
     )
 
     parser = argparse.ArgumentParser(description="Naver News API-based Crawler")
