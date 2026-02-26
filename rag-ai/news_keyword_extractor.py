@@ -42,17 +42,42 @@ class NewsKeywordExtractor:
         else:
             raise ValueError("Either 'embedding_model' or 'model_path' must be provided.")
 
-        # 기본 불용어 설정
+        # 기본 불용어 설정 (확장된 리스트)
         if stopwords:
             self.stopwords = set(stopwords)
         else:
             self.stopwords = {
-                '기자', '특파원', '사진', '뉴스', '연합뉴스', '뉴시스', '데일리',
-                '오늘', '오후', '오전', '내일', '지난', '올해', '이번',
-                '것', '수', '등', '이', '그', '저', '우리', '여기', '저기',
-                '위해', '대한', '통해', '따라', '관련', '가운데', '면서',
-                '부터', '까지', '정도', '당시', '현재', '한편', '바로'
+                # 언론 관련
+                '기자', '특파원', '사진', '뉴스', '연합뉴스', '뉴시스', '데일리', '헤럴드', '조선', '중앙', '동아', '한겨레',
+                '앵커', '리포트', '취재', '보도', '속보', '단독', '긴급',
+                # 시간 관련
+                '오늘', '오후', '오전', '내일', '지난', '올해', '이번', '작년', '내년', '어제', '모레', '최근', '현재', '당시',
+                '지난해', '올해', '내년', '지난달', '이달', '다음달', '이번주', '다음주', '지난주',
+                # 일반 대명사/조사
+                '것', '수', '등', '이', '그', '저', '우리', '여기', '저기', '무엇', '어디', '언제', '누구', '어떻게',
+                '위해', '대한', '통해', '따라', '관련', '가운데', '면서', '때문', '이후', '이전',
+                '부터', '까지', '정도', '한편', '바로', '또한', '그러나', '하지만', '그리고', '따르면',
+                # 동사/형용사 어근
+                '하다', '되다', '있다', '없다', '같다', '보다', '주다', '받다', '만들다', '알다', '모르다',
+                '말하다', '밝히다', '전하다', '설명하다', '강조하다', '지적하다', '발표하다',
+                # 일반적인 명사
+                '사람', '사람들', '경우', '문제', '상황', '내용', '결과', '방법', '부분', '사실', '의미',
+                '가능', '가능성', '필요', '필요성', '중요', '중요성', '대표', '관계자', '전문가', '측',
+                '지역', '국내', '국외', '해외', '국가', '세계', '전국', '서울', '수도권',
+                # 숫자/단위 관련
+                '만', '억', '조', '천', '백', '원', '달러', '엔', '유로', '퍼센트', '프로',
+                '명', '개', '건', '곳', '번', '회', '차', '년', '월', '일', '시', '분', '초',
+                # 기타 불용어
+                '제공', '무단', '전재', '배포', '금지', '저작권', '출처', '자료', '영상', '사진제공',
+                '이메일', '구독', '좋아요', '댓글', '공유', '클릭', '더보기', '관련기사',
             }
+
+        # 키워드 분리 불용어 (복합 명사 결합 시 분리해야 할 단어들)
+        self.split_stopwords = {
+            '오늘', '오후', '오전', '내일', '지난', '올해', '이번', '작년', '어제', '현재', '당시',
+            '또', '및', '등', '약', '각', '총', '전', '후', '내', '외', '중', '간',
+        }
+
         print("Initialization complete.")
 
     def _extract_text_and_weights(self, html_text: str, metadata: dict = None):
@@ -121,6 +146,52 @@ class NewsKeywordExtractor:
         return [token.form for token in self.kiwi.tokenize(text)]
 
 
+    def _is_valid_keyword(self, word: str) -> bool:
+        """키워드가 유효한지 검증합니다."""
+        if not word:
+            return False
+        # 최소 2글자
+        if len(word) < 2:
+            return False
+        # 최대 10글자 (너무 긴 복합어 방지)
+        if len(word) > 10:
+            return False
+        # 불용어 체크
+        if word in self.stopwords:
+            return False
+        # 숫자로만 이루어진 단어 제외
+        if word.isdigit():
+            return False
+        # 숫자로 시작하는 단어 제외 (예: 2024년)
+        if word[0].isdigit():
+            return False
+        # 특수문자 포함 단어 제외
+        if re.search(r'[^\w가-힣]', word):
+            return False
+        # 영문+숫자 혼합 제외 (예: AI2024)
+        if re.search(r'[a-zA-Z]', word) and re.search(r'\d', word):
+            return False
+        return True
+
+    def _clean_compound_word(self, word: str) -> str:
+        """복합 명사에서 불용어 접두사/접미사를 제거합니다."""
+        if not word:
+            return word
+
+        # 앞쪽 불용어 제거 (예: "오늘이사회" → "이사회")
+        for stopword in self.split_stopwords:
+            if word.startswith(stopword) and len(word) > len(stopword):
+                word = word[len(stopword):]
+                break
+
+        # 뒤쪽 불용어 제거
+        for stopword in self.split_stopwords:
+            if word.endswith(stopword) and len(word) > len(stopword):
+                word = word[:-len(stopword)]
+                break
+
+        return word
+
     def _get_candidate_words(self, text: str):
         """
         Step 2: Kiwi 형태소 분석 및 후보군 추출 (명사, 어근).
@@ -130,7 +201,7 @@ class NewsKeywordExtractor:
         :return: (토큰화된 문장 리스트, 후보 단어 set)
         """
         # 신조어 자동 등록 (복합어 인식 향상)
-        self.kiwi.extract_add_words(text, min_cnt=2, max_word_len=15)
+        self.kiwi.extract_add_words(text, min_cnt=2, max_word_len=10)
 
         sentences = text.split('.') # 간단한 문장 분리
 
@@ -147,10 +218,24 @@ class NewsKeywordExtractor:
             # 연속된 명사를 결합하여 복합 명사 생성
             compound_word = ""
             compound_start_pos = -1
+            compound_parts = []  # 복합어를 구성하는 개별 단어들
 
             for i, token in enumerate(tokens):
                 # 명사(NNG, NNP), 어근(XR) 추출
                 if token.tag in ['NNG', 'NNP', 'XR']:
+                    # 불용어는 복합어에 포함시키지 않음
+                    if token.form in self.split_stopwords:
+                        # 이전 복합어가 있으면 저장
+                        if compound_word:
+                            cleaned = self._clean_compound_word(compound_word)
+                            if self._is_valid_keyword(cleaned):
+                                candidate_tokens.append(cleaned)
+                                sentence_words.append(cleaned)
+                        compound_word = ""
+                        compound_start_pos = -1
+                        compound_parts = []
+                        continue
+
                     # 연속된 명사인지 확인 (위치가 바로 이어지는지)
                     if compound_word and compound_start_pos != -1:
                         # 이전 토큰과 현재 토큰이 연속된 위치인지 확인
@@ -158,29 +243,46 @@ class NewsKeywordExtractor:
                         if prev_token and prev_token.tag in ['NNG', 'NNP', 'XR']:
                             expected_pos = compound_start_pos + len(compound_word)
                             if token.start == expected_pos or token.start <= expected_pos + 1:
-                                compound_word += token.form
-                                continue
+                                # 복합어가 너무 길어지면 분리
+                                if len(compound_word) + len(token.form) <= 10:
+                                    compound_word += token.form
+                                    compound_parts.append(token.form)
+                                    continue
+                                else:
+                                    # 기존 복합어 저장하고 새로 시작
+                                    cleaned = self._clean_compound_word(compound_word)
+                                    if self._is_valid_keyword(cleaned):
+                                        candidate_tokens.append(cleaned)
+                                        sentence_words.append(cleaned)
 
                     # 이전 복합어가 있으면 저장
-                    if compound_word and len(compound_word) > 1 and compound_word not in self.stopwords:
-                        candidate_tokens.append(compound_word)
-                        sentence_words.append(compound_word)
+                    if compound_word:
+                        cleaned = self._clean_compound_word(compound_word)
+                        if self._is_valid_keyword(cleaned):
+                            candidate_tokens.append(cleaned)
+                            sentence_words.append(cleaned)
 
                     # 새 복합어 시작
                     compound_word = token.form
                     compound_start_pos = token.start
+                    compound_parts = [token.form]
                 else:
                     # 명사가 아닌 토큰을 만나면 복합어 저장
-                    if compound_word and len(compound_word) > 1 and compound_word not in self.stopwords:
-                        candidate_tokens.append(compound_word)
-                        sentence_words.append(compound_word)
+                    if compound_word:
+                        cleaned = self._clean_compound_word(compound_word)
+                        if self._is_valid_keyword(cleaned):
+                            candidate_tokens.append(cleaned)
+                            sentence_words.append(cleaned)
                     compound_word = ""
                     compound_start_pos = -1
+                    compound_parts = []
 
             # 문장 끝에 남은 복합어 저장
-            if compound_word and len(compound_word) > 1 and compound_word not in self.stopwords:
-                candidate_tokens.append(compound_word)
-                sentence_words.append(compound_word)
+            if compound_word:
+                cleaned = self._clean_compound_word(compound_word)
+                if self._is_valid_keyword(cleaned):
+                    candidate_tokens.append(cleaned)
+                    sentence_words.append(cleaned)
 
             if sentence_words:
                 tokenized_sentences.append(sentence_words)
