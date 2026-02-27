@@ -1,4 +1,4 @@
-# AI Reader - robots.txt
+# AHAread - robots.txt
 User-agent: *
 Allow: /
 
