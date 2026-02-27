@@ -1,6 +1,6 @@
-# AhaRead - AI 뉴스 분석 플랫폼
+# AHAread - AI 뉴스 분석 플랫폼
 
-> **서비스 URL**: https://aharead.com
+> **서비스 URL**: https://www.aharead.com
 
 ## 기술 스택
 
@@ -142,15 +142,31 @@ RAG_AI_URL=<ngrok URL>
 
 ## SEO 설정
 
+### 도메인 설정
+- **Primary Domain**: `www.aharead.com`
+- `aharead.com` → 301 → `www.aharead.com`
+- `ai-article-web.vercel.app` → 301 → `www.aharead.com`
+- Cloudflare: Always Use HTTPS ✅
+
 ### 검색엔진 등록
 - Google Search Console: ✅ 완료
 - Naver Search Advisor: ✅ 완료
+
+### 동적 Sitemap
+- **엔드포인트**: `GET /sitemap.xml` (백엔드 SitemapController)
+- Vercel에서 백엔드로 프록시 (vercel.json rewrites)
+- 정적 페이지 9개 + 기사 상세 페이지 자동 포함
+- 현재 208페이지 색인 등록
 
 ### 메타 태그 (index.html)
 ```html
 <meta name="naver-site-verification" content="bc4fc2c6977231b5e922cbae621f0aaf592d1b3a" />
 <meta name="google-site-verification" content="LJoNpweN77r27SkzzvvWeT_7UqtAxWoIqwX_6L1hXvc" />
 ```
+
+### Google AdSense
+- **Publisher ID**: ca-pub-9123736919448805
+- 상태: 심사 중 (2026-02-28 신청)
 
 ## Git 컨벤션
 
@@ -164,7 +180,23 @@ chore: 기타
 
 ---
 
-## 최근 작업 (2026-02-20)
+## 최근 작업 (2026-02-28)
+
+### SEO 최적화 및 AdSense 연동
+- 브랜드명 통일: AI Reader → AHAread (메타태그, robots.txt)
+- 도메인 통일: www.aharead.com을 Primary로 설정
+  - Cloudflare: Always Use HTTPS 활성화
+  - Vercel: aharead.com, ai-article-web.vercel.app → 301 리다이렉트
+- 동적 Sitemap 구현
+  - `SitemapController.java` 추가 (백엔드)
+  - 정적 페이지 + 기사 상세 페이지 자동 포함
+  - Vercel에서 `/sitemap.xml` → Railway 백엔드 프록시
+  - 208페이지 Google Search Console 등록
+- Google AdSense 신청 (심사 중)
+
+---
+
+## 작업 기록 (2026-02-20)
 
 ### 코드 정리
 - 프론트엔드 미사용 컴포넌트 8개 삭제 (899줄)
@@ -190,5 +222,7 @@ chore: 기타
 
 ## TODO
 
-- [ ] Google AdSense 신청 (색인 확인 후)
+- [x] Google AdSense 신청 (심사 중 - 2026-02-28)
+- [ ] AdSense 승인 후 광고 배치
 - [ ] 기사 추천 알고리즘 고도화
+- [ ] 기사별 동적 메타태그 (og:title, og:description)
