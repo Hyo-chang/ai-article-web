@@ -1,0 +1,81 @@
+package com.team.aiarticle.ai_article_backend.controller;
+
+import com.team.aiarticle.ai_article_backend.entity.ArticleV2;
+import com.team.aiarticle.ai_article_backend.repository.ArticleV2Repository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+public class SitemapController {
+
+    private final ArticleV2Repository articleV2Repository;
+    private static final String BASE_URL = "https://www.aharead.com";
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    @GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
+    public String generateSitemap() {
+        StringBuilder xml = new StringBuilder();
+        xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        xml.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
+
+        // 정적 페이지들
+        addStaticPages(xml);
+
+        // 동적 기사 페이지들
+        addArticlePages(xml);
+
+        xml.append("</urlset>");
+        return xml.toString();
+    }
+
+    private void addStaticPages(StringBuilder xml) {
+        String today = LocalDateTime.now().format(DATE_FORMAT);
+
+        // 메인 페이지
+        addUrl(xml, "/", today, "daily", "1.0");
+
+        // 주요 페이지
+        addUrl(xml, "/home", today, "hourly", "0.9");
+        addUrl(xml, "/experience", today, "weekly", "0.8");
+        addUrl(xml, "/board", today, "daily", "0.8");
+        addUrl(xml, "/updates", today, "weekly", "0.6");
+
+        // 기타 페이지
+        addUrl(xml, "/privacy", today, "monthly", "0.4");
+        addUrl(xml, "/terms", today, "monthly", "0.4");
+        addUrl(xml, "/login", today, "monthly", "0.5");
+        addUrl(xml, "/signup", today, "monthly", "0.5");
+    }
+
+    private void addArticlePages(StringBuilder xml) {
+        List<ArticleV2> articles = articleV2Repository.findAll();
+
+        for (ArticleV2 article : articles) {
+            if (article.getTitle() != null && article.getSummarize() != null) {
+                String lastmod = article.getPublishedAt() != null
+                    ? article.getPublishedAt().format(DATE_FORMAT)
+                    : article.getInitialCrawledAt() != null
+                        ? article.getInitialCrawledAt().format(DATE_FORMAT)
+                        : LocalDateTime.now().format(DATE_FORMAT);
+
+                addUrl(xml, "/content/" + article.getArticleId(), lastmod, "weekly", "0.7");
+            }
+        }
+    }
+
+    private void addUrl(StringBuilder xml, String path, String lastmod, String changefreq, String priority) {
+        xml.append("  <url>\n");
+        xml.append("    <loc>").append(BASE_URL).append(path).append("</loc>\n");
+        xml.append("    <lastmod>").append(lastmod).append("</lastmod>\n");
+        xml.append("    <changefreq>").append(changefreq).append("</changefreq>\n");
+        xml.append("    <priority>").append(priority).append("</priority>\n");
+        xml.append("  </url>\n");
+    }
+}
