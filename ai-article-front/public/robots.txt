@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://aharead.com/sitemap.xml
+Sitemap: https://www.aharead.com/sitemap.xml
