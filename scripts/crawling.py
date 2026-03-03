@@ -713,6 +713,10 @@ def process_article(session: requests.Session, cfg: Config, article_api_data: Di
             print(f"  ⏭️ SKIP: 본문을 추출하지 못했습니다: {link}")
             return None
 
+        if len(body) < 100:
+            print(f"  ⏭️ SKIP: 본문이 너무 짧습니다 ({len(body)}자): {link}")
+            return None
+
         # 영문 기사 필터링
         if not is_korean_article(title, body):
             print(f"  ⏭️ SKIP (영문 기사): {title[:50]}...")
