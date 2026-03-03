@@ -56,4 +56,13 @@ public interface ArticleV2Repository extends JpaRepository<ArticleV2, Integer> {
 
     // 인기 기사 조회 (랭킹순, 최신 업데이트 기준)
     List<ArticleV2> findByIsPopularTrueOrderByPopularRankAsc(Pageable pageable);
+
+    // sitemap용: title, summarize가 있는 기사만 조회
+    @Query("""
+        SELECT a FROM ArticleV2 a
+        WHERE a.title IS NOT NULL
+          AND a.summarize IS NOT NULL
+        ORDER BY a.articleId DESC
+    """)
+    List<ArticleV2> findSitemapArticles();
 }

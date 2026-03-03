@@ -4,12 +4,14 @@ import com.team.aiarticle.ai_article_backend.entity.ArticleV2;
 import com.team.aiarticle.ai_article_backend.repository.ArticleV2Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +22,7 @@ public class SitemapController {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
-    public String generateSitemap() {
+    public ResponseEntity<String> generateSitemap() {
         StringBuilder xml = new StringBuilder();
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         xml.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
@@ -32,7 +34,10 @@ public class SitemapController {
         addArticlePages(xml);
 
         xml.append("</urlset>");
-        return xml.toString();
+        return ResponseEntity.ok()
+            .header("Content-Type", MediaType.APPLICATION_XML_VALUE)
+            .header("Cache-Control", "public, max-age=" + TimeUnit.HOURS.toSeconds(1))
+            .body(xml.toString());
     }
 
     private void addStaticPages(StringBuilder xml) {
@@ -55,19 +60,17 @@ public class SitemapController {
     }
 
     private void addArticlePages(StringBuilder xml) {
-        List<ArticleV2> articles = articleV2Repository.findAll();
+        List<ArticleV2> articles = articleV2Repository.findSitemapArticles();
 
         for (ArticleV2 article : articles) {
-            if (article.getTitle() != null && article.getSummarize() != null) {
-                String lastmod = article.getPublishedAt() != null
-                    ? article.getPublishedAt().format(DATE_FORMAT)
-                    : article.getInitialCrawledAt() != null
-                        ? article.getInitialCrawledAt().format(DATE_FORMAT)
-                        : LocalDateTime.now().format(DATE_FORMAT);
-
-                addUrl(xml, "/content/" + article.getArticleId(), lastmod, "weekly", "0.7");
-            }
+            addUrl(xml, "/content/" + article.getArticleId(), resolveLastmod(article), "weekly", "0.7");
         }
+    }
+
+    private String resolveLastmod(ArticleV2 article) {
+        if (article.getPublishedAt() != null) return article.getPublishedAt().format(DATE_FORMAT);
+        if (article.getInitialCrawledAt() != null) return article.getInitialCrawledAt().format(DATE_FORMAT);
+        return LocalDateTime.now().format(DATE_FORMAT);
     }
 
     private void addUrl(StringBuilder xml, String path, String lastmod, String changefreq, String priority) {
