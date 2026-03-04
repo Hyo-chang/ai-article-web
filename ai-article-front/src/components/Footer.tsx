@@ -20,6 +20,13 @@ export function Footer() {
           {/* 링크 */}
           <nav className="flex flex-wrap items-center justify-center gap-4 text-sm">
             <Link
+              to="/about"
+              className="text-gray-600 transition hover:text-gray-900 dark:text-white/60 dark:hover:text-white"
+            >
+              소개
+            </Link>
+            <span className="text-gray-300 dark:text-white/20">|</span>
+            <Link
               to="/privacy"
               className="text-gray-600 transition hover:text-gray-900 dark:text-white/60 dark:hover:text-white"
             >

@@ -21,6 +21,7 @@ import PostWritePage from "./pages/board/PostWritePage";
 import AnalyzedArticlePage from "./pages/AnalyzedArticlePage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
+import AboutPage from "./pages/AboutPage";
 import { Tabs, TabsContent } from "./components/ui/tabs";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
@@ -678,6 +679,7 @@ export default function App() {
           <Route path="/analyzed/:id" element={<AnalyzedArticlePage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/about" element={<AboutPage />} />
         </Routes>
       </AuthProvider>
     </ThemeProvider>
