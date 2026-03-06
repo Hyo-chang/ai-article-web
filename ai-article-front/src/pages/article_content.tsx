@@ -6,6 +6,7 @@ import { useBookmarks } from '../hooks/useBookmarks';
 import { getApiBaseUrl } from '@/lib/api';
 import type { Article } from '@/types/article';
 import { useAuth } from '@/services/AuthContext';
+import { useCanonical } from '../hooks/useCanonical';
 
 interface LocationStateShape {
     article?: Article;
@@ -72,6 +73,7 @@ export default function ArticleDetailPage() {
     const { articles, isLoading, error } = useArticles();
     const { user } = useAuth();
     const { isBookmarked, toggleBookmark } = useBookmarks();
+    useCanonical(`/content/${articleId}`);
 
     const articleIdNumber = articleId ? Number(articleId) : NaN;
     const isArticleIdValid = Number.isInteger(articleIdNumber) && articleIdNumber >= 0;

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useCanonical } from "../hooks/useCanonical";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
@@ -91,6 +92,7 @@ const sections = [
 
 export default function TermsPage() {
   const navigate = useNavigate();
+  useCanonical("/terms");
 
   return (
     <div className="min-h-screen bg-[#090a0c] text-white">
