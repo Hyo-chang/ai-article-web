@@ -24,13 +24,6 @@
     <lombok.version>1.18.34</lombok.version>
   </properties>
 
-  <!-- KOMORAN은 JitPack을 통해 배포되므로 repositories에 jitpack.io를 반드시 추가 -->
-  <repositories>
-    <repository>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
-    </repository>
-  </repositories>
 
   <dependencies>
     <!-- Spring Boot starters -->
