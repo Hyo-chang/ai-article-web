@@ -92,4 +92,27 @@ public class UserService {
             userInterestRepository.save(interest);
         }
     }
+
+    // 이메일 구독 상태 조회
+    public java.util.Map<String, Object> getEmailSubscription(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        return java.util.Map.of(
+                "subscribed", user.isEmailSubscribed(),
+                "hour", user.getNotificationHour()
+        );
+    }
+
+    // 이메일 구독 상태 업데이트
+    @Transactional
+    public void updateEmailSubscription(Integer userId, boolean subscribed, int hour) {
+        if (hour < 0 || hour > 23) {
+            throw new IllegalArgumentException("시간은 0~23 사이여야 합니다.");
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        user.setEmailSubscribed(subscribed);
+        user.setNotificationHour(hour);
+        userRepository.save(user);
+    }
 }

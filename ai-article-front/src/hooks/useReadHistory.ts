@@ -30,7 +30,7 @@ export function useReadHistory(): UseReadHistoryState {
         setError(null);
 
         const response = await fetch(
-          `${getApiBaseUrl()}/api/users/${user.userId}/read-history`,
+          `${getApiBaseUrl()}/api/mypage/history`,
           {
             headers: {
               Authorization: `Bearer ${user.token}`,

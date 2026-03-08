@@ -146,6 +146,16 @@ public class MyPageController {
         }
     }
 
+    // 읽은 기사 기록 조회
+    @GetMapping("/history")
+    public ResponseEntity<?> getHistory() {
+        Integer userId = extractUserIdFromSecurity();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+        }
+        return ResponseEntity.ok(historyService.getReadHistory(userId, 50));
+    }
+
     // Records that the authenticated (or explicitly supplied) user viewed an article
     // Request JSON: { "articleId": number, "userId"?: number, "readAt"?: iso-string }
     @PostMapping("/history")
@@ -178,6 +188,51 @@ public class MyPageController {
         } catch (Exception e) {
             log.error("[READ-HISTORY] failed userId={} articleId={} err={}", userId, articleId, e.getMessage(), e);
             throw e;
+        }
+    }
+
+    // ==================== 이메일 구독 API ====================
+
+    // 이메일 구독 상태 조회
+    @GetMapping("/email-subscription")
+    public ResponseEntity<?> getEmailSubscription() {
+        Integer userId = extractUserIdFromSecurity();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+        }
+        try {
+            return ResponseEntity.ok(userService.getEmailSubscription(userId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // 이메일 구독 상태 업데이트
+    @PutMapping("/email-subscription")
+    public ResponseEntity<?> updateEmailSubscription(@RequestBody Map<String, Object> payload) {
+        Integer userId = extractUserIdFromSecurity();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+        }
+
+        Object subscribedObj = payload.get("subscribed");
+        Object hourObj = payload.get("hour");
+
+        if (!(subscribedObj instanceof Boolean)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "subscribed 값이 필요합니다."));
+        }
+        boolean subscribed = (Boolean) subscribedObj;
+        int hour = 9;
+        if (hourObj instanceof Number number) {
+            hour = number.intValue();
+        }
+
+        try {
+            userService.updateEmailSubscription(userId, subscribed, hour);
+            log.info("[EMAIL-SUB] updated userId={} subscribed={} hour={}", userId, subscribed, hour);
+            return ResponseEntity.ok(Map.of("message", "저장되었습니다.", "subscribed", subscribed, "hour", hour));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 

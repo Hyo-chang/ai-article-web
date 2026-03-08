@@ -65,4 +65,14 @@ public interface ArticleV2Repository extends JpaRepository<ArticleV2, Integer> {
         ORDER BY a.articleId DESC
     """)
     List<ArticleV2> findSitemapArticles();
+
+    // 이메일 구독용: 여러 카테고리에서 summarize 있는 최신 기사 조회
+    @Query("""
+        SELECT a FROM ArticleV2 a
+        WHERE a.categoryCode IN :categoryCodes
+          AND a.summarize IS NOT NULL
+        ORDER BY a.publishedAt DESC
+    """)
+    List<ArticleV2> findTop3ByCategoryCodesAndSummarizeNotNull(
+            @Param("categoryCodes") List<String> categoryCodes, Pageable pageable);
 }

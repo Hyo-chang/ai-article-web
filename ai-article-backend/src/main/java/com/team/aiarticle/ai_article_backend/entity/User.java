@@ -40,6 +40,12 @@ public class User {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Column(name = "email_subscribed", nullable = false)
+    private boolean emailSubscribed = false;
+
+    @Column(name = "notification_hour", nullable = false)
+    private int notificationHour = 9;
+
     // Optional VK integration: user roles mapping
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",

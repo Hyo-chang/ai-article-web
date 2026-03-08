@@ -1,7 +1,7 @@
 // src/pages/MyPage.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Trash2 } from "lucide-react";
+import { ArrowLeft, Heart, Trash2, Bell, BellOff } from "lucide-react";
 import { useAuth } from "../services/AuthContext";
 import { fetchJson, getApiBaseUrl } from "@/lib/api";
 import { BookmarkSection } from "@/components/BookmarkSection";
@@ -269,6 +269,48 @@ const MyPage: React.FC = () => {
 
   const [isResetting, setIsResetting] = useState(false);
 
+  // 이메일 구독 상태
+  const [emailSubscribed, setEmailSubscribed] = useState(false);
+  const [notificationHour, setNotificationHour] = useState(9);
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
+
+  useEffect(() => {
+    if (!typedUser?.token) return;
+    fetch(`${getApiBaseUrl()}/api/mypage/email-subscription`, {
+      headers: { Authorization: `Bearer ${typedUser.token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setEmailSubscribed(data.subscribed ?? false);
+        setNotificationHour(data.hour ?? 9);
+      })
+      .catch(() => {});
+  }, [typedUser?.token]);
+
+  const handleEmailSubscriptionSave = async () => {
+    if (!typedUser?.token) return;
+    try {
+      setIsSavingEmail(true);
+      const res = await fetch(`${getApiBaseUrl()}/api/mypage/email-subscription`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${typedUser.token}`,
+        },
+        body: JSON.stringify({ subscribed: emailSubscribed, hour: notificationHour }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "저장에 실패했습니다.");
+      }
+      alert("이메일 알림 설정이 저장되었습니다.");
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "저장에 실패했습니다.");
+    } finally {
+      setIsSavingEmail(false);
+    }
+  };
+
   // 북마크 상태
   const [bookmarks, setBookmarks] = useState<BookmarkedArticle[]>([]);
   const [bookmarksLoading, setBookmarksLoading] = useState(true);
@@ -514,6 +556,16 @@ const MyPage: React.FC = () => {
           maxSelections={MAX_KEYWORDS}
         />
 
+        <EmailSubscriptionSection
+          email={typedUser.email ?? ""}
+          subscribed={emailSubscribed}
+          hour={notificationHour}
+          isSaving={isSavingEmail}
+          onToggle={() => setEmailSubscribed((prev) => !prev)}
+          onHourChange={setNotificationHour}
+          onSave={handleEmailSubscriptionSave}
+        />
+
         <BookmarkSection
           bookmarks={bookmarks}
           isLoading={bookmarksLoading}
@@ -740,6 +792,101 @@ const KeywordSection: React.FC<KeywordSectionProps> = ({
             className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSaving ? "저장 중..." : "관심사 저장"}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+interface EmailSubscriptionSectionProps {
+  email: string;
+  subscribed: boolean;
+  hour: number;
+  isSaving: boolean;
+  onToggle: () => void;
+  onHourChange: (hour: number) => void;
+  onSave: () => void;
+}
+
+const HOUR_OPTIONS = Array.from({ length: 17 }, (_, i) => i + 6); // 6 ~ 22
+
+const EmailSubscriptionSection: React.FC<EmailSubscriptionSectionProps> = ({
+  email,
+  subscribed,
+  hour,
+  isSaving,
+  onToggle,
+  onHourChange,
+  onSave,
+}) => {
+  return (
+    <section className="rounded-2xl border border-white/10 bg-[#15181f]/95 p-4 shadow-2xl shadow-black/40 sm:rounded-3xl sm:p-6">
+      <div className="flex flex-col gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50 sm:tracking-[0.3em]">Notification</p>
+          <h2 className="text-lg font-semibold text-white sm:text-xl md:text-2xl">이메일 알림</h2>
+          <p className="text-sm text-white/70">
+            관심 카테고리 기반 추천 기사 3개를 매일 선택한 시간에 이메일로 보내드립니다.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-white/15 bg-white/5 p-4 space-y-4">
+          {/* 현재 이메일 표시 */}
+          <div>
+            <p className="text-xs font-medium text-white/50 mb-1">수신 이메일</p>
+            <p className="text-sm text-white/80">{email || "이메일 정보 없음"}</p>
+          </div>
+
+          {/* 구독 ON/OFF 토글 */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-white">이메일 수신</p>
+              <p className="text-xs text-white/50 mt-0.5">
+                {subscribed ? "구독 중 — 매일 기사를 발송합니다." : "구독 해제 상태"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onToggle}
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
+                subscribed
+                  ? "bg-sky-500/20 border border-sky-400/40 text-sky-300 hover:bg-sky-500/30"
+                  : "bg-white/10 border border-white/20 text-white/60 hover:bg-white/15"
+              }`}
+            >
+              {subscribed ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+              {subscribed ? "ON" : "OFF"}
+            </button>
+          </div>
+
+          {/* 시간 선택 */}
+          {subscribed && (
+            <div>
+              <label className="text-sm font-medium text-white/80 mb-2 block">발송 시간</label>
+              <select
+                value={hour}
+                onChange={(e) => onHourChange(Number(e.target.value))}
+                className="h-10 rounded-xl border border-white/15 bg-white/5 px-3 text-sm text-white focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+              >
+                {HOUR_OPTIONS.map((h) => (
+                  <option key={h} value={h} style={{ background: "#15181f" }}>
+                    {String(h).padStart(2, "0")}:00
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={isSaving}
+            className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSaving ? "저장 중..." : "알림 설정 저장"}
           </button>
         </div>
       </div>
