@@ -1,6 +1,55 @@
 # Release Notes
 
-AI Reader 서비스의 변경 사항을 기록합니다.
+AHAread 서비스의 변경 사항을 기록합니다.
+
+---
+
+## v0.5.0 (2026-03-09)
+
+### 인프라
+- **Railway 빌드 완전 안정화**: KOMORAN(JitPack) 의존성 제거로 빌드 실패 해결
+- **Dockerfile 멀티스테이지 빌드**: eclipse-temurin:21-jdk-jammy → jre-jammy 분리
+
+### 버그 수정
+- `admin_job_run` 테이블 자동 생성 (`@PostConstruct`)
+- `mvnw` Git 실행권한 누락 수정
+
+---
+
+## v0.4.0 (2026-03-06)
+
+### 새로운 기능
+- **이메일 구독 알림**: 관심 카테고리 기반 기사 3개를 매일 원하는 시간에 이메일로 발송
+  - MyPage에서 구독 ON/OFF 및 발송 시간(06~22시) 설정 가능
+  - Gmail SMTP 연동
+
+### 버그 수정
+- 열람 기록 404 버그 수정
+
+---
+
+## v0.3.0 (2026-03-04)
+
+### SEO / AdSense
+- `ads.txt` 추가 (Google AdSense 인증)
+- About 페이지 추가 (`/about`) - AdSense 필수 페이지
+- 동적 canonical 태그 적용 (Google 중복 색인 방지)
+- SitemapController 성능 개선 (DB 필터링, HTTP 캐싱)
+- 짧은 기사(100자 미만) 필터링
+
+### 브랜딩
+- 브랜드명 통일: AI Reader → **AHAread**
+- 도메인 통일: `www.aharead.com` Primary 설정
+- Google AdSense 재신청 (심사 중)
+
+---
+
+## v0.2.0 (2026-02-28)
+
+### SEO 최적화
+- 동적 Sitemap 구현 (`/sitemap.xml` → 백엔드 프록시, 208페이지 등록)
+- Google Search Console, 네이버 서치어드바이저 등록
+- Cloudflare Always Use HTTPS 활성화
 
 ---
 
@@ -67,9 +116,16 @@ AI Reader 서비스의 변경 사항을 기록합니다.
 
 ## 로드맵
 
-### 예정된 기능
-- [ ] AI 채팅: 기사 맥락 기반 대화
+### 완료
+- [x] AI 채팅: 기사 맥락 기반 대화
+- [x] 이메일 구독 알림
+- [x] Google AdSense 신청 (심사 중)
+- [x] SEO 최적화 (Sitemap, canonical, Search Console)
+
+### 예정
+- [ ] AdSense 승인 후 광고 배치
+- [ ] 카카오톡 알림 (카카오 채널 API)
+- [ ] 기사 추천 알고리즘 고도화
+- [ ] 기사별 동적 메타태그 (og:title, og:description)
 - [ ] 다크 모드
 - [ ] 프로필 이미지 업로드
-- [ ] 검색 고도화 (내용 검색)
-- [ ] Google AdSense 적용
