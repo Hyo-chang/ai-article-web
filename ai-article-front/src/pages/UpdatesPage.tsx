@@ -23,6 +23,16 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.8.0",
+    date: "2026-03-09",
+    highlights: "카테고리 분류 정확도 개선",
+    items: [
+      { type: "improvement", text: "기사 카테고리 분류 정확도 개선: 크롤링 키워드 기반 카테고리 자동 지정" },
+      { type: "improvement", text: "세계/정치/경제 등 카테고리 혼용 오류 수정 (이란·중동 뉴스 세계 카테고리로 정확 분류)" },
+      { type: "feature", text: "관리자 기능: 제목 키워드 기반 기존 기사 카테고리 일괄 재분류 (653건 수정)" },
+    ],
+  },
+  {
     version: "0.7.0",
     date: "2026-03-09",
     highlights: "Railway 배포 안정화",
