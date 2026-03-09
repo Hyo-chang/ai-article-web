@@ -52,6 +52,14 @@ public class AdminController {
         return crawlingBridgeService.crawlSingleArticle(request.getArticleUrl());
     }
 
+    @PostMapping("/recategorize-by-url")
+    public Map<String,Object> recategorizeByUrl(@RequestHeader(value="X-Admin-Token", required=false) String token) {
+        requireToken(token);
+        long runId = adminService.startRun("recategorizeByUrlSid", Map.of());
+        adminService.recategorizeByUrlSid(runId);
+        return Map.of("runId", runId, "status", "STARTED");
+    }
+
     @PostMapping("/backfill/category-code")
     public Map<String,Object> backfill(@RequestHeader(value="X-Admin-Token", required=false) String token) {
         requireToken(token);

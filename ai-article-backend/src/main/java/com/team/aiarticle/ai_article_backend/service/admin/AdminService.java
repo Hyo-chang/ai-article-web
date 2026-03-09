@@ -53,6 +53,27 @@ public class AdminService {
         jdbc.update("DELETE FROM admin_job_lock WHERE job_name=?", jobName);
     }
 
+    /* =============== 0) URL sid 기반 카테고리 재분류 =============== */
+    @Async
+    public void recategorizeByUrlSid(long runId) {
+        final String JOB = "recategorizeByUrlSid";
+        try {
+            // Naver URL의 ?sid= 파라미터에서 카테고리 코드 추출 후 업데이트
+            int updated = jdbc.update("""
+                UPDATE articlev2
+                SET category_code = SUBSTRING_INDEX(SUBSTRING_INDEX(article_url, 'sid=', -1), '&', 1)
+                WHERE article_url LIKE '%sid=%'
+                  AND SUBSTRING_INDEX(SUBSTRING_INDEX(article_url, 'sid=', -1), '&', 1)
+                      IN ('100', '101', '102', '103', '104', '105', '106')
+            """);
+            log.info("[{}] URL sid 기반 카테고리 재분류 완료: {}건 업데이트", JOB, updated);
+            finishRun(runId, true, "updated=" + updated);
+        } catch (Exception e) {
+            log.error("{} failed", JOB, e);
+            finishRun(runId, false, e.getMessage());
+        }
+    }
+
     /* =============== 1) 카테고리 코드 백필 =============== */
     @Async
     public void backfillCategoryCodeV2(long runId) {
