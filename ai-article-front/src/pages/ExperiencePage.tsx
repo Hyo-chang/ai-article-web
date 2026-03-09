@@ -6,19 +6,7 @@ const fadeUpVariants = {
   visible: { opacity: 1, y: 0, scale: 1 },
 };
 
-const slideVariants = {
-  left: {
-    hidden: { opacity: 0, x: -60 },
-    visible: { opacity: 1, x: 0 },
-  },
-  right: {
-    hidden: { opacity: 0, x: 60 },
-    visible: { opacity: 1, x: 0 },
-  },
-};
-
 const heroBackground = "bg-[#141414]";
-
 const pageBackground = "bg-[#090a0c]";
 const aboutBackground =
   "bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#151515]";
@@ -57,16 +45,16 @@ const featureList = [
       "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    title: "프리미엄 키워드 분석",
+    title: "트렌드 키워드 분석",
     description:
-      "문맥과 관련성을 고려해 키워드를 정리하고, 연관된 흐름까지 짚어 드립니다.",
+      "인기 기사에서 핵심 키워드를 실시간으로 추출해 지금 가장 주목받는 흐름을 한눈에 파악합니다.",
     image:
       "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    title: "맞춤형 인사이트",
+    title: "맞춤형 뉴스레터",
     description:
-      "읽는 습관을 학습해 지금 필요한 관점을 제안하고 이어서 읽을 콘텐츠를 추천합니다.",
+      "관심 카테고리를 설정하면 매일 원하는 시간에 큐레이션된 기사 3개 요약을 이메일로 받아볼 수 있습니다.",
     image:
       "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=1200&q=80",
   },
@@ -220,7 +208,6 @@ export default function ExperiencePage() {
             {demoCards.map((card, index) => (
               <motion.div
                 key={card.title}
-                className="group relative flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-7 text-left text-[#f5f5f5] shadow-[0_16px_44px_rgba(6,8,14,0.5)] backdrop-blur-sm transition-all duration-150 hover:border-white/20 hover:bg-white/[0.07] hover:shadow-[0_26px_50px_rgba(8,10,18,0.55)]"
                 variants={fadeUpVariants}
                 initial="hidden"
                 whileInView="visible"
@@ -230,30 +217,23 @@ export default function ExperiencePage() {
                   ease: "easeOut",
                   delay: 0.08 * index,
                 }}
-                whileHover={{
-                  scale: 1.08,
-                  y: -10,
-                  transition: { duration: 0.08, ease: "easeOut" },
-                }}
-                whileTap={{
-                  scale: 0.95,
-                  transition: { duration: 0.08, ease: "easeOut" },
-                }}
               >
-                <span className="h-px w-10 bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
-                <h3 className="text-lg font-semibold text-white">
-                  {card.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-gray-400">
-                  {card.description}
-                </p>
+                <div className="group relative flex h-full flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-7 text-left text-[#f5f5f5] shadow-[0_16px_44px_rgba(6,8,14,0.5)] backdrop-blur-sm transition-all duration-150 hover:-translate-y-2 hover:scale-[1.04] hover:border-white/20 hover:bg-white/[0.07] hover:shadow-[0_26px_50px_rgba(8,10,18,0.55)] active:scale-[0.97]">
+                  <span className="h-px w-10 bg-gradient-to-r from-white/60 via-white/20 to-transparent" />
+                  <h3 className="text-lg font-semibold text-white">
+                    {card.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-gray-400">
+                    {card.description}
+                  </p>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Future Section */}
+      {/* Feature Section */}
       <section
         className={`${featureBackground} relative flex min-h-screen items-center px-6 py-24`}
       >
@@ -278,14 +258,13 @@ export default function ExperiencePage() {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
-              Future
+              Features
             </span>
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
-              AI가 그려내는 다음 장면
+              AHAread가 제공하는 것들
             </h2>
             <p className="mx-auto max-w-[720px] text-sm leading-relaxed text-white/65 sm:text-base">
-              다가오는 업데이트는 더욱 정교한 분석과 빠른 통찰을 약속합니다. 데이터를
-              연결하고 패턴을 예측하며, 한발 앞선 뉴스 이해를 지원합니다.
+              AI 요약부터 트렌드 분석, 이메일 뉴스레터까지 — 뉴스를 더 스마트하게 소비할 수 있도록 돕는 기능들을 제공합니다.
             </p>
           </motion.div>
 
@@ -293,7 +272,6 @@ export default function ExperiencePage() {
             {featureList.map((feature, index) => (
               <motion.div
                 key={feature.title}
-                className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.05] shadow-[0_24px_48px_rgba(6,10,18,0.55)] backdrop-blur-sm"
                 variants={fadeUpVariants}
                 initial="hidden"
                 whileInView="visible"
@@ -303,35 +281,25 @@ export default function ExperiencePage() {
                   ease: "easeOut",
                   delay: 0.08 * index,
                 }}
-                whileHover={{
-                  scale: 1.06,
-                  y: -12,
-                  transition: { duration: 0.1, ease: "easeOut" },
-                }}
-                whileTap={{
-                  scale: 0.95,
-                  transition: { duration: 0.08, ease: "easeOut" },
-                }}
               >
-                <div className="absolute inset-0">
-                  <img
-                    src={feature.image}
-                    alt={feature.title}
-                    className="h-full w-full object-cover opacity-35 transition duration-200 group-hover:opacity-55"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#0b0d16]/90 via-[#111422]/70 to-[#1a2335]/60" />
-                </div>
-                <div className="relative flex h-full flex-col gap-5 p-7">
-                  <span className="h-px w-10 bg-gradient-to-r from-white/70 via-white/25 to-transparent" />
-                  <h3 className="text-2xl font-semibold text-white">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-white/70">
-                    {feature.description}
-                  </p>
-                  <span className="mt-auto text-xs uppercase tracking-[0.3em] text-white/50">
-                    
-                  </span>
+                <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.05] shadow-[0_24px_48px_rgba(6,10,18,0.55)] backdrop-blur-sm transition-all duration-150 hover:-translate-y-3 hover:scale-[1.04] hover:border-white/20 hover:shadow-[0_32px_56px_rgba(6,10,18,0.65)] active:scale-[0.97]">
+                  <div className="absolute inset-0">
+                    <img
+                      src={feature.image}
+                      alt={feature.title}
+                      className="h-full w-full object-cover opacity-35 transition duration-150 group-hover:opacity-55"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#0b0d16]/90 via-[#111422]/70 to-[#1a2335]/60" />
+                  </div>
+                  <div className="relative flex h-full flex-col gap-5 p-7">
+                    <span className="h-px w-10 bg-gradient-to-r from-white/70 via-white/25 to-transparent" />
+                    <h3 className="text-2xl font-semibold text-white">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-white/70">
+                      {feature.description}
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -339,7 +307,7 @@ export default function ExperiencePage() {
         </div>
       </section>
 
-      {/* FAQ Section (리뷰 섹션 대체) */}
+      {/* FAQ Section */}
       <section
         className={`${reviewBackground} relative flex min-h-screen items-center px-6 py-24`}
       >
@@ -364,7 +332,7 @@ export default function ExperiencePage() {
               자주 묻는 질문
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-white/70">
-              서비스 준비 중에 많이 받는 질문을 정리했어요.
+              궁금한 점들을 정리했습니다.
             </p>
           </motion.div>
 
@@ -375,16 +343,16 @@ export default function ExperiencePage() {
                 a: "네. 기사 원문 링크와 언론사 정보가 함께 표시됩니다.",
               },
               {
-                q: "개인정보는 어떻게 처리되나요?",
-                a: "로그인/맞춤 추천이 필요한 최소한의 정보만 암호화해 보관합니다.",
+                q: "이메일 뉴스레터를 구독할 수 있나요?",
+                a: "네. 마이페이지에서 관심 카테고리를 설정하면, 원하는 시간에 기사 3개 요약을 이메일로 받아볼 수 있습니다.",
               },
               {
-                q: "팀/기업용 기능이 있나요?",
-                a: "공유 링크, 워크스페이스, 권한 관리 기능을 준비 중입니다.",
+                q: "개인정보는 어떻게 처리되나요?",
+                a: "로그인 및 맞춤 서비스에 필요한 최소한의 정보만 암호화하여 보관합니다.",
               },
               {
                 q: "모바일에서도 잘 동작하나요?",
-                a: "반응형 레이아웃으로 모바일/태블릿/데스크톱을 지원합니다.",
+                a: "반응형 레이아웃으로 모바일·태블릿·데스크톱 모두 지원합니다.",
               },
             ].map((item, i) => (
               <motion.div
@@ -423,7 +391,7 @@ export default function ExperiencePage() {
             <motion.button
               type="button"
               onClick={() => navigate("/home")}
-              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-12 py-3.5 text-lg font-semibold text-white shadow-[0_18px_35px_rgba(12,18,28,0.35)] transition duration-200 hover:-translate-y-1 hover:border-white/40 hover:bg-white/15"
+              className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-12 py-3.5 text-lg font-semibold text-white shadow-[0_18px_35px_rgba(12,18,28,0.35)] transition duration-150 hover:-translate-y-1 hover:border-white/40 hover:bg-white/15"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
             >
