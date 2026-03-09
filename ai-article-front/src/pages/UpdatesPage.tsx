@@ -23,6 +23,39 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.7.0",
+    date: "2026-03-09",
+    highlights: "Railway 배포 안정화",
+    items: [
+      { type: "improvement", text: "Railway 빌드 실패 완전 해결: KOMORAN(JitPack) 의존성 제거" },
+      { type: "improvement", text: "Dockerfile 멀티스테이지 빌드 적용으로 배포 안정성 향상" },
+      { type: "bugfix", text: "admin_job_run 테이블 자동 생성 추가" },
+    ],
+  },
+  {
+    version: "0.6.0",
+    date: "2026-03-06",
+    highlights: "이메일 구독 알림",
+    items: [
+      { type: "feature", text: "이메일 구독 알림: 관심 카테고리 기반 기사 3개를 매일 원하는 시간에 발송" },
+      { type: "feature", text: "마이페이지에서 구독 ON/OFF 및 발송 시간(06~22시) 직접 설정 가능" },
+      { type: "bugfix", text: "열람 기록 404 오류 수정" },
+    ],
+  },
+  {
+    version: "0.5.0",
+    date: "2026-03-04",
+    highlights: "SEO 강화 및 AdSense 준비",
+    items: [
+      { type: "feature", text: "About 페이지 추가 (/about)" },
+      { type: "improvement", text: "동적 canonical 태그 적용으로 Google 중복 색인 방지" },
+      { type: "improvement", text: "ads.txt 추가 (Google AdSense 인증)" },
+      { type: "improvement", text: "SitemapController 성능 개선 (DB 필터링, HTTP 캐싱)" },
+      { type: "improvement", text: "브랜드명 통일: AI Reader → AHAread" },
+      { type: "bugfix", text: "짧은 기사(100자 미만) 필터링으로 저품질 기사 차단" },
+    ],
+  },
+  {
     version: "0.4.0",
     date: "2026-02-26",
     highlights: "인기 기사 & 급상승 키워드 기능",
