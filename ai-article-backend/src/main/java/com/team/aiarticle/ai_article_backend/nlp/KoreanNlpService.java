@@ -2,8 +2,6 @@ package com.team.aiarticle.ai_article_backend.nlp;
 
 import com.team.aiarticle.ai_article_backend.entity.ArticleProcessedContentV2;
 import com.team.aiarticle.ai_article_backend.repository.ArticleProcessedContentV2Repository;
-import kr.co.shineware.nlp.komoran.core.Komoran;
-import kr.co.shineware.nlp.komoran.model.Token;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,14 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class KoreanNlpService {
 
     private static final Logger log = LoggerFactory.getLogger(KoreanNlpService.class);
-    private final Komoran komoran;
 
     @Nullable private final ArticleProcessedContentV2Repository apcV2Repo;
 
@@ -37,18 +33,6 @@ public class KoreanNlpService {
     @Value("${app.nlp.mecab.url:}")
     private String mecabFullUrl;
 	
-    private static final Set<String> STOP_POS = Set.of(
-            "JKS","JKC","JKG","JKO","JKB","JKV","JKQ","JX","JC",
-            "MAG","MAJ", "IC",
-            "SF","SP","SS","SE","SO","SW"
-    );
-
-    private static final Set<String> ALLOW_POS = Set.of(
-            "NNG","NNP","NNB","NR","NP",
-            "VV","VA","VX","VCP","VCN",
-            "SN"
-    );
-
     private final Set<String> userCompoundNounDict = new HashSet<>();
 	
     public void loadUserCompoundNouns(Collection<String> entries) {
@@ -88,14 +72,8 @@ public class KoreanNlpService {
                 return List.of();
             }
         } else {
-            List<Token> tokens = komoran.analyze(text).getTokenList();
-            List<String> morphemes = tokens.stream()
-                    .filter(t -> ALLOW_POS.contains(t.getPos()) && !STOP_POS.contains(t.getPos()))
-                    .map(Token::getMorph)
-                    .filter(m -> m != null && !m.isBlank())
-                    .toList();
-            if (userCompoundNounDict.isEmpty() || morphemes.isEmpty()) return morphemes;
-            return mergeCompoundNouns(morphemes, userCompoundNounDict);
+            log.warn("[NLP] KOMORAN provider not supported, returning empty list");
+            return List.of();
         }
     }
 	
