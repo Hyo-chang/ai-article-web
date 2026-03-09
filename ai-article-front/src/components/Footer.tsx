@@ -56,7 +56,7 @@ export function Footer() {
             <div ref={contactRef} className="relative">
               <button
                 onClick={() => setContactOpen((v) => !v)}
-                className="text-gray-600 transition hover:text-gray-900 dark:text-white/60 dark:hover:text-white"
+                className="text-sm font-normal text-gray-600 transition hover:text-gray-900 dark:text-white/60 dark:hover:text-white"
               >
                 문의하기
               </button>
