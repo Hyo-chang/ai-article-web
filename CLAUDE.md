@@ -180,7 +180,47 @@ chore: 기타
 
 ---
 
-## 최근 작업 (2026-02-28)
+## 최근 작업 (2026-03-09)
+
+### Railway 빌드 실패 해결
+- **원인**: KOMORAN(JitPack 의존성)이 pom.xml에 있어 JitPack 521 에러로 모든 빌드 실패
+- KOMORAN 완전 제거: `pom.xml`, `KomoranConfig.java` 삭제, `KoreanNlpService.java` 수정
+  - mecab이 기본 NLP provider라 KOMORAN은 실제로 미사용 상태였음
+- `Dockerfile` 멀티스테이지 빌드로 변경 (eclipse-temurin:21-jdk-jammy → jre-jammy)
+- `mvnw` Git 실행권한 추가 (`git update-index --chmod=+x`) - permission denied 해결
+- `AdminRunLogger.java` `@PostConstruct`로 `admin_job_run` 테이블 자동 생성
+- **결과**: Railway 배포 SUCCESS ✅
+
+---
+
+## 작업 기록 (2026-03-06)
+
+### 이메일 구독 알림 기능
+- `User.java`: `emailSubscribed`, `notificationHour` 필드 추가
+- `EmailService.java`: HTML 이메일 빌더 (기사 3개 요약+링크)
+- `EmailScheduler.java`: 매 정시 실행 (Asia/Seoul), 관심 카테고리 기반 발송
+- `MyPageController`: `GET/PUT /api/mypage/email-subscription` 엔드포인트
+- `MyPage.tsx`: 이메일 구독 섹션 추가 (토글 + 시간 선택 + 저장)
+- Railway 환경변수 필요: `GMAIL_USERNAME`, `GMAIL_APP_PASSWORD`
+
+### 버그 수정
+- 히스토리 404 버그 수정 (`useReadHistory.ts` URL 수정)
+
+---
+
+## 작업 기록 (2026-03-04)
+
+### SEO / AdSense 추가 작업
+- `ads.txt` 추가 (`public/ads.txt`, `ca-pub-9123736919448805`)
+- About 페이지 추가 (`/about`) + Footer에 "소개" 링크
+- 동적 canonical 태그 페이지별 적용 (Google 색인 중복 방지)
+- SitemapController 효율 개선 (DB 필터링, HTTP 캐싱)
+- 짧은 기사(100자 미만) DB 삭제 + 크롤러 필터 추가
+- Google AdSense 재신청 (심사 중)
+
+---
+
+## 작업 기록 (2026-02-28)
 
 ### SEO 최적화 및 AdSense 연동
 - 브랜드명 통일: AI Reader → AHAread (메타태그, robots.txt)
@@ -222,7 +262,11 @@ chore: 기타
 
 ## TODO
 
-- [x] Google AdSense 신청 (심사 중 - 2026-02-28)
+- [x] Google AdSense 신청 (심사 중 - 2026-02-28, 재신청 2026-03-04)
+- [x] 이메일 구독 알림 기능 구현 (2026-03-06)
+- [x] Railway 빌드 실패 해결 (2026-03-09)
 - [ ] AdSense 승인 후 광고 배치
+- [ ] 이메일 구독 실제 테스트 (Gmail 앱 비밀번호 설정 완료, 정시 발송 확인 필요)
+- [ ] 카카오톡 알림 (카카오 채널 API)
 - [ ] 기사 추천 알고리즘 고도화
 - [ ] 기사별 동적 메타태그 (og:title, og:description)
