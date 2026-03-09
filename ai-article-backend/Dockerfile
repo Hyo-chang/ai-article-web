@@ -8,8 +8,10 @@ WORKDIR /app
 # 먼저 의존성 관련 파일만 복사하여 의존성을 다운로드합니다.
 # 이렇게 하면 소스 코드 변경 시 매번 의존성을 새로 받지 않아 빌드 시간을 단축할 수 있습니다.
 COPY pom.xml .
-# JitPack 불안정 대비: KOMORAN JAR를 로컬 Maven 레포에 미리 설치
+# KOMORAN JAR를 로컬 Maven 레포에 미리 설치 (JitPack 접근 불필요)
 COPY libs/ /root/.m2/repository/
+# 의존성만 먼저 다운로드 → Docker 레이어 캐시 활용 (pom.xml 변경 시에만 재실행)
+RUN mvn dependency:resolve -DskipTests -Dhttp.connectionTimeout=120000 -Dhttp.readTimeout=120000
 COPY src ./src
 
 # Maven을 사용하여 프로젝트를 빌드합니다. (-DskipTests=true 옵션으로 테스트는 건너뜁니다)
