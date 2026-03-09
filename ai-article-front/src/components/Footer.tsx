@@ -1,7 +1,20 @@
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const [contactOpen, setContactOpen] = useState(false);
+  const contactRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (contactRef.current && !contactRef.current.contains(e.target as Node)) {
+        setContactOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <footer className="mt-auto border-t border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-[#0a0b0d]">
@@ -40,12 +53,32 @@ export function Footer() {
               이용약관
             </Link>
             <span className="text-gray-300 dark:text-white/20">|</span>
-            <a
-              href="mailto:wee7846@gmail.com"
-              className="text-gray-600 transition hover:text-gray-900 dark:text-white/60 dark:hover:text-white"
-            >
-              문의하기
-            </a>
+            <div ref={contactRef} className="relative">
+              <button
+                onClick={() => setContactOpen((v) => !v)}
+                className="text-gray-600 transition hover:text-gray-900 dark:text-white/60 dark:hover:text-white"
+              >
+                문의하기
+              </button>
+              {contactOpen && (
+                <div className="absolute bottom-full right-0 mb-2 w-44 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-white/10 dark:bg-[#1a1b1f]">
+                  <a
+                    href="mailto:wee7846@gmail.com"
+                    className="flex items-center gap-2 rounded-t-xl px-4 py-3 text-sm text-gray-700 transition hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/5"
+                    onClick={() => setContactOpen(false)}
+                  >
+                    ✉️ 이메일로 문의
+                  </a>
+                  <Link
+                    to="/community"
+                    className="flex items-center gap-2 rounded-b-xl px-4 py-3 text-sm text-gray-700 transition hover:bg-gray-50 dark:text-white/80 dark:hover:bg-white/5"
+                    onClick={() => setContactOpen(false)}
+                  >
+                    💬 커뮤니티에서 문의
+                  </Link>
+                </div>
+              )}
+            </div>
           </nav>
         </div>
 
