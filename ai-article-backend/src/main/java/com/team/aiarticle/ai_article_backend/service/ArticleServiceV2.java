@@ -92,15 +92,21 @@ public class ArticleServiceV2 {
         article.setContent(request.getContent());
         article.setPublisher(request.getPublisher());
 
-        // 3. Set category from AI response
-        String aiCategoryName = analyzeResponse.getCategory();
-        String finalCategoryCode = availableCategories.stream()
-            .filter(cat -> cat.getCategoryName().equalsIgnoreCase(aiCategoryName))
-            .findFirst()
-            .map(CategoryDictV2::getCategoryCode)
-            .orElse("UNCATEGORIZED"); // If AI category is not found, default to UNCATEGORIZED
+        // 3. Set category: 크롤러가 보낸 categoryCode 우선, 없으면 AI 분류 사용
+        String finalCategoryCode;
+        if (StringUtils.hasText(request.getCategoryCode())) {
+            finalCategoryCode = request.getCategoryCode();
+            System.out.println("크롤러 제공 카테고리 코드 사용: " + finalCategoryCode);
+        } else {
+            String aiCategoryName = analyzeResponse.getCategory();
+            finalCategoryCode = availableCategories.stream()
+                .filter(cat -> cat.getCategoryName().equalsIgnoreCase(aiCategoryName))
+                .findFirst()
+                .map(CategoryDictV2::getCategoryCode)
+                .orElse("UNCATEGORIZED");
+            System.out.println("AI 분류 카테고리 코드 사용: " + finalCategoryCode);
+        }
         article.setCategoryCode(finalCategoryCode);
-        System.out.println("적용된 카테고리 코드: " + finalCategoryCode);
 
         // 4. Set summary from AI response
         article.setSummarize(analyzeResponse.getSummary());

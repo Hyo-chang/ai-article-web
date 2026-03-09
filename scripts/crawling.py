@@ -554,6 +554,34 @@ RANKING_SECTIONS = {
     "IT/과학": 105,
 }
 
+# 검색 키워드 → 카테고리 코드 매핑
+KEYWORD_TO_CATEGORY = {
+    "정치": "100",
+    "경제": "101",
+    "사회": "102",
+    "생활/문화": "103",
+    "세계": "104",
+    "IT/과학": "105",
+    "연예": "106",
+}
+
+# Naver ?sid= → 카테고리 코드 매핑
+SID_TO_CATEGORY = {
+    "100": "100", "101": "101", "102": "102",
+    "103": "103", "104": "104", "105": "105", "106": "106",
+}
+
+def extract_category_from_url(url: str) -> Optional[str]:
+    """Naver 기사 URL의 ?sid= 파라미터에서 카테고리 코드 추출"""
+    try:
+        params = parse_qs(urlparse(url).query)
+        sid = params.get("sid", [None])[0]
+        if sid and sid in SID_TO_CATEGORY:
+            return SID_TO_CATEGORY[sid]
+    except Exception:
+        pass
+    return None
+
 def fetch_popular_articles(session: requests.Session, cfg: Config, section_id: Optional[int] = None, limit: int = 10) -> List[Dict[str, Any]]:
     """네이버 뉴스 랭킹 페이지에서 인기 기사 목록을 크롤링합니다."""
 
@@ -693,7 +721,7 @@ def fetch_articles_from_naver_api(session: requests.Session, cfg: Config, keywor
         print(f"❌ API 요청 실패: {e}")
         return []
 
-def process_article(session: requests.Session, cfg: Config, article_api_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def process_article(session: requests.Session, cfg: Config, article_api_data: Dict[str, Any], search_keyword: Optional[str] = None) -> Optional[Dict[str, Any]]:
     # 네이버 뉴스 URL 사용 (HTML 구조 통일)
     link = article_api_data.get("link")
     if not link: return None
@@ -703,9 +731,9 @@ def process_article(session: requests.Session, cfg: Config, article_api_data: Di
         page_res = fetch_page(session, link, cfg, resolve_profile(link))
         page_html = page_res.text
         soup = BeautifulSoup(page_html, "lxml")
-        
+
         parsed_data = parse_article_fields(link, soup, resolve_profile(link))
-        
+
         title = parsed_data.get("title") or BeautifulSoup(article_api_data.get("title", ""), "html.parser").get_text(strip=True)
         body = parsed_data.get("body")
 
@@ -724,7 +752,11 @@ def process_article(session: requests.Session, cfg: Config, article_api_data: Di
 
         # 저작권 문구 등 불필요한 내용 제거
         body = clean_article_body(body)
-        
+
+        # 카테고리 결정: URL ?sid= 우선, 없으면 검색 키워드 기반
+        category_code = extract_category_from_url(link) or KEYWORD_TO_CATEGORY.get(search_keyword or "")
+        print(f"  📂 카테고리: {category_code} (sid={extract_category_from_url(link)}, keyword={search_keyword})")
+
         payload = {
             "articleUrl": link,
             "title": title,
@@ -734,8 +766,9 @@ def process_article(session: requests.Session, cfg: Config, article_api_data: Di
             "contentCrawledAt": to_iso(datetime.utcnow()),
             "isFullContentCrawled": True,
             "image_url": parsed_data.get("image_url"),
+            "categoryCode": category_code,
         }
-        
+
         return {"payload": payload, "html": page_html, "metadata": {}}
 
     except Exception as e:
@@ -754,8 +787,8 @@ def crawl_with_api_2_phase(session: requests.Session, cfg: Config, keyword_extra
             url = article_api_data.get("link")
             if not url or url in processed_urls: continue
             processed_urls.add(url)
-            
-            result = process_article(session, cfg, article_api_data)
+
+            result = process_article(session, cfg, article_api_data, search_keyword=keyword)
             if result:
                 send_to_backend(session, cfg, result["payload"])
                 if keyword_extractor:
