@@ -26,10 +26,13 @@ const CATEGORIES = [
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 
-const CONTAINER_H = 700;
-const ENV_H = 280;
-const ENVELOPE_TOP = CONTAINER_H - ENV_H; // 420
+const CONTAINER_H = 760;
+const ENV_H = 360;
+const ENVELOPE_TOP = CONTAINER_H - ENV_H; // 400
 const CARD_H = 400;
+// 씰 Y 위치 (봉투 내부 기준, top:0에서의 거리)
+const SEAL_CENTER_Y = Math.round(ENV_H / 2 - 26); // 봉투 중앙 (154)
+const SEAL_BOTTOM_Y = ENV_H - 22 - 52 - 8;        // 하단 텍스트 위 (278)
 
 interface Props {
   isOpen: boolean;
@@ -185,7 +188,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               rotate: cardVisible ? -2.5 : -1.0,
               opacity: cardVisible ? 1 : 0,
             }}
-            transition={{ duration: 1.08, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 1.08, ease: [0.22, 1, 0.36, 1], opacity: { duration: 0.35 } }}
           >
             {/* 카드 상단 Gmail 4색 줄 */}
             <div style={{
@@ -383,13 +386,17 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               background: "#CCC8B8",
             }} />
 
-            {/* AHAread 씰 — A 원형 + 텍스트, 하단 중앙 고정 */}
-            <div style={{
-              position: "absolute", bottom: 22, left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
-              zIndex: 3,
-            }}>
+            {/* A 씰 — 닫혔을 때 중앙, 열릴 때 하단으로 이동 */}
+            <motion.div
+              animate={{ y: flapOpen && phase !== "success" ? SEAL_BOTTOM_Y : SEAL_CENTER_Y }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                position: "absolute", top: 0,
+                left: "calc(50% - 26px)",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+                zIndex: 3,
+              }}
+            >
               <div style={{
                 width: 52, height: 52, borderRadius: "50%",
                 background: "linear-gradient(135deg, #4285F4 0%, #34A853 100%)",
@@ -398,13 +405,18 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               }}>
                 <span style={{ color: "#fff", fontSize: 22, fontWeight: 800, letterSpacing: "-1px" }}>A</span>
               </div>
-              <span style={{
-                fontSize: 9.5, color: "#999", letterSpacing: "0.2em",
-                fontWeight: 700, textTransform: "uppercase",
-              }}>
+              {/* AHAREAD 텍스트 — 하단에 있을 때만 표시 */}
+              <motion.span
+                animate={{ opacity: flapOpen && phase !== "success" ? 1 : 0 }}
+                transition={{ duration: 0.4 }}
+                style={{
+                  fontSize: 9.5, color: "#999", letterSpacing: "0.2em",
+                  fontWeight: 700, textTransform: "uppercase",
+                }}
+              >
                 AHAread
-              </span>
-            </div>
+              </motion.span>
+            </motion.div>
 
             {/* 구독 완료 오버레이 */}
             <AnimatePresence>
