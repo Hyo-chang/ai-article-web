@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../services/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -26,12 +26,11 @@ const CATEGORIES = [
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 
-// 레이아웃 상수
-const CONTAINER_H = 660;
-const ENV_H = 370;
-const ENVELOPE_TOP = CONTAINER_H - ENV_H; // 290
-const FLAP_H = Math.round(ENV_H * 0.52);  // ~192px
-const CARD_H = 395;
+const CONTAINER_H = 680;
+const ENV_H = 300;
+const ENVELOPE_TOP = CONTAINER_H - ENV_H; // 380
+const FLAP_H = Math.round(ENV_H * 0.54);  // ~162px
+const CARD_H = 400;
 
 interface Props {
   isOpen: boolean;
@@ -46,9 +45,11 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [useExisting, setUseExisting] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [keywords, setKeywords] = useState("");
+  const [keywordTags, setKeywordTags] = useState<string[]>([]);
+  const [keywordInput, setKeywordInput] = useState("");
   const [hour, setHour] = useState(9);
   const [error, setError] = useState("");
+  const keywordInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -56,7 +57,8 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
       setError("");
       setUseExisting(true);
       setSelectedCategories([]);
-      setKeywords("");
+      setKeywordTags([]);
+      setKeywordInput("");
       setHour(9);
 
       const t1 = setTimeout(() => setPhase("opening"), 350);
@@ -74,8 +76,31 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
     );
   };
 
+  const addKeyword = (raw: string) => {
+    const tokens = raw.split(",").map((k) => k.trim()).filter((k) => k && !keywordTags.includes(k));
+    if (tokens.length > 0) {
+      setKeywordTags((prev) => [...prev, ...tokens]);
+    }
+    setKeywordInput("");
+  };
+
+  const removeKeyword = (tag: string) => {
+    setKeywordTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addKeyword(keywordInput);
+    } else if (e.key === "Backspace" && keywordInput === "" && keywordTags.length > 0) {
+      setKeywordTags((prev) => prev.slice(0, -1));
+    }
+  };
+
   const handleSubmit = async () => {
     if (!typedUser?.token) return;
+    // 입력 중인 키워드도 반영
+    const finalTags = [...keywordTags, ...keywordInput.split(",").map((k) => k.trim()).filter(Boolean)];
     setPhase("submitting");
     setError("");
 
@@ -85,8 +110,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
         const cats = selectedCategories
           .map((c) => CATEGORIES.find((cat) => cat.code === c)?.name ?? "")
           .filter(Boolean);
-        const kws = keywords.split(",").map((k) => k.trim()).filter(Boolean);
-        const combined = [...cats, ...kws].join(",");
+        const combined = [...cats, ...finalTags].join(",");
         emailKeywords = combined || null;
       }
 
@@ -118,7 +142,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
 
-        {/* ── 배경 ── */}
+        {/* 배경 */}
         <motion.div
           className="absolute inset-0"
           initial={{ opacity: 0 }}
@@ -132,7 +156,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
           }}
         />
 
-        {/* ── 메인 컨테이너 ── */}
+        {/* 메인 컨테이너 */}
         <motion.div
           className="relative z-10"
           style={{ width: "min(480px, 93vw)", height: `${CONTAINER_H}px` }}
@@ -142,11 +166,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
           transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
         >
 
-          {/* ══════════════════════════════════════
-              카드 (봉투 body 밖 절대 배치)
-              z=5 이라 봉투(z=10) 뒤에 있지만,
-              봉투가 열리면 반투명해져서 보임
-          ══════════════════════════════════════ */}
+          {/* ══ 카드 (봉투 body 밖 절대 배치, z=5) ══ */}
           <motion.div
             className="absolute inset-x-4 overflow-y-auto"
             style={{
@@ -157,19 +177,22 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               boxShadow: "0 28px 72px rgba(0,0,0,0.52), 0 4px 18px rgba(0,0,0,0.28)",
               zIndex: 5,
               transformOrigin: "50% 90%",
+              // 스크롤바 숨기기
+              scrollbarWidth: "none",
             }}
             animate={{
               y: cardVisible ? 8 : ENVELOPE_TOP + 14,
-              rotate: cardVisible ? -2.8 : -1.0,
+              rotate: cardVisible ? -2.5 : -1.0,
               opacity: cardVisible ? 1 : 0,
             }}
             transition={{ duration: 1.08, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Gmail 4색 상단 줄 */}
+            {/* 카드 상단 Gmail 4색 줄 */}
             <div style={{
               height: 4,
               background: "linear-gradient(90deg, #EA4335 0%, #FBBC04 33%, #34A853 66%, #4285F4 100%)",
               borderRadius: "14px 14px 0 0",
+              flexShrink: 0,
             }} />
 
             {!isLoggedIn ? (
@@ -187,7 +210,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                 </button>
               </div>
             ) : (
-              <div className="p-5 pt-4">
+              <div className="p-4 pt-3">
                 <AnimatePresence>
                   {cardVisible && (
                     <motion.div
@@ -195,15 +218,15 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.25, duration: 0.4 }}
                     >
-                      <h2 className="text-xl font-bold text-gray-900 mb-0.5">뉴스레터 구독</h2>
-                      <p className="text-sm text-gray-400 mb-4">
+                      <h2 className="text-lg font-bold text-gray-900 mb-0.5">뉴스레터 구독</h2>
+                      <p className="text-xs text-gray-400 mb-3">
                         매일 원하는 시간에 맞춤 기사를 보내드립니다
                       </p>
 
                       {/* 관심사 토글 */}
-                      <div className="flex rounded-xl overflow-hidden border border-gray-200 mb-4 text-sm">
+                      <div className="flex rounded-xl overflow-hidden border border-gray-200 mb-3 text-sm">
                         <button
-                          className={`flex-1 py-2.5 font-medium transition ${
+                          className={`flex-1 py-2 font-medium transition ${
                             useExisting ? "bg-indigo-600 text-white" : "text-gray-500 hover:bg-gray-50"
                           }`}
                           onClick={() => setUseExisting(true)}
@@ -211,7 +234,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                           기존 관심사 사용
                         </button>
                         <button
-                          className={`flex-1 py-2.5 font-medium transition ${
+                          className={`flex-1 py-2 font-medium transition ${
                             !useExisting ? "bg-indigo-600 text-white" : "text-gray-500 hover:bg-gray-50"
                           }`}
                           onClick={() => setUseExisting(false)}
@@ -220,47 +243,78 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                         </button>
                       </div>
 
-                      <AnimatePresence>
-                        {!useExisting && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="overflow-hidden mb-3"
+                      {/* 직접 설정 영역 */}
+                      {!useExisting && (
+                        <div className="mb-3">
+                          {/* 카테고리 — 수평 스크롤 */}
+                          <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">카테고리</p>
+                          <div
+                            className="flex gap-1.5 mb-3"
+                            style={{ overflowX: "auto", flexWrap: "nowrap", paddingBottom: 4, scrollbarWidth: "none" }}
                           >
-                            <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">카테고리</p>
-                            <div className="flex flex-wrap gap-1.5 mb-3">
-                              {CATEGORIES.map((cat) => (
-                                <button
-                                  key={cat.code}
-                                  onClick={() => toggleCategory(cat.code)}
-                                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
-                                    selectedCategories.includes(cat.code)
-                                      ? "bg-indigo-600 text-white border-indigo-600"
-                                      : "border-gray-200 text-gray-600 hover:border-indigo-300"
-                                  }`}
-                                >
-                                  {cat.emoji} {cat.name}
-                                </button>
-                              ))}
-                            </div>
-                            <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
-                              키워드{" "}
-                              <span className="font-normal text-gray-400 normal-case">(쉼표 구분)</span>
-                            </p>
-                            <input
-                              type="text"
-                              value={keywords}
-                              onChange={(e) => setKeywords(e.target.value)}
-                              placeholder="예: 이란, 반도체, 삼성"
-                              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:border-indigo-400"
-                            />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                            {CATEGORIES.map((cat) => (
+                              <button
+                                key={cat.code}
+                                onClick={() => toggleCategory(cat.code)}
+                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition whitespace-nowrap flex-shrink-0 ${
+                                  selectedCategories.includes(cat.code)
+                                    ? "bg-indigo-600 text-white border-indigo-600"
+                                    : "border-gray-200 text-gray-600 hover:border-indigo-300"
+                                }`}
+                              >
+                                {cat.emoji} {cat.name}
+                              </button>
+                            ))}
+                          </div>
 
-                      {/* 시간 선택 */}
-                      <div className="mb-4">
+                          {/* 키워드 태그 입력 */}
+                          <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                            키워드{" "}
+                            <span className="font-normal text-gray-400 normal-case">
+                              (Enter 또는 쉼표로 추가)
+                            </span>
+                          </p>
+
+                          {/* 태그 + 입력창 수평 스크롤 컨테이너 */}
+                          <div
+                            className="flex items-center gap-1.5 border border-gray-200 rounded-lg px-2.5 py-1.5 focus-within:border-indigo-400 transition mb-1"
+                            style={{ overflowX: "auto", flexWrap: "nowrap", scrollbarWidth: "none", minHeight: 40 }}
+                            onClick={() => keywordInputRef.current?.focus()}
+                          >
+                            {keywordTags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium border border-indigo-200 whitespace-nowrap flex-shrink-0"
+                              >
+                                {tag}
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); removeKeyword(tag); }}
+                                  className="text-indigo-400 hover:text-indigo-700 text-xs leading-none ml-0.5"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                            <input
+                              ref={keywordInputRef}
+                              type="text"
+                              value={keywordInput}
+                              onChange={(e) => setKeywordInput(e.target.value)}
+                              onKeyDown={handleKeywordKeyDown}
+                              onBlur={() => { if (keywordInput.trim()) addKeyword(keywordInput); }}
+                              placeholder={keywordTags.length === 0 ? "예: 이란, 반도체, 삼성" : ""}
+                              className="flex-1 text-sm outline-none min-w-20 bg-transparent"
+                              style={{ minWidth: 80 }}
+                            />
+                          </div>
+                          <p className="text-xs text-gray-400 mb-3">
+                            입력한 키워드를 포함하는 기사를 선별합니다
+                          </p>
+                        </div>
+                      )}
+
+                      {/* 발송 시간 */}
+                      <div className="mb-3">
                         <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">발송 시간</p>
                         <select
                           value={hour}
@@ -273,12 +327,12 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                         </select>
                       </div>
 
-                      {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
+                      {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
 
                       <button
                         onClick={handleSubmit}
                         disabled={phase === "submitting"}
-                        className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-indigo-700 active:scale-[0.98] transition disabled:opacity-50"
+                        className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-indigo-700 active:scale-[0.98] transition disabled:opacity-50"
                       >
                         {phase === "submitting" ? "구독 중..." : "구독하기 ✉️"}
                       </button>
@@ -289,10 +343,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
             )}
           </motion.div>
 
-          {/* ══════════════════════════════════════
-              봉투 본체 (z=10)
-              열리면 반투명 유리로 전환
-          ══════════════════════════════════════ */}
+          {/* ══ 봉투 본체 (z=10) ══ */}
           <div
             className="absolute inset-x-0 bottom-0 overflow-hidden"
             style={{
@@ -300,52 +351,54 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               zIndex: 10,
               borderRadius: 18,
               boxShadow:
-                "0 -2px 0 0 rgba(0,0,0,0.06), 0 16px 60px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(255,255,255,0.18)",
+                "0 -2px 0 rgba(0,0,0,0.06), 0 16px 60px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(255,255,255,0.18)",
             }}
           >
-            {/* 레이어 A: 닫혔을 때 크림색 종이 */}
+            {/* 레이어 A: 닫힌 상태 — 크림 종이 */}
             <motion.div
               className="absolute inset-0"
               animate={{ opacity: flapOpen ? 0 : 1 }}
-              transition={{ duration: 0.7 }}
-              style={{
-                background: "linear-gradient(162deg, #FFFEF8 0%, #F4EFE3 100%)",
-              }}
+              transition={{ duration: 0.65 }}
+              style={{ background: "linear-gradient(162deg, #FFFEF8 0%, #F4EFE3 100%)" }}
             />
 
-            {/* 레이어 B: 열렸을 때 반투명 유리 */}
+            {/* 레이어 B: 열린 상태 — 가벼운 반투명 (블러 약하게) */}
             <motion.div
               className="absolute inset-0"
               animate={{ opacity: flapOpen ? 1 : 0 }}
-              transition={{ duration: 0.7 }}
+              transition={{ duration: 0.65 }}
               style={{
-                background: "rgba(255,252,242,0.22)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                border: "1.5px solid rgba(255,255,255,0.28)",
+                background: "rgba(255,252,245,0.45)",
+                backdropFilter: "blur(4px)",
+                WebkitBackdropFilter: "blur(4px)",
+                border: "1.5px solid rgba(255,255,255,0.3)",
               }}
             />
 
-            {/* Gmail 4색 상단 선 */}
-            <div style={{
-              position: "absolute", top: 0, left: 0, right: 0, height: 5, zIndex: 4,
-              background: "linear-gradient(90deg, #EA4335 0%, #FBBC04 33%, #34A853 66%, #4285F4 100%)",
-            }} />
-
-            {/* 좌 사다리꼴 폴드 */}
+            {/* Gmail 4색 줄 — 열리면 사라짐 */}
             <motion.div
-              animate={{ opacity: flapOpen ? 0.1 : 1 }}
-              transition={{ duration: 0.7 }}
+              animate={{ opacity: flapOpen ? 0 : 1 }}
+              transition={{ duration: 0.45 }}
+              style={{
+                position: "absolute", top: 0, left: 0, right: 0, height: 5, zIndex: 4,
+                background: "linear-gradient(90deg, #EA4335 0%, #FBBC04 33%, #34A853 66%, #4285F4 100%)",
+              }}
+            />
+
+            {/* 좌 폴드 */}
+            <motion.div
+              animate={{ opacity: flapOpen ? 0.08 : 1 }}
+              transition={{ duration: 0.65 }}
               style={{
                 position: "absolute", inset: 0,
                 clipPath: "polygon(0 0, 0 100%, 50% 53%)",
                 background: "linear-gradient(90deg, #DDD7C6 0%, #EAE5D5 100%)",
               }}
             />
-            {/* 우 사다리꼴 폴드 */}
+            {/* 우 폴드 */}
             <motion.div
-              animate={{ opacity: flapOpen ? 0.1 : 1 }}
-              transition={{ duration: 0.7 }}
+              animate={{ opacity: flapOpen ? 0.08 : 1 }}
+              transition={{ duration: 0.65 }}
               style={{
                 position: "absolute", inset: 0,
                 clipPath: "polygon(100% 0, 100% 100%, 50% 53%)",
@@ -354,8 +407,8 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
             />
             {/* 하단 폴드 */}
             <motion.div
-              animate={{ opacity: flapOpen ? 0.1 : 1 }}
-              transition={{ duration: 0.7 }}
+              animate={{ opacity: flapOpen ? 0.08 : 1 }}
+              transition={{ duration: 0.65 }}
               style={{
                 position: "absolute", inset: 0,
                 borderRadius: "0 0 16px 16px",
@@ -364,12 +417,12 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               }}
             />
 
-            {/* 봉투 전면 AHAread 씰 (닫혔을 때만) */}
+            {/* AHAread 씰 — 닫힌 상태만 */}
             <motion.div
               animate={{ opacity: flapOpen ? 0 : 1 }}
               transition={{ duration: 0.35 }}
               style={{
-                position: "absolute", bottom: 32, left: "50%",
+                position: "absolute", bottom: 28, left: "50%",
                 transform: "translateX(-50%)",
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
                 zIndex: 3,
@@ -381,7 +434,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 boxShadow: "0 3px 12px rgba(66,133,244,0.35), 0 1px 4px rgba(0,0,0,0.15)",
               }}>
-                <span style={{ color: "#fff", fontSize: 20, fontWeight: 800, letterSpacing: "-1px" }}>A</span>
+                <span style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>A</span>
               </div>
               <span style={{
                 fontSize: 9.5, color: "#999", letterSpacing: "0.16em",
@@ -433,10 +486,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
             </AnimatePresence>
           </div>
 
-          {/* ══════════════════════════════════════
-              플랩 (봉투 body 밖 절대 배치, z=20)
-              backfaceVisibility:hidden → 뒤집히면 사라짐
-          ══════════════════════════════════════ */}
+          {/* ══ 플랩 (봉투 body 밖, z=20) ══ */}
           <motion.div
             style={{
               position: "absolute",
@@ -460,7 +510,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               borderRadius: "18px 18px 0 0",
             }} />
 
-            {/* 플랩 상단 Gmail 4색 선 */}
+            {/* 플랩 Gmail 4색 줄 */}
             <div style={{
               position: "absolute", top: 0, left: 0, right: 0, height: 5,
               background: "linear-gradient(90deg, #EA4335 0%, #FBBC04 33%, #34A853 66%, #4285F4 100%)",
@@ -471,18 +521,11 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
             <div style={{
               position: "absolute", inset: 0,
               clipPath: "polygon(20% 0, 80% 0, 50% 84%)",
-              background: "linear-gradient(180deg, rgba(0,0,0,0.055) 0%, transparent 65%)",
-            }} />
-
-            {/* 플랩 하단 접힘선 (봉투에 닿는 선) */}
-            <div style={{
-              position: "absolute", bottom: 0, left: "8%", right: "8%",
-              height: 1.5,
-              background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent)",
+              background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, transparent 65%)",
             }} />
           </motion.div>
 
-          {/* ── 닫기 버튼 ── */}
+          {/* 닫기 버튼 */}
           <button
             onClick={onClose}
             className="absolute top-3 right-3 z-40 w-8 h-8 rounded-full flex items-center justify-center text-white/60 hover:text-white transition font-bold text-lg leading-none"
