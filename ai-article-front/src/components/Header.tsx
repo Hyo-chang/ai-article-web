@@ -160,12 +160,21 @@ export function Header({
             onClick={handleHomeClick}
             className="flex flex-col items-center transition-transform duration-200 hover:scale-105 focus:outline-none"
           >
-            <img
-              src="/logo.png"
-              alt="AHA Logo"
-              className="h-48 w-48 object-contain"
-            />
-            <span className="-mt-4 text-sm font-medium tracking-wide text-[#7dd3d3]" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div
+              style={{
+                width: 72, height: 72, borderRadius: "50%",
+                background: "linear-gradient(135deg, #4285F4 0%, #34A853 100%)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 4px 20px rgba(66,133,244,0.4), 0 1px 6px rgba(0,0,0,0.12)",
+                marginBottom: 6,
+              }}
+            >
+              <span style={{ color: "#fff", fontSize: 32, fontWeight: 800, letterSpacing: "-1.5px" }}>A</span>
+            </div>
+            <span className="text-base font-bold tracking-wide text-gray-800">
+              AHAread
+            </span>
+            <span className="mt-0.5 text-xs font-medium tracking-wide text-[#7dd3d3]" style={{ fontFamily: 'Inter, sans-serif' }}>
               Article Highlights with AI
             </span>
           </button>
