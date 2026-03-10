@@ -1,7 +1,12 @@
 package com.team.aiarticle.ai_article_backend.controller;
 
 import com.team.aiarticle.ai_article_backend.dto.ManualCrawlResponse;
+import com.team.aiarticle.ai_article_backend.entity.ArticleV2;
+import com.team.aiarticle.ai_article_backend.entity.User;
+import com.team.aiarticle.ai_article_backend.repository.ArticleV2Repository;
+import com.team.aiarticle.ai_article_backend.repository.UserRepository;
 import com.team.aiarticle.ai_article_backend.service.CrawlingBridgeService;
+import com.team.aiarticle.ai_article_backend.service.EmailService;
 import com.team.aiarticle.ai_article_backend.service.admin.AdminService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +29,20 @@ public class AdminController {
     private final AdminService adminService;
     private final CrawlingBridgeService crawlingBridgeService;
     private final JdbcTemplate jdbc;
+    private final EmailService emailService;
+    private final UserRepository userRepository;
+    private final ArticleV2Repository articleV2Repository;
     private static final String TOKEN = System.getenv().getOrDefault("ADMIN_TOKEN", "1234");
 
-    public AdminController(AdminService adminService, CrawlingBridgeService crawlingBridgeService, JdbcTemplate jdbc) {
+    public AdminController(AdminService adminService, CrawlingBridgeService crawlingBridgeService,
+                           JdbcTemplate jdbc, EmailService emailService,
+                           UserRepository userRepository, ArticleV2Repository articleV2Repository) {
         this.adminService = adminService;
         this.crawlingBridgeService = crawlingBridgeService;
         this.jdbc = jdbc;
+        this.emailService = emailService;
+        this.userRepository = userRepository;
+        this.articleV2Repository = articleV2Repository;
     }
 
     private void requireToken(String token) {
@@ -50,6 +63,23 @@ public class AdminController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "articleUrl cannot be empty");
         }
         return crawlingBridgeService.crawlSingleArticle(request.getArticleUrl());
+    }
+
+    @PostMapping("/test-email")
+    public Map<String,Object> testEmail(
+            @RequestHeader(value="X-Admin-Token", required=false) String token,
+            @RequestParam String email
+    ) {
+        requireToken(token);
+        User user = userRepository.findByEmail(email);
+        if (user == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + email);
+        List<ArticleV2> articles = articleV2Repository.findTop3ByOrderByArticleIdDesc();
+        try {
+            emailService.sendNewsDigest(user, articles);
+            return Map.of("status", "SENT", "to", email, "articles", articles.size());
+        } catch (Exception e) {
+            return Map.of("status", "FAILED", "error", e.getMessage());
+        }
     }
 
     @PostMapping("/recategorize-by-title")
