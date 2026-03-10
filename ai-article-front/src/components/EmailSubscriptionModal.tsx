@@ -383,36 +383,21 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               background: "#CCC8B8",
             }} />
 
-            {/* AHAread 씰 */}
-            {/* A 원형 씰 — 플랩 열릴 때 아래로 떨어짐 */}
-            <motion.div
-              animate={{
-                y: flapOpen && phase !== "success" ? 28 : 0,
-                opacity: flapOpen && phase !== "success" ? 0 : 1,
-                rotate: flapOpen && phase !== "success" ? 12 : 0,
-              }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              style={{
-                position: "absolute", bottom: 40, left: "50%",
-                transform: "translateX(-50%)",
-                zIndex: 3,
-              }}
-            >
-              <div style={{
-                width: 56, height: 56, borderRadius: "50%",
-                background: "linear-gradient(135deg, #4285F4 0%, #34A853 100%)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 4px 16px rgba(66,133,244,0.4), 0 1px 5px rgba(0,0,0,0.18)",
-              }}>
-                <span style={{ color: "#fff", fontSize: 24, fontWeight: 800, letterSpacing: "-1px" }}>A</span>
-              </div>
-            </motion.div>
-            {/* AHAREAD 텍스트 */}
+            {/* AHAread 씰 — A 원형 + 텍스트, 하단 중앙 고정 */}
             <div style={{
-              position: "absolute", bottom: 18, left: "50%",
+              position: "absolute", bottom: 22, left: "50%",
               transform: "translateX(-50%)",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
               zIndex: 3,
             }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: "50%",
+                background: "linear-gradient(135deg, #4285F4 0%, #34A853 100%)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 4px 16px rgba(66,133,244,0.38), 0 1px 5px rgba(0,0,0,0.16)",
+              }}>
+                <span style={{ color: "#fff", fontSize: 22, fontWeight: 800, letterSpacing: "-1px" }}>A</span>
+              </div>
               <span style={{
                 fontSize: 9.5, color: "#999", letterSpacing: "0.2em",
                 fontWeight: 700, textTransform: "uppercase",
