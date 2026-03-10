@@ -29,7 +29,7 @@ const HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 const CONTAINER_H = 680;
 const ENV_H = 282;
 const ENVELOPE_TOP = CONTAINER_H - ENV_H; // 398
-const ENV_OPEN_H = Math.round(ENV_H * 0.46); // 폴드 중심점 아래만 (약 130px)
+const ENV_FOLD_Y = Math.round(ENV_H * 0.53); // 폴드 중심점 (봉투 위에서 ~150px)
 const CARD_H = 405;
 
 interface Props {
@@ -348,12 +348,15 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
           <motion.div
             className="absolute inset-x-0 bottom-0 overflow-hidden"
             animate={{
-              height: flapOpen && phase !== "success" ? ENV_OPEN_H : ENV_H,
-              borderRadius: flapOpen && phase !== "success" ? "0 0 18px 18px" : "18px",
+              clipPath: flapOpen && phase !== "success"
+                ? `inset(${ENV_FOLD_Y}px 0px 0px 0px round 0px 0px 18px 18px)`
+                : `inset(0px 0px 0px 0px round 18px 18px 18px 18px)`,
             }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             style={{
+              height: ENV_H,
               zIndex: 10,
+              borderRadius: 18,
               boxShadow:
                 "0 -2px 0 rgba(0,0,0,0.06), 0 16px 60px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(255,255,255,0.18)",
             }}
