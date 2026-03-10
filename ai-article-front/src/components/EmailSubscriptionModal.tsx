@@ -160,10 +160,10 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
         <motion.div
           className="relative z-10"
           style={{ width: "min(480px, 93vw)", height: `${CONTAINER_H}px` }}
-          initial={{ opacity: 0, y: 90, scale: 0.82 }}
+          initial={{ opacity: 0, y: 18, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 90, scale: 0.82 }}
-          transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
+          exit={{ opacity: 0, y: 18, scale: 0.96 }}
+          transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
         >
 
           {/* ══ 카드 (봉투 body 밖 절대 배치, z=5) ══ */}
@@ -180,6 +180,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               // 스크롤바 숨기기
               scrollbarWidth: "none",
             }}
+            initial={{ y: ENVELOPE_TOP + 14, rotate: -1.0, opacity: 0 }}
             animate={{
               y: cardVisible ? 8 : ENVELOPE_TOP + 14,
               rotate: cardVisible ? -2.5 : -1.0,
@@ -344,8 +345,10 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
           </motion.div>
 
           {/* ══ 봉투 본체 (z=10) ══ */}
-          <div
+          <motion.div
             className="absolute inset-x-0 bottom-0 overflow-hidden"
+            animate={{ opacity: flapOpen && phase !== "success" ? 0 : 1 }}
+            transition={{ duration: 0.55 }}
             style={{
               height: ENV_H,
               zIndex: 10,
@@ -354,80 +357,42 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                 "0 -2px 0 rgba(0,0,0,0.06), 0 16px 60px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(255,255,255,0.18)",
             }}
           >
-            {/* 레이어 A: 닫힌 상태 — 크림 종이 */}
-            <motion.div
-              className="absolute inset-0"
-              animate={{ opacity: flapOpen ? 0 : 1 }}
-              transition={{ duration: 0.65 }}
-              style={{ background: "linear-gradient(162deg, #FFFEF8 0%, #F4EFE3 100%)" }}
-            />
+            {/* 크림 종이 배경 */}
+            <div className="absolute inset-0" style={{ background: "linear-gradient(162deg, #FFFEF8 0%, #F4EFE3 100%)" }} />
 
-            {/* 레이어 B: 열린 상태 — 가벼운 반투명 (블러 약하게) */}
-            <motion.div
-              className="absolute inset-0"
-              animate={{ opacity: flapOpen ? 1 : 0 }}
-              transition={{ duration: 0.65 }}
-              style={{
-                background: "rgba(255,252,245,0.45)",
-                backdropFilter: "blur(4px)",
-                WebkitBackdropFilter: "blur(4px)",
-                border: "1.5px solid rgba(255,255,255,0.3)",
-              }}
-            />
-
-            {/* Gmail 4색 줄 — 열리면 사라짐 */}
-            <motion.div
-              animate={{ opacity: flapOpen ? 0 : 1 }}
-              transition={{ duration: 0.45 }}
-              style={{
-                position: "absolute", top: 0, left: 0, right: 0, height: 5, zIndex: 4,
-                background: "linear-gradient(90deg, #EA4335 0%, #FBBC04 33%, #34A853 66%, #4285F4 100%)",
-              }}
-            />
+            {/* Gmail 4색 줄 */}
+            <div style={{
+              position: "absolute", top: 0, left: 0, right: 0, height: 5, zIndex: 4,
+              background: "linear-gradient(90deg, #EA4335 0%, #FBBC04 33%, #34A853 66%, #4285F4 100%)",
+            }} />
 
             {/* 좌 폴드 */}
-            <motion.div
-              animate={{ opacity: flapOpen ? 0.08 : 1 }}
-              transition={{ duration: 0.65 }}
-              style={{
-                position: "absolute", inset: 0,
-                clipPath: "polygon(0 0, 0 100%, 50% 53%)",
-                background: "linear-gradient(90deg, #DDD7C6 0%, #EAE5D5 100%)",
-              }}
-            />
+            <div style={{
+              position: "absolute", inset: 0,
+              clipPath: "polygon(0 0, 0 100%, 50% 53%)",
+              background: "linear-gradient(90deg, #DDD7C6 0%, #EAE5D5 100%)",
+            }} />
             {/* 우 폴드 */}
-            <motion.div
-              animate={{ opacity: flapOpen ? 0.08 : 1 }}
-              transition={{ duration: 0.65 }}
-              style={{
-                position: "absolute", inset: 0,
-                clipPath: "polygon(100% 0, 100% 100%, 50% 53%)",
-                background: "#EDE9DA",
-              }}
-            />
+            <div style={{
+              position: "absolute", inset: 0,
+              clipPath: "polygon(100% 0, 100% 100%, 50% 53%)",
+              background: "#EDE9DA",
+            }} />
             {/* 하단 폴드 */}
-            <motion.div
-              animate={{ opacity: flapOpen ? 0.08 : 1 }}
-              transition={{ duration: 0.65 }}
-              style={{
-                position: "absolute", inset: 0,
-                borderRadius: "0 0 16px 16px",
-                clipPath: "polygon(0 100%, 100% 100%, 50% 53%)",
-                background: "#CCC8B8",
-              }}
-            />
+            <div style={{
+              position: "absolute", inset: 0,
+              borderRadius: "0 0 16px 16px",
+              clipPath: "polygon(0 100%, 100% 100%, 50% 53%)",
+              background: "#CCC8B8",
+            }} />
 
-            {/* AHAread 씰 — 닫힌 상태만 */}
-            <motion.div
-              animate={{ opacity: flapOpen ? 0 : 1 }}
-              transition={{ duration: 0.35 }}
-              style={{
-                position: "absolute", bottom: 28, left: "50%",
-                transform: "translateX(-50%)",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
-                zIndex: 3,
-              }}
-            >
+            {/* AHAread 씰 */}
+            <div style={{
+              position: "absolute", bottom: 28, left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+              zIndex: 3,
+            }}>
               <div style={{
                 width: 48, height: 48, borderRadius: "50%",
                 background: "linear-gradient(135deg, #4285F4 0%, #34A853 100%)",
@@ -442,7 +407,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               }}>
                 AHAread
               </span>
-            </motion.div>
+            </div>
 
             {/* 구독 완료 오버레이 */}
             <AnimatePresence>
@@ -484,7 +449,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
 
           {/* ══ 플랩 (봉투 body 밖, z=20) ══ */}
           <motion.div
