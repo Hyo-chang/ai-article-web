@@ -465,11 +465,18 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
             animate={{ rotateX: flapOpen ? -180 : 0 }}
             transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* 플랩 종이 */}
+            {/* 플랩 */}
             <div style={{
               width: "100%", height: "100%",
               clipPath: "polygon(0 0, 100% 0, 50% 84%)",
-              background: "linear-gradient(160deg, #FFFEF8 0%, #EDE9DC 100%)",
+              background: "linear-gradient(160deg, #6366f1 0%, #4338ca 100%)",
+              borderRadius: "18px 18px 0 0",
+            }} />
+            {/* 플랩 하이라이트 (입체감) */}
+            <div style={{
+              position: "absolute", inset: 0,
+              clipPath: "polygon(0 0, 100% 0, 50% 84%)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 55%)",
               borderRadius: "18px 18px 0 0",
             }} />
 
