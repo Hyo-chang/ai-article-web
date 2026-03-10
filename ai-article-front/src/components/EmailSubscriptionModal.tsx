@@ -345,10 +345,8 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
           </motion.div>
 
           {/* ══ 봉투 본체 (z=10) ══ */}
-          <motion.div
+          <div
             className="absolute inset-x-0 bottom-0 overflow-hidden"
-            animate={{ opacity: flapOpen && phase !== "success" ? 0 : 1 }}
-            transition={{ duration: 0.55 }}
             style={{
               height: ENV_H,
               zIndex: 10,
@@ -449,7 +447,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
 
           {/* ══ 플랩 (봉투 body 밖, z=20) ══ */}
           <motion.div
