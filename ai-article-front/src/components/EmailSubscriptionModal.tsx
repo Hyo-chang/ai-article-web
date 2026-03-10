@@ -27,10 +27,9 @@ const CATEGORIES = [
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 
 const CONTAINER_H = 680;
-const ENV_H = 300;
-const ENVELOPE_TOP = CONTAINER_H - ENV_H; // 380
-const FLAP_H = Math.round(ENV_H * 0.54);  // ~162px
-const CARD_H = 400;
+const ENV_H = 282;
+const ENVELOPE_TOP = CONTAINER_H - ENV_H; // 398
+const CARD_H = 382;
 
 interface Props {
   isOpen: boolean;
@@ -455,7 +454,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               position: "absolute",
               top: ENVELOPE_TOP,
               left: 0, right: 0,
-              height: FLAP_H,
+              height: Math.round(ENV_H * 0.54),
               transformOrigin: "top center",
               transformPerspective: 2400,
               zIndex: 20,
@@ -465,33 +464,22 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
             animate={{ rotateX: flapOpen ? -180 : 0 }}
             transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* 플랩 */}
             <div style={{
               width: "100%", height: "100%",
               clipPath: "polygon(0 0, 100% 0, 50% 84%)",
               background: "linear-gradient(160deg, #6366f1 0%, #4338ca 100%)",
               borderRadius: "18px 18px 0 0",
             }} />
-            {/* 플랩 하이라이트 (입체감) */}
             <div style={{
               position: "absolute", inset: 0,
               clipPath: "polygon(0 0, 100% 0, 50% 84%)",
               background: "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 55%)",
               borderRadius: "18px 18px 0 0",
             }} />
-
-            {/* 플랩 Gmail 4색 줄 */}
             <div style={{
               position: "absolute", top: 0, left: 0, right: 0, height: 5,
               background: "linear-gradient(90deg, #EA4335 0%, #FBBC04 33%, #34A853 66%, #4285F4 100%)",
               borderRadius: "18px 18px 0 0",
-            }} />
-
-            {/* 플랩 중앙 접힘 그림자 */}
-            <div style={{
-              position: "absolute", inset: 0,
-              clipPath: "polygon(20% 0, 80% 0, 50% 84%)",
-              background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, transparent 65%)",
             }} />
           </motion.div>
 
