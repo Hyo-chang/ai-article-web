@@ -48,7 +48,17 @@ public class EmailScheduler {
                 List<String> categoryCodes = userInterestRepository.findCategoryCodesByUserId(user.getUserId());
 
                 List<ArticleV2> articles;
-                if (categoryCodes.isEmpty()) {
+                if (user.getEmailKeywords() != null && !user.getEmailKeywords().isBlank()) {
+                    // keyword-based: match by title REGEXP
+                    String pattern = java.util.Arrays.stream(user.getEmailKeywords().split(","))
+                            .map(String::trim)
+                            .filter(k -> !k.isBlank())
+                            .collect(java.util.stream.Collectors.joining("|"));
+                    articles = articleV2Repository.findTop3ByTitleRegexpAndSummarizeNotNull(pattern);
+                    if (articles.isEmpty()) {
+                        articles = articleV2Repository.findTop3ByOrderByArticleIdDesc();
+                    }
+                } else if (categoryCodes.isEmpty()) {
                     articles = articleV2Repository.findTop3ByOrderByArticleIdDesc();
                 } else {
                     articles = articleV2Repository.findTop3ByCategoryCodesAndSummarizeNotNull(

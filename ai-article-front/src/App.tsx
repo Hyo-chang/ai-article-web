@@ -3,6 +3,7 @@ import type { MouseEvent as ReactMouseEvent } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Header } from "./components/Header";
+import EmailSubscriptionModal from "./components/EmailSubscriptionModal";
 import { KeywordCategories } from "./components/KeywordCategories";
 import { ArticleInput } from "./components/ArticleInput";
 import { AnalysisResult } from "./components/AnalysisResult";
@@ -220,6 +221,7 @@ function HomePage() {
 
   const [crawlLog, setCrawlLog] = useState<string | null>(null);
   const [crawlStatus, setCrawlStatus] = useState<"idle" | "success" | "error">("idle");
+  const [showNewsletter, setShowNewsletter] = useState(false);
 
   const handleAnalyze = async (articleUrl: string) => {
     if (!articleUrl) return;
@@ -555,6 +557,7 @@ function HomePage() {
         activeView={headerActiveView}
         isMobileMenuOpen={isMobileMenuOpen}
         onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        onNewsletterClick={() => setShowNewsletter(true)}
       />
 
       <main
@@ -652,6 +655,7 @@ function HomePage() {
       </main>
 
       <Footer />
+      <EmailSubscriptionModal isOpen={showNewsletter} onClose={() => setShowNewsletter(false)} />
     </div>
   );
 }

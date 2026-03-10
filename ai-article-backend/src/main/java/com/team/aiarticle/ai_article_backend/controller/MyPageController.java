@@ -227,9 +227,12 @@ public class MyPageController {
             hour = number.intValue();
         }
 
+        Object emailKeywordsObj = payload.get("emailKeywords");
+        String emailKeywords = emailKeywordsObj instanceof String s ? s : null;
+
         try {
-            userService.updateEmailSubscription(userId, subscribed, hour);
-            log.info("[EMAIL-SUB] updated userId={} subscribed={} hour={}", userId, subscribed, hour);
+            userService.updateEmailSubscription(userId, subscribed, hour, emailKeywords);
+            log.info("[EMAIL-SUB] updated userId={} subscribed={} hour={} keywords={}", userId, subscribed, hour, emailKeywords);
             return ResponseEntity.ok(Map.of("message", "저장되었습니다.", "subscribed", subscribed, "hour", hour));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));

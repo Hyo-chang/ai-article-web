@@ -1,4 +1,4 @@
-import { Sparkles, Home, FileText, User as UserIcon, Clock3, Menu, X, History, Sun, Moon, MessageSquare } from "lucide-react";
+import { Sparkles, Home, FileText, User as UserIcon, Clock3, Menu, X, History, Sun, Moon, MessageSquare, Mail } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import type React from "react";
 import { useTheme } from "next-themes";
@@ -17,6 +17,7 @@ interface HeaderProps {
   activeView?: "home" | "analyze" | "history";
   isMobileMenuOpen?: boolean;
   onMobileMenuToggle?: () => void;
+  onNewsletterClick?: () => void;
 }
 
 export function Header({
@@ -30,6 +31,7 @@ export function Header({
   activeView = "home",
   isMobileMenuOpen = false,
   onMobileMenuToggle,
+  onNewsletterClick,
 }: HeaderProps) {
   const { user, isLoggedIn, logout } = useAuth();
   const navigate = useNavigate();
@@ -212,6 +214,17 @@ export function Header({
             <MessageSquare className="h-4 w-4" />
             <span>커뮤니티</span>
           </button>
+
+          {onNewsletterClick && (
+            <button
+              type="button"
+              onClick={onNewsletterClick}
+              className="mt-2 flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20 self-start ml-4"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              뉴스레터
+            </button>
+          )}
 
           {mounted && (
             <button

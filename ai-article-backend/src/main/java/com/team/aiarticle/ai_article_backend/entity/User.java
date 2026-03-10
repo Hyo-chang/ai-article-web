@@ -46,6 +46,9 @@ public class User {
     @Column(name = "notification_hour", nullable = false)
     private int notificationHour = 9;
 
+    @Column(name = "email_keywords", length = 500)
+    private String emailKeywords;
+
     // Optional VK integration: user roles mapping
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",

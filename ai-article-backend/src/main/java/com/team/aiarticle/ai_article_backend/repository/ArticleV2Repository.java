@@ -75,4 +75,8 @@ public interface ArticleV2Repository extends JpaRepository<ArticleV2, Integer> {
     """)
     List<ArticleV2> findTop3ByCategoryCodesAndSummarizeNotNull(
             @Param("categoryCodes") List<String> categoryCodes, Pageable pageable);
+
+    // 키워드 REGEXP 매칭으로 summarize 있는 최신 기사 조회 (이메일 구독 키워드 필터용)
+    @Query(value = "SELECT * FROM articlev2 WHERE summarize IS NOT NULL AND LOWER(title) REGEXP LOWER(:pattern) ORDER BY article_id DESC LIMIT 3", nativeQuery = true)
+    List<ArticleV2> findTop3ByTitleRegexpAndSummarizeNotNull(@Param("pattern") String pattern);
 }
