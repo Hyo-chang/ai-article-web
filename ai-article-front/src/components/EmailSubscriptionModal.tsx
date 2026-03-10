@@ -383,23 +383,30 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               background: "#CCC8B8",
             }} />
 
-            {/* AHAread 씰 */}
+            {/* AHAread 씰 — A 원형은 봉투 중앙, 텍스트는 하단 */}
+            {/* 중앙 A 씰 */}
             <div style={{
-              position: "absolute", bottom: 28, left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+              position: "absolute", top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
               zIndex: 3,
             }}>
               <div style={{
-                width: 48, height: 48, borderRadius: "50%",
+                width: 64, height: 64, borderRadius: "50%",
                 background: "linear-gradient(135deg, #4285F4 0%, #34A853 100%)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 3px 12px rgba(66,133,244,0.35), 0 1px 4px rgba(0,0,0,0.15)",
+                boxShadow: "0 4px 18px rgba(66,133,244,0.4), 0 1px 6px rgba(0,0,0,0.18)",
               }}>
-                <span style={{ color: "#fff", fontSize: 20, fontWeight: 800 }}>A</span>
+                <span style={{ color: "#fff", fontSize: 26, fontWeight: 800, letterSpacing: "-1px" }}>A</span>
               </div>
+            </div>
+            {/* 하단 AHAREAD 텍스트 */}
+            <div style={{
+              position: "absolute", bottom: 18, left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 3,
+            }}>
               <span style={{
-                fontSize: 9.5, color: "#999", letterSpacing: "0.16em",
+                fontSize: 9.5, color: "#aaa", letterSpacing: "0.22em",
                 fontWeight: 700, textTransform: "uppercase",
               }}>
                 AHAread
