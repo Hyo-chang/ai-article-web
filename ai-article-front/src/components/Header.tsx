@@ -171,10 +171,7 @@ export function Header({
             >
               <span style={{ color: "#fff", fontSize: 32, fontWeight: 800, letterSpacing: "-1.5px" }}>A</span>
             </div>
-            <span className="text-base font-bold tracking-wide text-gray-800">
-              AHAread
-            </span>
-            <span className="mt-0.5 text-xs font-medium tracking-wide text-[#7dd3d3]" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <span className="text-sm font-medium tracking-wide text-[#7dd3d3]" style={{ fontFamily: 'Inter, sans-serif' }}>
               Article Highlights with AI
             </span>
           </button>
