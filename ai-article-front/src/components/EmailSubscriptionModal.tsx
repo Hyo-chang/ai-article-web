@@ -383,30 +383,38 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               background: "#CCC8B8",
             }} />
 
-            {/* AHAread 씰 — A 원형은 봉투 중앙, 텍스트는 하단 */}
-            {/* 중앙 A 씰 */}
-            <div style={{
-              position: "absolute", top: "50%", left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 3,
-            }}>
+            {/* AHAread 씰 */}
+            {/* A 원형 씰 — 플랩 열릴 때 아래로 떨어짐 */}
+            <motion.div
+              animate={{
+                y: flapOpen && phase !== "success" ? 28 : 0,
+                opacity: flapOpen && phase !== "success" ? 0 : 1,
+                rotate: flapOpen && phase !== "success" ? 12 : 0,
+              }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                position: "absolute", bottom: 40, left: "50%",
+                transform: "translateX(-50%)",
+                zIndex: 3,
+              }}
+            >
               <div style={{
-                width: 64, height: 64, borderRadius: "50%",
+                width: 56, height: 56, borderRadius: "50%",
                 background: "linear-gradient(135deg, #4285F4 0%, #34A853 100%)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 4px 18px rgba(66,133,244,0.4), 0 1px 6px rgba(0,0,0,0.18)",
+                boxShadow: "0 4px 16px rgba(66,133,244,0.4), 0 1px 5px rgba(0,0,0,0.18)",
               }}>
-                <span style={{ color: "#fff", fontSize: 26, fontWeight: 800, letterSpacing: "-1px" }}>A</span>
+                <span style={{ color: "#fff", fontSize: 24, fontWeight: 800, letterSpacing: "-1px" }}>A</span>
               </div>
-            </div>
-            {/* 하단 AHAREAD 텍스트 */}
+            </motion.div>
+            {/* AHAREAD 텍스트 */}
             <div style={{
               position: "absolute", bottom: 18, left: "50%",
               transform: "translateX(-50%)",
               zIndex: 3,
             }}>
               <span style={{
-                fontSize: 9.5, color: "#aaa", letterSpacing: "0.22em",
+                fontSize: 9.5, color: "#999", letterSpacing: "0.2em",
                 fontWeight: 700, textTransform: "uppercase",
               }}>
                 AHAread
