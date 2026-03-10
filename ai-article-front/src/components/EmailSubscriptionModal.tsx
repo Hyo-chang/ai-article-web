@@ -26,11 +26,10 @@ const CATEGORIES = [
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 
-const CONTAINER_H = 680;
-const ENV_H = 282;
-const ENVELOPE_TOP = CONTAINER_H - ENV_H; // 398
-const ENV_FOLD_Y = Math.round(ENV_H * 0.53); // 폴드 중심점 (봉투 위에서 ~150px)
-const CARD_H = 405;
+const CONTAINER_H = 700;
+const ENV_H = 280;
+const ENVELOPE_TOP = CONTAINER_H - ENV_H; // 420
+const CARD_H = 400;
 
 interface Props {
   isOpen: boolean;
@@ -345,14 +344,8 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
           </motion.div>
 
           {/* ══ 봉투 본체 (z=10) — flapOpen 시 위쪽 폴드 영역 숨김 ══ */}
-          <motion.div
+          <div
             className="absolute inset-x-0 bottom-0 overflow-hidden"
-            animate={{
-              clipPath: flapOpen && phase !== "success"
-                ? `inset(${ENV_FOLD_Y}px 0px 0px 0px round 0px 0px 18px 18px)`
-                : `inset(0px 0px 0px 0px round 18px 18px 18px 18px)`,
-            }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             style={{
               height: ENV_H,
               zIndex: 10,
@@ -453,7 +446,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
 
           {/* ══ 플랩 (봉투 body 밖, z=20) ══ */}
           <motion.div
