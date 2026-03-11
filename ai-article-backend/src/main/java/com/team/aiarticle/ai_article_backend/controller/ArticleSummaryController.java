@@ -8,6 +8,7 @@ import com.team.aiarticle.ai_article_backend.dto.UserAnalyzedArticleResponse;
 import com.team.aiarticle.ai_article_backend.entity.ArticleV2;
 import com.team.aiarticle.ai_article_backend.entity.UserAnalyzedArticle;
 import com.team.aiarticle.ai_article_backend.repository.ArticleV2Repository;
+import com.team.aiarticle.ai_article_backend.repository.KeywordRepository;
 import com.team.aiarticle.ai_article_backend.security.services.UserDetailsImpl;
 import com.team.aiarticle.ai_article_backend.service.ArticleServiceV2;
 import com.team.aiarticle.ai_article_backend.service.ArticleSummaryService;
@@ -15,6 +16,7 @@ import com.team.aiarticle.ai_article_backend.service.RagAiService;
 import com.team.aiarticle.ai_article_backend.service.UserAnalyzedArticleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -36,6 +38,7 @@ public class ArticleSummaryController {
     private final RagAiService ragAiService;
     private final ArticleV2Repository articleV2Repository;
     private final UserAnalyzedArticleService userAnalyzedArticleService;
+    private final KeywordRepository keywordRepository;
 
     private Integer getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -64,6 +67,20 @@ public class ArticleSummaryController {
         List<ArticleListResponse> results = articleServiceV2.searchByKeyword(query.trim(), limit);
         log.info("[SEARCH] query='{}' found {} results", query, results.size());
         return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/articles/keywords")
+    public ResponseEntity<List<String>> searchKeywords(
+            @RequestParam(name = "q") String query) {
+        if (query == null || query.trim().length() < 1) {
+            return ResponseEntity.ok(List.of());
+        }
+        List<String> keywords = keywordRepository
+                .findByKeywordNameContainingIgnoreCase(query.trim(), PageRequest.of(0, 20))
+                .stream()
+                .map(k -> k.getKeywordName())
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(keywords);
     }
 
     @GetMapping("/articles/popular")

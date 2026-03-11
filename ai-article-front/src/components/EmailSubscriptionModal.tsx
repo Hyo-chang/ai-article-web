@@ -49,6 +49,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [keywordTags, setKeywordTags] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState("");
+  const [keywordSearching, setKeywordSearching] = useState(false);
   const [hour, setHour] = useState(9);
   const [error, setError] = useState("");
   const keywordInputRef = useRef<HTMLInputElement>(null);
@@ -78,12 +79,25 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
     );
   };
 
-  const addKeyword = (raw: string) => {
-    const tokens = raw.split(",").map((k) => k.trim()).filter((k) => k && !keywordTags.includes(k));
-    if (tokens.length > 0) {
-      setKeywordTags((prev) => [...prev, ...tokens]);
-    }
+  const addKeyword = async (raw: string) => {
+    const q = raw.trim();
+    if (!q) return;
     setKeywordInput("");
+    setKeywordSearching(true);
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/articles/keywords?q=${encodeURIComponent(q)}`);
+      const found: string[] = res.ok ? await res.json() : [];
+      if (found.length > 0) {
+        setKeywordTags((prev) => [...prev, ...found.filter((k) => !prev.includes(k))]);
+      } else {
+        // DB에 없으면 입력값 그대로 추가
+        setKeywordTags((prev) => prev.includes(q) ? prev : [...prev, q]);
+      }
+    } catch {
+      setKeywordTags((prev) => prev.includes(q) ? prev : [...prev, q]);
+    } finally {
+      setKeywordSearching(false);
+    }
   };
 
   const removeKeyword = (tag: string) => {
@@ -253,7 +267,7 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                           <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">카테고리</p>
                           <div
                             className="flex gap-1.5 mb-3"
-                            style={{ overflowX: "auto", flexWrap: "nowrap", paddingBottom: 4, scrollbarWidth: "none" }}
+                            style={{ flexWrap: "wrap" }}
                           >
                             {CATEGORIES.map((cat) => (
                               <button
@@ -308,7 +322,11 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
                               placeholder={keywordTags.length === 0 ? "예: 이란, 반도체, 삼성" : ""}
                               className="flex-1 text-sm outline-none min-w-20 bg-transparent"
                               style={{ minWidth: 80 }}
+                              disabled={keywordSearching}
                             />
+                            {keywordSearching && (
+                              <span className="text-xs text-indigo-400 whitespace-nowrap">검색 중...</span>
+                            )}
                           </div>
                           <p className="text-xs text-gray-400 mb-3">
                             입력한 키워드를 포함하는 기사를 선별합니다
@@ -473,8 +491,8 @@ export default function EmailSubscriptionModal({ isOpen, onClose }: Props) {
               backfaceVisibility: "hidden" as const,
               WebkitBackfaceVisibility: "hidden" as const,
             }}
-            animate={{ rotateX: flapOpen ? -180 : 0 }}
-            transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
+            animate={{ rotateX: flapOpen ? -180 : 0, opacity: phase === "success" ? 0 : 1 }}
+            transition={{ rotateX: { duration: 0.95, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.25 } }}
           >
             <div style={{
               width: "100%", height: "100%",
