@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -18,7 +18,13 @@ import { GoogleLoginButton } from "../components/GoogleLoginButton";
 
 // ✅ Login 컴포넌트에서 더 이상 props를 받지 않습니다.
 export function Login() {
-  // ✅ { onLogin, onSwitchToSignUp }: LoginProps 제거
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "google-adsense-page-no-ads";
+    meta.content = "true";
+    document.head.appendChild(meta);
+    return () => { meta.remove(); };
+  }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

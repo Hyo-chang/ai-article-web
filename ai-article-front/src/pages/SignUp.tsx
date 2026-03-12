@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -16,6 +16,13 @@ interface SignUpProps {
 }
 
 export function SignUp({ onSignUp, onSwitchToLogin }: SignUpProps) {
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "google-adsense-page-no-ads";
+    meta.content = "true";
+    document.head.appendChild(meta);
+    return () => { meta.remove(); };
+  }, []);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

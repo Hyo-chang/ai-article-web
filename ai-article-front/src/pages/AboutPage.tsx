@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCanonical } from "../hooks/useCanonical";
+import { useNoAds } from "../hooks/useNoAds";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
@@ -44,6 +45,7 @@ const features = [
 export default function AboutPage() {
   const navigate = useNavigate();
   useCanonical("/about");
+  useNoAds();
 
   return (
     <div className="min-h-screen bg-[#090a0c] text-white">
