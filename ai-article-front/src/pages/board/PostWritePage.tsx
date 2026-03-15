@@ -4,8 +4,10 @@ import { usePosts } from '../../hooks/usePosts';
 import { usePost } from '../../hooks/usePost';
 import { useAuth } from '../../services/AuthContext';
 import { ArrowLeft } from 'lucide-react';
+import { useNoAds } from '../../hooks/useNoAds';
 
 export default function PostWritePage() {
+  useNoAds();
   const navigate = useNavigate();
   const { postId } = useParams<{ postId?: string }>();
   const isEditMode = !!postId;

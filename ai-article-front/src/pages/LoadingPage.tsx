@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNoAds } from "../hooks/useNoAds";
 import type { Article } from "../types/article";
 import { Progress } from "@/components/ui/progress";
 
@@ -20,6 +21,7 @@ const MESSAGES = [
 const MESSAGE_INTERVAL_MS = LOADING_DURATION_MS / MESSAGES.length;
 
 export default function LoadingPage() {
+  useNoAds();
   const { articleId } = useParams<{ articleId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
