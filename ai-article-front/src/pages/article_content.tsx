@@ -105,6 +105,7 @@ export default function ArticleDetailPage() {
     const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [showAiTooltip, setShowAiTooltip] = useState(false);
+    const [showSource, setShowSource] = useState(false);
 
     // AI 툴팁 표시 여부 (localStorage 확인)
     useEffect(() => {
@@ -342,6 +343,7 @@ export default function ArticleDetailPage() {
             summary: resolvedSummary,
             keywords: resolvedKeywords,
             glossary: resolvedGlossary,
+            articleUrl: resolvedArticle.articleUrl || null,
         };
     }, [resolvedArticle, sampleArticle, aiSummary, aiKeywords, aiGlossary]);
 
@@ -580,6 +582,37 @@ export default function ArticleDetailPage() {
                                                 </p>
                                             ))}
                                         </div>
+
+                                        {/* 원문 보기 */}
+                                        {articleDetail.articleUrl && (
+                                            <div className="mt-6 border-t border-slate-100 pt-4 dark:border-white/10">
+                                                <button
+                                                    onClick={() => setShowSource((v) => !v)}
+                                                    className="flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-800 dark:text-gray-400 dark:hover:text-white"
+                                                >
+                                                    <span>📰 원문 출처</span>
+                                                    <span className="text-xs opacity-60">{showSource ? '▲' : '▼'}</span>
+                                                </button>
+                                                {showSource && (
+                                                    <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
+                                                        <div className="mb-3 flex items-center gap-2 text-sm text-slate-600 dark:text-gray-300">
+                                                            <span className="font-semibold">{articleDetail.publisher || '언론사'}</span>
+                                                        </div>
+                                                        <p className="mb-3 break-all text-xs text-slate-400 dark:text-gray-500">
+                                                            {articleDetail.articleUrl}
+                                                        </p>
+                                                        <a
+                                                            href={articleDetail.articleUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white/10 dark:hover:bg-white/20"
+                                                        >
+                                                            새 탭에서 원문 보기 →
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </section>
                                 </div>
 
