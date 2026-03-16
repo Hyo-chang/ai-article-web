@@ -4,6 +4,7 @@ import com.team.aiarticle.ai_article_backend.dto.ManualCrawlResponse;
 import com.team.aiarticle.ai_article_backend.entity.ArticleV2;
 import com.team.aiarticle.ai_article_backend.entity.User;
 import com.team.aiarticle.ai_article_backend.repository.ArticleV2Repository;
+import com.team.aiarticle.ai_article_backend.repository.PostRepository;
 import com.team.aiarticle.ai_article_backend.repository.UserRepository;
 import com.team.aiarticle.ai_article_backend.service.CrawlingBridgeService;
 import com.team.aiarticle.ai_article_backend.service.EmailService;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,17 +35,20 @@ public class AdminController {
     private final EmailService emailService;
     private final UserRepository userRepository;
     private final ArticleV2Repository articleV2Repository;
+    private final PostRepository postRepository;
     private static final String TOKEN = System.getenv().getOrDefault("ADMIN_TOKEN", "1234");
 
     public AdminController(AdminService adminService, CrawlingBridgeService crawlingBridgeService,
                            JdbcTemplate jdbc, EmailService emailService,
-                           UserRepository userRepository, ArticleV2Repository articleV2Repository) {
+                           UserRepository userRepository, ArticleV2Repository articleV2Repository,
+                           PostRepository postRepository) {
         this.adminService = adminService;
         this.crawlingBridgeService = crawlingBridgeService;
         this.jdbc = jdbc;
         this.emailService = emailService;
         this.userRepository = userRepository;
         this.articleV2Repository = articleV2Repository;
+        this.postRepository = postRepository;
     }
 
     private void requireToken(String token) {
@@ -55,6 +61,39 @@ public class AdminController {
     @Setter
     public static class CrawlRequest {
         private String articleUrl;
+    }
+
+    @GetMapping("/stats")
+    public Map<String, Object> getStats(@RequestHeader(value="X-Admin-Token", required=false) String token) {
+        requireToken(token);
+        long subscriberCount = userRepository.findAll().stream()
+                .filter(u -> Boolean.TRUE.equals(u.getEmailSubscribed())).count();
+        return Map.of(
+                "userCount", userRepository.count(),
+                "articleCount", articleV2Repository.count(),
+                "postCount", postRepository.count(),
+                "subscriberCount", subscriberCount
+        );
+    }
+
+    @GetMapping("/users")
+    public List<Map<String, Object>> getUsers(@RequestHeader(value="X-Admin-Token", required=false) String token) {
+        requireToken(token);
+        return userRepository.findAll().stream()
+                .sorted(Comparator.comparing(u -> u.getCreatedAt() == null ? LocalDateTime.MIN : u.getCreatedAt(),
+                        Comparator.reverseOrder()))
+                .map(u -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("userId", u.getUserId());
+                    m.put("username", u.getUsername());
+                    m.put("email", u.getEmail());
+                    m.put("createdAt", u.getCreatedAt());
+                    m.put("provider", u.getProvider());
+                    m.put("emailSubscribed", u.isEmailSubscribed());
+                    m.put("notificationHour", u.getNotificationHour());
+                    return m;
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @PostMapping("/crawl-article")
