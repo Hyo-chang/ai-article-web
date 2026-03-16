@@ -67,7 +67,7 @@ public class AdminController {
     public Map<String, Object> getStats(@RequestHeader(value="X-Admin-Token", required=false) String token) {
         requireToken(token);
         long subscriberCount = userRepository.findAll().stream()
-                .filter(u -> Boolean.TRUE.equals(u.getEmailSubscribed())).count();
+                .filter(u -> u.isEmailSubscribed()).count();
         return Map.of(
                 "userCount", userRepository.count(),
                 "articleCount", articleV2Repository.count(),

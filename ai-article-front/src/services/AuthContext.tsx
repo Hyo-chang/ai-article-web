@@ -10,7 +10,7 @@ import authService from "./auth.services";
 import { User } from "../types/User";
 
 interface AuthContextType {
-  user: User | null;
+  user: User | null | undefined;
   isLoggedIn: boolean;
   login: (identifier: string, password: string) => Promise<void>;
   googleLogin: (credential: string) => Promise<void>;
@@ -23,7 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null | undefined>(undefined);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setUser(storedUser);
       setIsLoggedIn(true);
     } else {
-      setUser(null);
+      setUser(null); // null = 로그인 안됨, undefined = 아직 확인 중
       setIsLoggedIn(false);
     }
   }, []);
