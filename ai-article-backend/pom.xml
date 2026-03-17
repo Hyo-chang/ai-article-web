@@ -70,11 +70,7 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- Email (Gmail SMTP) -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-mail</artifactId>
-    </dependency>
+    <!-- Email: Resend API (HTTP, SMTP 대체) -->
 
     <!-- Test -->
     <dependency>
