@@ -23,6 +23,32 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.10.0",
+    date: "2026-03-18",
+    highlights: "관리자 페이지 & 이메일 발송 안정화",
+    items: [
+      { type: "feature", text: "관리자 페이지 추가 (/admin): 통계 대시보드, 회원 관리 탭" },
+      { type: "feature", text: "회원 관리: 가입 이력, 가입 방식(일반/Google), 뉴스레터 구독 현황 시간대별 조회" },
+      { type: "feature", text: "원문 출처 버튼: 기사 상세 페이지 하단에 원문 링크 accordion 추가" },
+      { type: "improvement", text: "이메일 발송 Gmail SMTP → Resend API 전환 (Railway SMTP 포트 차단 문제 해결)" },
+      { type: "improvement", text: "AdSense 정책 준수: 비콘텐츠 페이지(로그인/약관/소개 등)에서 광고 자동 차단" },
+      { type: "improvement", text: "게시판 공지/FAQ/가이드 콘텐츠 5개 추가" },
+      { type: "bugfix", text: "관리자 페이지 로그인 상태 확인 전 튕기는 race condition 수정" },
+    ],
+  },
+  {
+    version: "0.9.0",
+    date: "2026-03-10",
+    highlights: "뉴스레터 구독 모달 & 키워드 검색 개선",
+    items: [
+      { type: "feature", text: "뉴스레터 구독 모달: 봉투 펼치기 애니메이션과 함께 구독 설정 UI" },
+      { type: "feature", text: "헤더에 뉴스레터 버튼 추가 (Mail 아이콘)" },
+      { type: "feature", text: "키워드 태그 입력 방식: Enter/쉼표로 추가, Backspace로 삭제" },
+      { type: "feature", text: "키워드 DB 검색 연동: 입력 시 기존 키워드 자동 매핑" },
+      { type: "improvement", text: "AHAread 로고 변경: A 원형 씰 디자인" },
+    ],
+  },
+  {
     version: "0.8.0",
     date: "2026-03-09",
     highlights: "카테고리 분류 정확도 개선",
