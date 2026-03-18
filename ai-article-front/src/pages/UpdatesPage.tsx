@@ -27,8 +27,7 @@ const releases: Release[] = [
     date: "2026-03-18",
     highlights: "관리자 페이지 & 이메일 발송 안정화",
     items: [
-      { type: "feature", text: "관리자 페이지 추가 (/admin): 통계 대시보드, 회원 관리 탭" },
-      { type: "feature", text: "회원 관리: 가입 이력, 가입 방식(일반/Google), 뉴스레터 구독 현황 시간대별 조회" },
+      { type: "feature", text: "서비스 통계 대시보드 및 회원 관리 기능 추가" },
       { type: "feature", text: "원문 출처 버튼: 기사 상세 페이지 하단에 원문 링크 accordion 추가" },
       { type: "improvement", text: "이메일 발송 Gmail SMTP → Resend API 전환 (Railway SMTP 포트 차단 문제 해결)" },
       { type: "improvement", text: "AdSense 정책 준수: 비콘텐츠 페이지(로그인/약관/소개 등)에서 광고 자동 차단" },
